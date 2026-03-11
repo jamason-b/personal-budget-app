@@ -703,11 +703,22 @@
             try {
                 document.getElementById('sync-status').innerText = "☁️ Force Saving...";
                 const docRef = doc_fn(db, 'budget_data', 'master_save');
-                await setDoc_fn(docRef, { budgetData: budgetData, calculationRules: calculationRules });
+                
+                // 10-SECOND TIMEOUT TRAP
+                // If Firebase hangs, this catches it and breaks the infinite loop!
+                const saveTask = setDoc_fn(docRef, { budgetData: budgetData, calculationRules: calculationRules });
+                const timeoutTask = new Promise((_, reject) => setTimeout(() => reject(new Error("TIMEOUT")), 10000));
+                
+                await Promise.race([saveTask, timeoutTask]);
+                
                 document.getElementById('sync-status').innerText = "☁️ Synced";
                 alert("✅ SUCCESS! Your data has been forcefully pushed to the cloud.");
             } catch(e) {
-                alert("❌ ERROR: Failed to push to cloud.\n\nMake sure your Firebase Rules are set to 'allow read, write: if true;'. Details: " + e.message);
+                if (e.message === "TIMEOUT") {
+                    alert("❌ ERROR: The connection timed out.\n\nFirebase is blocking the save. This almost always means the Firestore Database hasn't been created yet, or the Rules weren't updated correctly.\n\nPlease go to Firebase > Firestore Database > Rules, set them to 'allow read, write: if true;', and click Publish.");
+                } else {
+                    alert("❌ ERROR: Failed to push to cloud.\n\nDetails: " + e.message);
+                }
                 document.getElementById('sync-status').innerText = "⚠️ Save Blocked";
             }
         }
@@ -1562,13 +1573,14 @@
         renderMonthly();
     }
 
-    let db, setDoc_fn, doc_fn, getDoc_fn;
+    let db, auth, setDoc_fn, doc_fn;
 
     async function initCloud() {
         try {
             document.getElementById('sync-status').innerText = "☁️ Connecting...";
             
             const appModule = await import('https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js');
+            const authModule = await import('https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js');
             const fsModule = await import('https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js');
 
             const firebaseConfig = {
@@ -1581,10 +1593,13 @@
             };
 
             const app = appModule.initializeApp(firebaseConfig);
+            auth = authModule.getAuth(app);
             db = fsModule.getFirestore(app);
             setDoc_fn = fsModule.setDoc;
             doc_fn = fsModule.doc;
-            getDoc_fn = fsModule.getDoc;
+
+            // Silently authenticate behind the scenes. Firebase often blocks unauthenticated traffic entirely!
+            await authModule.signInAnonymously(auth);
 
             setupCloudSync(fsModule);
         } catch (e) {
@@ -1635,7 +1650,11 @@
             document.getElementById('sync-status').innerText = "☁️ Saving...";
             const docRef = doc_fn(db, 'budget_data', 'master_save');
             try {
-                await setDoc_fn(docRef, { budgetData: budgetData, calculationRules: calculationRules });
+                // 8-SECOND TIMEOUT TRAP for standard background saving
+                const saveTask = setDoc_fn(docRef, { budgetData: budgetData, calculationRules: calculationRules });
+                const timeoutTask = new Promise((_, reject) => setTimeout(() => reject(new Error("TIMEOUT")), 8000));
+                
+                await Promise.race([saveTask, timeoutTask]);
                 document.getElementById('sync-status').innerText = "☁️ Synced";
             } catch(e) {
                 console.error("Cloud Save Failed", e);
