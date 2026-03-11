@@ -403,9 +403,9 @@
     </div>
 </div>
 
-<!-- Settings Modal (UPGRADED) -->
+<!-- Settings Modal (SIMPLIFIED) -->
 <div id="settings-modal" class="modal-overlay">
-    <div class="modal-content" style="max-width: 28rem;">
+    <div class="modal-content" style="max-width: 26rem;">
         <div class="modal-header">
             <h3 class="modal-title">Data Settings</h3>
             <button onclick="closeSettingsModal()" class="btn-close">
@@ -413,33 +413,12 @@
             </button>
         </div>
         <div class="modal-body">
-            <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1.5rem;">Manage your locally stored budget data safely.</p>
+            <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1.5rem;">Your app is securely synced to your private Firebase database.</p>
             
-            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                <!-- DEVICE LINKING SECTION -->
-                <p style="font-size: 0.75rem; font-weight: 600; color: var(--text-strong); text-transform: uppercase;">Your Cloud Sync Key</p>
-                <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.5rem;">
-                    <input type="text" id="my-sync-key" class="input-text" style="flex: 1; padding: 0.5rem; font-family: monospace; font-size: 0.75rem; background: var(--bg-page);" readonly>
-                    <button onclick="copySyncKey()" class="btn-add" style="margin: 0; width: auto; padding: 0.5rem 1rem; background: var(--bg-alt); color: var(--text-strong); border: 1px solid var(--border);">Copy</button>
-                </div>
+            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                <button onclick="forceCloudSave()" class="btn-add" style="margin: 0; background: var(--primary-bg); color: var(--primary); border: 1px solid var(--primary-border);">⬆️ Force Push Displayed Data to Cloud</button>
                 
-                <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.25rem;">
-                    Link to another device's budget by pasting their key below:
-                </p>
-                <div style="display: flex; gap: 0.5rem; align-items: center;">
-                    <input type="text" id="sync-key-input" class="input-text" style="flex: 1; padding: 0.5rem; font-family: monospace; font-size: 0.75rem;" placeholder="Paste external key here">
-                    <button id="btn-link" onclick="applySyncKey()" class="btn-add" style="margin: 0; width: auto; padding: 0.5rem 1rem;">Link Device</button>
-                </div>
-
-                <!-- UNLINK BUTTON -->
-                <button onclick="unlinkDevice()" class="btn-add" style="margin: 0; margin-top: 0.5rem; background: transparent; color: var(--danger); border: 1px dashed var(--danger);">Disconnect / Unlink Device</button>
-
-                <div style="height: 1px; background: var(--border); margin: 1rem 0;"></div>
-
-                <!-- FORCE PUSH BUTTON -->
-                <button onclick="forceCloudSave()" class="btn-add" style="margin: 0; background: var(--primary-bg); color: var(--primary); border: 1px solid var(--primary-border);">⬆️ Force Push to Cloud</button>
-                
-                <div style="height: 1px; background: var(--border); margin: 1rem 0;"></div>
+                <div style="height: 1px; background: var(--border); margin: 0.5rem 0;"></div>
 
                 <button onclick="exportData()" class="btn-add" style="margin: 0;">📥 Download Backup (.json)</button>
                 <button onclick="document.getElementById('import-file-settings').click()" class="btn-add" style="margin: 0; background: var(--bg-alt); color: var(--text-strong); border: 1px solid var(--border);">📤 Restore from Backup</button>
@@ -638,8 +617,7 @@
     window.editCalculationRule = editCalculationRule; window.handleSaveCustomRule = handleSaveCustomRule; window.deleteCalculationRule = deleteCalculationRule;
     window.closeReorderModal = closeReorderModal; window.renderReorderList = renderReorderList; window.moveCategory = moveCategory;
     window.toggleSection = toggleSection; window.toggleAllSources = toggleAllSources; window.deleteRow = deleteRow;
-    window.closeSettingsModal = closeSettingsModal; window.applySyncKey = applySyncKey; window.copySyncKey = copySyncKey;
-    window.forceCloudSave = forceCloudSave; window.unlinkDevice = unlinkDevice;
+    window.closeSettingsModal = closeSettingsModal; window.forceCloudSave = forceCloudSave;
 
     const fullMonthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -647,7 +625,6 @@
     let yearlyViewMode = 'summary'; 
     let undoStack = [];
     const MAX_UNDO = 15;
-    let activeSyncKey = null; 
 
     function toggleTheme() {
         const currentTheme = document.documentElement.getAttribute('data-theme');
@@ -716,59 +693,21 @@
     }
 
     function openSettingsModal() { 
-        document.getElementById('my-sync-key').value = activeSyncKey || 'Loading...';
         document.getElementById('settings-modal').classList.add('active'); 
     }
     
     function closeSettingsModal() { document.getElementById('settings-modal').classList.remove('active'); }
 
-    function copySyncKey() {
-        const copyText = document.getElementById("my-sync-key");
-        copyText.select();
-        copyText.setSelectionRange(0, 99999); 
-        document.execCommand('copy');
-        alert("Sync Key Copied! Text this to yourself and paste it on your phone.");
-    }
-
-    function unlinkDevice() {
-        localStorage.removeItem('budgetSyncKey');
-        alert("Device unlinked. The page will reload back to its original state.");
-        window.location.reload();
-    }
-
-    async function applySyncKey() {
-        const newKey = document.getElementById('sync-key-input').value.trim();
-        if (newKey && newKey !== activeSyncKey) {
-            document.getElementById('btn-link').innerText = "Verifying...";
-            try {
-                const checkRef = doc_fn(db, 'artifacts', appId, 'users', newKey, 'budget', 'main');
-                const snap = await getDoc_fn(checkRef);
-                if (snap.exists()) {
-                    activeSyncKey = newKey;
-                    localStorage.setItem('budgetSyncKey', activeSyncKey);
-                    alert("Device linked perfectly! The page will now reload with your data.");
-                    window.location.reload();
-                } else {
-                    alert("⚠️ The cloud folder for that key is empty!\n\nPlease go to your computer, click 'Force Push to Cloud' in the Settings, wait for the 'Success' message, and then try linking again.");
-                    document.getElementById('btn-link').innerText = "Link Device";
-                }
-            } catch(e) {
-                alert("Error connecting to cloud to verify key.");
-                document.getElementById('btn-link').innerText = "Link Device";
-            }
-        }
-    }
-
     async function forceCloudSave() {
         if(confirm("This will completely overwrite the cloud database with exactly what you see on this screen. Proceed?")) {
             try {
                 document.getElementById('sync-status').innerText = "☁️ Force Saving...";
-                const docRef = doc_fn(db, 'artifacts', appId, 'users', activeSyncKey, 'budget', 'main');
+                const docRef = doc_fn(db, 'budget_data', 'master_save');
                 await setDoc_fn(docRef, { budgetData: budgetData, calculationRules: calculationRules });
                 document.getElementById('sync-status').innerText = "☁️ Synced";
-                alert("✅ SUCCESS!\n\nYour data has been forcefully pushed to the cloud.\n\nYou can now safely link your phone using this key:\n" + activeSyncKey);
+                alert("✅ SUCCESS! Your data has been forcefully pushed to the cloud.");
             } catch(e) {
-                alert("❌ ERROR: Failed to push to cloud.\n\nThis usually means your Firebase Database is not in 'Test Mode' and is blocking the save. Error details: " + e.message);
+                alert("❌ ERROR: Failed to push to cloud.\n\nMake sure your Firebase Rules are set to 'allow read, write: if true;'. Details: " + e.message);
                 document.getElementById('sync-status').innerText = "⚠️ Save Blocked";
             }
         }
@@ -1623,14 +1562,13 @@
         renderMonthly();
     }
 
-    let db, auth, userId, appId, setDoc_fn, doc_fn, getDoc_fn;
+    let db, setDoc_fn, doc_fn, getDoc_fn;
 
     async function initCloud() {
         try {
             document.getElementById('sync-status').innerText = "☁️ Connecting...";
             
             const appModule = await import('https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js');
-            const authModule = await import('https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js');
             const fsModule = await import('https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js');
 
             const firebaseConfig = {
@@ -1643,26 +1581,12 @@
             };
 
             const app = appModule.initializeApp(firebaseConfig);
-            auth = authModule.getAuth(app);
             db = fsModule.getFirestore(app);
             setDoc_fn = fsModule.setDoc;
             doc_fn = fsModule.doc;
             getDoc_fn = fsModule.getDoc;
-            appId = 'personal-budget-app-aeb06'; 
 
-            await authModule.signInAnonymously(auth);
-
-            authModule.onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    userId = user.uid;
-                    activeSyncKey = localStorage.getItem('budgetSyncKey');
-                    if (!activeSyncKey) {
-                        activeSyncKey = userId; 
-                        localStorage.setItem('budgetSyncKey', activeSyncKey);
-                    }
-                    setupCloudSync(fsModule);
-                }
-            });
+            setupCloudSync(fsModule);
         } catch (e) {
             console.warn("Cloud failed. Using local browser memory.", e);
             document.getElementById('sync-status').innerText = "⚠️ Offline Mode";
@@ -1672,7 +1596,8 @@
     }
 
     function setupCloudSync(fsModule) {
-        const docRef = doc_fn(db, 'artifacts', appId, 'users', activeSyncKey, 'budget', 'main');
+        // HARDCODED MASTER FOLDER - No keys, no logins required.
+        const docRef = doc_fn(db, 'budget_data', 'master_save');
         
         fsModule.onSnapshot(docRef, (docSnap) => {
             if (docSnap.exists()) {
@@ -1691,16 +1616,10 @@
                 getOrCreateMonthData(currentMonthStr, true);
                 renderApp();
             } else {
-                if (activeSyncKey === userId) {
-                    loadLocalData();
-                    saveData(); 
-                    renderApp();
-                } else {
-                    document.getElementById('sync-status').innerText = "⚠️ Invalid Link";
-                    if(confirm("⚠️ The Sync Key '" + activeSyncKey + "' does not contain any data in the cloud.\n\nDid you forget to click 'Force Push to Cloud' on your computer first? Do you want to Unlink this phone to start over?")) {
-                        unlinkDevice();
-                    }
-                }
+                // First time ever loading the cloud for this project
+                loadLocalData();
+                saveData(); 
+                renderApp();
             }
         }, (err) => {
             console.error("Sync error", err);
@@ -1712,9 +1631,9 @@
         localStorage.setItem(STORAGE_KEY, JSON.stringify(budgetData));
         localStorage.setItem(RULES_KEY, JSON.stringify(calculationRules));
 
-        if (!skipCloud && db && activeSyncKey && setDoc_fn && doc_fn) {
+        if (!skipCloud && db && setDoc_fn && doc_fn) {
             document.getElementById('sync-status').innerText = "☁️ Saving...";
-            const docRef = doc_fn(db, 'artifacts', appId, 'users', activeSyncKey, 'budget', 'main');
+            const docRef = doc_fn(db, 'budget_data', 'master_save');
             try {
                 await setDoc_fn(docRef, { budgetData: budgetData, calculationRules: calculationRules });
                 document.getElementById('sync-status').innerText = "☁️ Synced";
