@@ -139,19 +139,26 @@
         }
         .month-selector:focus { border-color: var(--primary); }
 
-        /* Summary Cards */
-        .summary-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; margin-bottom: 2rem; }
-        @media (min-width: 768px) { .summary-grid { grid-template-columns: repeat(4, 1fr); } }
+        /* Summary Cards - Mobile Optimized */
+        .summary-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin-bottom: 1.5rem; }
+        @media (min-width: 768px) { .summary-grid { grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem; } }
         
-        .summary-card { background: var(--bg-card); padding: 1.25rem; border-radius: var(--radius-xl); border: 1px solid var(--border); box-shadow: var(--shadow-sm); }
+        .summary-card { background: var(--bg-card); padding: 1rem; border-radius: var(--radius-lg); border: 1px solid var(--border); box-shadow: var(--shadow-sm); }
+        @media (min-width: 768px) { .summary-card { padding: 1.25rem; border-radius: var(--radius-xl); } }
+        
         .summary-card.highlight { background: var(--primary-bg); border-color: var(--primary-border); position: relative; overflow: hidden; }
         .summary-card.highlight::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--primary); }
         .summary-label-wrapper { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem; }
-        .summary-label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); }
+        
+        .summary-label { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); }
+        @media (min-width: 768px) { .summary-label { font-size: 0.75rem; } }
+        
         .pct-badge { font-size: 0.65rem; font-weight: 600; background: var(--bg-alt); color: var(--text-muted); padding: 0.15rem 0.4rem; border-radius: var(--radius-sm); }
         .summary-card.highlight .summary-label { color: var(--primary); }
         .summary-card.highlight .pct-badge { background: var(--primary-badge-bg); color: var(--primary); }
-        .summary-value { font-size: 1.5rem; font-weight: 700; color: var(--text-strong); }
+        
+        .summary-value { font-size: 1.25rem; font-weight: 700; color: var(--text-strong); }
+        @media (min-width: 768px) { .summary-value { font-size: 1.5rem; } }
         .summary-card.highlight .summary-value { color: var(--primary-text); }
 
         /* Tables & Sections */
@@ -160,29 +167,59 @@
         .section-header:hover { background: var(--header-hover); }
         .icon-collapse { width: 1.25rem; height: 1.25rem; color: var(--text-muted); transition: transform 0.2s ease; }
         .section-header.collapsed .icon-collapse { transform: rotate(-90deg); }
-        .section-title { font-size: 1.125rem; font-weight: 600; color: var(--text-strong); }
-        .section-totals { font-size: 0.875rem; font-weight: 600; color: var(--text-muted); }
+        
+        .section-title { font-size: 1rem; font-weight: 600; color: var(--text-strong); }
+        @media (min-width: 768px) { .section-title { font-size: 1.125rem; } }
+        
+        .section-totals { font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-align: right; }
+        @media (min-width: 768px) { .section-totals { font-size: 0.875rem; } }
+        
         .section-totals span.val-budget { color: var(--text-muted); margin-left: 0.25rem; }
         .section-totals span.val-actual { color: var(--text-strong); margin-left: 0.25rem; }
-        .section-totals .divider { margin: 0 0.5rem; color: var(--text-light); }
+        .section-totals .divider { margin: 0 0.25rem; color: var(--text-light); }
+        @media (min-width: 768px) { .section-totals .divider { margin: 0 0.5rem; } }
 
-        table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; font-size: 0.875rem; }
-        th { padding: 0.75rem 1.5rem; font-size: 0.75rem; text-transform: uppercase; font-weight: 600; color: var(--text-muted); background-color: var(--bg-card); border-bottom: 1px solid var(--border); white-space: nowrap; }
+        /* Mobile Optimized Table Spacing */
+        table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; font-size: 0.8rem; }
+        @media (min-width: 768px) { table { font-size: 0.875rem; } }
+        
+        th { padding: 0.75rem 0.5rem; font-size: 0.65rem; text-transform: uppercase; font-weight: 600; color: var(--text-muted); background-color: var(--bg-card); border-bottom: 1px solid var(--border); white-space: nowrap; }
+        @media (min-width: 768px) { th { padding: 0.75rem 1.5rem; font-size: 0.75rem; } }
+        
         th.text-right, td.text-right { text-align: right; }
         th.text-center, td.text-center { text-align: center; }
         tr.table-row { background-color: var(--bg-card); transition: background-color 0.15s ease; }
         tr.table-row:hover { background-color: var(--bg-alt); }
-        td { padding: 1rem 1.5rem; color: var(--text-muted); white-space: nowrap; vertical-align: middle; border-bottom: 1px solid var(--border-light); background-color: transparent; }
+        
+        td { padding: 0.75rem 0.5rem; color: var(--text-muted); white-space: nowrap; vertical-align: middle; border-bottom: 1px solid var(--border-light); background-color: transparent; }
+        @media (min-width: 768px) { td { padding: 1rem 1.5rem; } }
+        
         tr.table-row:last-child td { border-bottom: none; }
 
-        .btn-row-action { opacity: 0; pointer-events: none; background: transparent; border: none; color: var(--text-light); cursor: pointer; padding: 0.35rem; border-radius: var(--radius-sm); transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+        /* Action Buttons - Always visible on mobile, hover on desktop */
+        .btn-row-action { opacity: 1; pointer-events: auto; background: var(--bg-alt); border: 1px solid var(--border); color: var(--text-muted); cursor: pointer; padding: 0.25rem; border-radius: var(--radius-sm); transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+        .btn-row-action svg { width: 1rem; height: 1rem; }
+        
+        @media (min-width: 768px) { 
+            .btn-row-action { opacity: 0; pointer-events: none; background: transparent; border: none; padding: 0.35rem; color: var(--text-light); }
+            .btn-row-action svg { width: 1.125rem; height: 1.125rem; }
+        }
+        
         .table-row:hover .btn-row-action { opacity: 1; pointer-events: auto; }
         .btn-row-action:hover { color: var(--primary); background: var(--primary-bg); }
         .btn-row-action.delete:hover { color: var(--danger); background: var(--danger-bg); }
-        .btn-row-action svg { width: 1.125rem; height: 1.125rem; }
 
         td.cat-name { font-weight: 500; color: var(--text-strong); }
-        .cat-name-wrapper { display: flex; align-items: center; gap: 0.5rem; }
+        
+        /* Stack category badges vertically on mobile */
+        .cat-name-wrapper { display: flex; flex-direction: column; align-items: flex-start; gap: 0.25rem; }
+        .action-buttons-wrapper { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.25rem; }
+        
+        @media (min-width: 768px) { 
+            .cat-name-wrapper { flex-direction: row; align-items: center; gap: 0.5rem; } 
+            .action-buttons-wrapper { flex-direction: row; justify-content: flex-end; gap: 0.25rem; }
+        }
+        
         .calc-badge { background: var(--calc-badge-bg); color: var(--calc-badge-text); font-size: 0.65rem; font-weight: 600; padding: 0.15rem 0.5rem; border-radius: 9999px; display: inline-flex; align-items: center; gap: 0.2rem; cursor: help; white-space: nowrap; }
         .calc-badge svg { width: 0.75rem; height: 0.75rem; }
         .yearly-badge { background: transparent; color: var(--text-muted); font-size: 0.65rem; font-weight: 600; padding: 0.15rem 0.5rem; border-radius: 9999px; display: inline-flex; align-items: center; gap: 0.2rem; cursor: help; white-space: nowrap; border: 1px dashed var(--text-light); }
@@ -705,7 +742,6 @@
                 const docRef = doc_fn(db, 'budget_data', 'master_save');
                 
                 // 10-SECOND TIMEOUT TRAP
-                // If Firebase hangs, this catches it and breaks the infinite loop!
                 const saveTask = setDoc_fn(docRef, { budgetData: budgetData, calculationRules: calculationRules });
                 const timeoutTask = new Promise((_, reject) => setTimeout(() => reject(new Error("TIMEOUT")), 10000));
                 
@@ -715,7 +751,7 @@
                 alert("✅ SUCCESS! Your data has been forcefully pushed to the cloud.");
             } catch(e) {
                 if (e.message === "TIMEOUT") {
-                    alert("❌ ERROR: The connection timed out.\n\nFirebase is blocking the save. This almost always means the Firestore Database hasn't been created yet, or the Rules weren't updated correctly.\n\nPlease go to Firebase > Firestore Database > Rules, set them to 'allow read, write: if true;', and click Publish.");
+                    alert("❌ ERROR: The connection timed out.\n\nFirebase is blocking the save. Please check your Firestore rules.");
                 } else {
                     alert("❌ ERROR: Failed to push to cloud.\n\nDetails: " + e.message);
                 }
@@ -1052,11 +1088,16 @@
 
                 const targetHtml = vals.isCalculated ? `<div style="font-size: 0.65rem; color: var(--primary); text-align: right; margin-top: 0.15rem; font-weight: 600;">Target: ${formatCurrency(vals.suggestedActual)}</div>` : '';
 
+                // NEW MOBILE WRAPPERS FOR ACTION BUTTONS
                 rowsHtml += `
                     <tr class="table-row">
                         <td class="cat-name">
                             <div class="cat-name-wrapper">
-                                ${item.name} ${vals.isCalculated ? calcBadge : ''} ${yearlyBadge}
+                                <span>${item.name}</span>
+                                <div style="display: flex; gap: 0.25rem; flex-wrap: wrap;">
+                                    ${vals.isCalculated ? calcBadge : ''} 
+                                    ${yearlyBadge}
+                                </div>
                             </div>
                         </td>
                         <td class="text-right">${formatCurrency(vals.budget)}</td>
@@ -1071,8 +1112,8 @@
                             ${targetHtml}
                         </td>
                         <td class="text-right val-diff ${diffClass}">${diffText}</td>
-                        <td style="padding: 0 0.5rem; width: 60px;">
-                            <div style="display: flex; justify-content: flex-end; gap: 0.25rem;">
+                        <td style="padding: 0 0.25rem; width: 40px;">
+                            <div class="action-buttons-wrapper">
                                 <button class="btn-row-action" onclick="openEditRowModal('${sec.id}', ${idx})" title="Edit Category">
                                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                                 </button>
@@ -1598,7 +1639,6 @@
             setDoc_fn = fsModule.setDoc;
             doc_fn = fsModule.doc;
 
-            // Silently authenticate behind the scenes. Firebase often blocks unauthenticated traffic entirely!
             await authModule.signInAnonymously(auth);
 
             setupCloudSync(fsModule);
@@ -1611,7 +1651,6 @@
     }
 
     function setupCloudSync(fsModule) {
-        // HARDCODED MASTER FOLDER - No keys, no logins required.
         const docRef = doc_fn(db, 'budget_data', 'master_save');
         
         fsModule.onSnapshot(docRef, (docSnap) => {
@@ -1631,7 +1670,6 @@
                 getOrCreateMonthData(currentMonthStr, true);
                 renderApp();
             } else {
-                // First time ever loading the cloud for this project
                 loadLocalData();
                 saveData(); 
                 renderApp();
@@ -1650,7 +1688,6 @@
             document.getElementById('sync-status').innerText = "☁️ Saving...";
             const docRef = doc_fn(db, 'budget_data', 'master_save');
             try {
-                // 8-SECOND TIMEOUT TRAP for standard background saving
                 const saveTask = setDoc_fn(docRef, { budgetData: budgetData, calculationRules: calculationRules });
                 const timeoutTask = new Promise((_, reject) => setTimeout(() => reject(new Error("TIMEOUT")), 8000));
                 
