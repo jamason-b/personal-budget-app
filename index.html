@@ -416,7 +416,7 @@
             <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1.5rem;">Manage your locally stored budget data safely.</p>
             
             <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                <!-- NEW DEVICE LINKING SECTION -->
+                <!-- DEVICE LINKING SECTION -->
                 <p style="font-size: 0.75rem; font-weight: 600; color: var(--text-strong); text-transform: uppercase;">Your Cloud Sync Key</p>
                 <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.5rem;">
                     <input type="text" id="my-sync-key" class="input-text" style="flex: 1; padding: 0.5rem; font-family: monospace; font-size: 0.75rem; background: var(--bg-page);" readonly>
@@ -431,8 +431,12 @@
                     <button id="btn-link" onclick="applySyncKey()" class="btn-add" style="margin: 0; width: auto; padding: 0.5rem 1rem;">Link Device</button>
                 </div>
 
+                <!-- UNLINK BUTTON -->
+                <button onclick="unlinkDevice()" class="btn-add" style="margin: 0; margin-top: 0.5rem; background: transparent; color: var(--danger); border: 1px dashed var(--danger);">Disconnect / Unlink Device</button>
+
                 <div style="height: 1px; background: var(--border); margin: 1rem 0;"></div>
 
+                <!-- FORCE PUSH BUTTON -->
                 <button onclick="forceCloudSave()" class="btn-add" style="margin: 0; background: var(--primary-bg); color: var(--primary); border: 1px solid var(--primary-border);">⬆️ Force Push to Cloud</button>
                 
                 <div style="height: 1px; background: var(--border); margin: 1rem 0;"></div>
@@ -635,7 +639,7 @@
     window.closeReorderModal = closeReorderModal; window.renderReorderList = renderReorderList; window.moveCategory = moveCategory;
     window.toggleSection = toggleSection; window.toggleAllSources = toggleAllSources; window.deleteRow = deleteRow;
     window.closeSettingsModal = closeSettingsModal; window.applySyncKey = applySyncKey; window.copySyncKey = copySyncKey;
-    window.forceCloudSave = forceCloudSave;
+    window.forceCloudSave = forceCloudSave; window.unlinkDevice = unlinkDevice;
 
     const fullMonthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -726,6 +730,12 @@
         alert("Sync Key Copied! Text this to yourself and paste it on your phone.");
     }
 
+    function unlinkDevice() {
+        localStorage.removeItem('budgetSyncKey');
+        alert("Device unlinked. The page will reload back to its original state.");
+        window.location.reload();
+    }
+
     async function applySyncKey() {
         const newKey = document.getElementById('sync-key-input').value.trim();
         if (newKey && newKey !== activeSyncKey) {
@@ -739,7 +749,7 @@
                     alert("Device linked perfectly! The page will now reload with your data.");
                     window.location.reload();
                 } else {
-                    alert("Sync Key not found! Double-check the key on your computer.");
+                    alert("⚠️ The cloud folder for that key is empty!\n\nPlease go to your computer, click 'Force Push to Cloud' in the Settings, wait for the 'Success' message, and then try linking again.");
                     document.getElementById('btn-link').innerText = "Link Device";
                 }
             } catch(e) {
@@ -750,9 +760,17 @@
     }
 
     async function forceCloudSave() {
-        if(confirm("This will overwrite the cloud with your computer's current data. Proceed?")) {
-            await saveData(false);
-            alert("Data forcefully pushed to the cloud!");
+        if(confirm("This will completely overwrite the cloud database with exactly what you see on this screen. Proceed?")) {
+            try {
+                document.getElementById('sync-status').innerText = "☁️ Force Saving...";
+                const docRef = doc_fn(db, 'artifacts', appId, 'users', activeSyncKey, 'budget', 'main');
+                await setDoc_fn(docRef, { budgetData: budgetData, calculationRules: calculationRules });
+                document.getElementById('sync-status').innerText = "☁️ Synced";
+                alert("✅ SUCCESS!\n\nYour data has been forcefully pushed to the cloud.\n\nYou can now safely link your phone using this key:\n" + activeSyncKey);
+            } catch(e) {
+                alert("❌ ERROR: Failed to push to cloud.\n\nThis usually means your Firebase Database is not in 'Test Mode' and is blocking the save. Error details: " + e.message);
+                document.getElementById('sync-status').innerText = "⚠️ Save Blocked";
+            }
         }
     }
 
@@ -1596,7 +1614,6 @@
             for(let y = 2024; y <= 2036; y++) yearDrop.innerHTML += `<option value="${y}">${y}</option>`;
         }
         
-        // Safety check to ensure dropdowns visually match the internal state
         if(currentMonthStr) {
             const [mName, yStr] = currentMonthStr.split(' ');
             monthDrop.value = mName;
@@ -1664,26 +1681,25 @@
                 calculationRules = data.calculationRules || [];
                 document.getElementById('sync-status').innerText = "☁️ Synced";
                 
-                // If the phone opens on a month that doesn't exist in the cloud database, auto-switch to the most recent available month
                 if (!budgetData[currentMonthStr]) {
                     const availableMonths = Object.keys(budgetData);
                     if (availableMonths.length > 0) {
-                        currentMonthStr = availableMonths[availableMonths.length - 1]; // Grab the latest month
+                        currentMonthStr = availableMonths[availableMonths.length - 1]; 
                     }
                 }
                 
                 getOrCreateMonthData(currentMonthStr, true);
                 renderApp();
             } else {
-                // If the doc DOES NOT exist in the cloud, ONLY push local data if this device is the "owner" (Sync Key == User ID).
-                // This prevents a phone with a typo in the Sync Key from uploading empty data into a parallel universe.
                 if (activeSyncKey === userId) {
                     loadLocalData();
                     saveData(); 
                     renderApp();
                 } else {
-                    alert("⚠️ The Sync Key you entered does not exist in the cloud. Please check the key on your computer and try linking again.");
                     document.getElementById('sync-status').innerText = "⚠️ Invalid Link";
+                    if(confirm("⚠️ The Sync Key '" + activeSyncKey + "' does not contain any data in the cloud.\n\nDid you forget to click 'Force Push to Cloud' on your computer first? Do you want to Unlink this phone to start over?")) {
+                        unlinkDevice();
+                    }
                 }
             }
         }, (err) => {
