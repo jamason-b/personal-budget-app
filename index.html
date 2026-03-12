@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Household Budget Dashboard</title>
-
-    <!-- Add this single line right here for the money bag favicon -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💰</text></svg>">
     
+    <!-- Emoji Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💰</text></svg>">
+
     <script>
         const savedTheme = localStorage.getItem('budgetTheme');
         if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -347,7 +347,7 @@
                 <button onclick="openReorderModal()" class="btn-toggle" style="background: var(--bg-card); border: 1px solid var(--border); padding: 0.5rem 0.75rem; box-shadow: var(--shadow-sm);">⇅ Reorder</button>
             </div>
             <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
-                <button id="btn-undo" onclick="handleUndo()" class="btn-toggle" style="display: none; font-size: 0.75rem; padding: 0.35rem 0.75rem; background: var(--warning); color: #fff; border: none; box-shadow: var(--shadow-sm); font-weight: 600;" title="Undo Last Action">↩ Undo</button>
+                <button id="btn-undo" onclick="handleUndo()" class="btn-toggle" style="display: none; font-size: 0.75rem; padding: 0.35rem 0.75rem; background: var(--warning); color: #fff; border: none; box-shadow: var(--shadow-sm); font-weight: 600; transition: all 0.2s;" title="Undo Last Action">↩ Undo</button>
                 <button onclick="openSettingsModal()" class="btn-toggle" style="font-size: 0.75rem; padding: 0.35rem 0.75rem; background: var(--bg-card); border: 1px solid var(--border);">⚙️ Data Settings</button>
             </div>
         </div>
@@ -444,7 +444,7 @@
     </div>
 </div>
 
-<!-- Settings Modal (SIMPLIFIED) -->
+<!-- Settings Modal -->
 <div id="settings-modal" class="modal-overlay">
     <div class="modal-content" style="max-width: 26rem;">
         <div class="modal-header">
@@ -730,7 +730,17 @@
         saveData(true); 
         renderMonthly();
         if(!document.getElementById('view-yearly').classList.contains('hidden')) renderYearly();
-        if (undoStack.length === 0) document.getElementById('btn-undo').style.display = 'none';
+        
+        // Visual Feedback
+        const btn = document.getElementById('btn-undo');
+        btn.innerHTML = "✅ Undone!";
+        btn.style.backgroundColor = "var(--success)";
+        
+        setTimeout(() => {
+            btn.innerHTML = "↩ Undo";
+            btn.style.backgroundColor = "var(--warning)";
+            if (undoStack.length === 0) btn.style.display = 'none';
+        }, 1500);
     }
 
     function openSettingsModal() { 
@@ -745,7 +755,6 @@
                 document.getElementById('sync-status').innerText = "☁️ Force Saving...";
                 const docRef = doc_fn(db, 'budget_data', 'master_save');
                 
-                // 10-SECOND TIMEOUT TRAP
                 const saveTask = setDoc_fn(docRef, { budgetData: budgetData, calculationRules: calculationRules });
                 const timeoutTask = new Promise((_, reject) => setTimeout(() => reject(new Error("TIMEOUT")), 10000));
                 
@@ -919,6 +928,9 @@
     function toggleSection(secId) {
         collapsedSections[secId] = !collapsedSections[secId];
         renderMonthly();
+        if (!document.getElementById('view-yearly').classList.contains('hidden')) {
+            renderYearly();
+        }
     }
 
     function openReorderModal() { document.getElementById('reorder-modal').classList.add('active'); renderReorderList(); }
@@ -1092,7 +1104,6 @@
 
                 const targetHtml = vals.isCalculated ? `<div style="font-size: 0.65rem; color: var(--primary); text-align: right; margin-top: 0.15rem; font-weight: 600;">Target: ${formatCurrency(vals.suggestedActual)}</div>` : '';
 
-                // NEW MOBILE WRAPPERS FOR ACTION BUTTONS
                 rowsHtml += `
                     <tr class="table-row">
                         <td class="cat-name">
@@ -1251,11 +1262,13 @@
             });
 
             sections.forEach(sec => {
-                html += `<tr class="table-row row-bold"><td colspan="14" style="color: var(--primary-text);">${sec.title.toUpperCase()}</td></tr>`;
-                let sectionTotals = Array(12).fill(0); let sectionYtdTotal = 0;
+                let sectionTotals = Array(12).fill(0); 
+                let sectionYtdTotal = 0;
+                let rowsHtml = '';
+                
                 masterTemplate[sec.id].forEach((item) => {
                     let catYtdTotal = 0;
-                    html += `<tr class="table-row row-alt"><td style="padding-left: 2rem;">${item.name}</td>`;
+                    rowsHtml += `<tr class="table-row row-alt"><td style="padding-left: 2rem;">${item.name}</td>`;
                     yearMonths.forEach((m, mIdx) => {
                         let actual = 0;
                         if (budgetData[m]) {
@@ -1263,14 +1276,32 @@
                             if (matchItem) actual = sumTransactions(matchItem.transactions);
                         }
                         catYtdTotal += actual; sectionTotals[mIdx] += actual;
-                        html += `<td class="text-right">${actual === 0 ? '-' : formatCurrency(actual)}</td>`;
+                        rowsHtml += `<td class="text-right">${actual === 0 ? '-' : formatCurrency(actual)}</td>`;
                     });
                     sectionYtdTotal += catYtdTotal;
-                    html += `<td class="text-right col-ytd">${formatCurrency(catYtdTotal)}</td></tr>`;
+                    rowsHtml += `<td class="text-right col-ytd">${formatCurrency(catYtdTotal)}</td></tr>`;
                 });
-                html += `<tr class="table-row"><td style="font-weight: 600; text-align: right;">Total ${sec.title}:</td>`;
-                sectionTotals.forEach(t => html += `<td class="text-right" style="font-weight: 600;">${formatCurrency(t)}</td>`);
+
+                const isCollapsed = collapsedSections[sec.id];
+                
+                // Header row with embedded section totals!
+                html += `<tr class="table-row row-bold" style="cursor: pointer;" onclick="toggleSection('${sec.id}')">
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--primary-text);">
+                            <svg class="icon-collapse" style="${isCollapsed ? 'transform: rotate(-90deg); transition: transform 0.2s;' : 'transition: transform 0.2s;'}" width="1.25rem" height="1.25rem" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            ${sec.title.toUpperCase()}
+                        </div>
+                    </td>`;
+                
+                sectionTotals.forEach(t => {
+                    html += `<td class="text-right">${t === 0 ? '-' : formatCurrency(t)}</td>`;
+                });
                 html += `<td class="text-right col-ytd">${formatCurrency(sectionYtdTotal)}</td></tr>`;
+
+                if (!isCollapsed) {
+                    html += rowsHtml;
+                }
+                
                 html += `<tr class="table-row spacer-row"><td colspan="14"></td></tr>`;
             });
         }
