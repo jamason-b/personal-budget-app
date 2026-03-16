@@ -783,6 +783,25 @@
     let pieChartInstance = null;
     let barChartInstance = null;
 
+    // --- NEW SMART DATE HELPER ---
+    function getSmartDateDefault(targetMonthStr) {
+        const today = new Date();
+        const [mName, yStr] = targetMonthStr.split(' ');
+        const mIdx = monthNames.indexOf(mName);
+
+        // If the user is viewing the current calendar month, default to EXACTLY today.
+        if (today.getFullYear() === parseInt(yStr) && today.getMonth() === mIdx) {
+            const y = today.getFullYear();
+            const m = String(today.getMonth() + 1).padStart(2, '0');
+            const d = String(today.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        } else {
+            // If they are viewing a past/future month, lock the Year and Month to that view!
+            const mPad = String(mIdx + 1).padStart(2, '0');
+            return `${yStr}-${mPad}-01`;
+        }
+    }
+
     // --- CUSTOM MODALS TO REPLACE BROWSER ALERTS ---
     function customAlert(msg) {
         document.getElementById('alert-message').innerText = msg;
@@ -1254,11 +1273,9 @@
             select.appendChild(optgroup);
         });
 
-        const today = new Date();
-        const y = today.getFullYear();
-        const m = String(today.getMonth() + 1).padStart(2, '0');
-        const d = String(today.getDate()).padStart(2, '0');
-        document.getElementById('qa-date').value = `${y}-${m}-${d}`;
+        // Inject the new Smart Date here!
+        document.getElementById('qa-date').value = getSmartDateDefault(currentMonthStr);
+
         setTimeout(() => document.getElementById('qa-amount').focus(), 100);
     }
     
@@ -1727,10 +1744,8 @@
         document.getElementById('transaction-modal').classList.add('active');
         document.querySelector('#transaction-modal .add-form').reset();
         
-        const [mName, yStr] = currentMonthStr.split(' ');
-        const mIdx = monthNames.indexOf(mName) + 1;
-        const monthPad = mIdx < 10 ? `0${mIdx}` : mIdx;
-        document.getElementById('tx-date').value = `${yStr}-${monthPad}-01`; 
+        // Inject the new Smart Date here!
+        document.getElementById('tx-date').value = getSmartDateDefault(currentMonthStr); 
 
         editingTxIndex = null;
         document.getElementById('btn-add-tx').innerText = "Add Transaction";
@@ -1787,10 +1802,10 @@
     function cancelEditTransaction() {
         editingTxIndex = null;
         document.querySelector('#transaction-modal .add-form').reset();
-        const [mName, yStr] = currentMonthStr.split(' ');
-        const mIdx = monthNames.indexOf(mName) + 1;
-        const monthPad = mIdx < 10 ? `0${mIdx}` : mIdx;
-        document.getElementById('tx-date').value = `${yStr}-${monthPad}-01`; 
+        
+        // Re-inject the Smart Date if they cancel an edit
+        document.getElementById('tx-date').value = getSmartDateDefault(currentMonthStr); 
+        
         document.getElementById('btn-add-tx').innerText = "Add Transaction";
         document.getElementById('btn-cancel-tx').style.display = "none";
         renderTransactionsList(); 
