@@ -484,14 +484,17 @@
             </button>
         </div>
         <div class="modal-body">
-            <div class="form-group" style="margin-bottom: 1.5rem;">
-                <label class="form-label" for="reorder-section-select">Select Section</label>
-                <select id="reorder-section-select" class="input-text" onchange="renderReorderList()">
-                    <option value="income">Income</option>
-                    <option value="necessary">Necessary Expenses</option>
-                    <option value="discretionary" selected>Discretionary Expenses</option>
-                    <option value="investments">Investments / Savings</option>
-                </select>
+            <div class="form-group" style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: flex-end;">
+                <div style="flex: 1; margin-right: 1rem;">
+                    <label class="form-label" for="reorder-section-select">Select Section</label>
+                    <select id="reorder-section-select" class="input-text" onchange="renderReorderList()">
+                        <option value="income">Income</option>
+                        <option value="necessary">Necessary Expenses</option>
+                        <option value="discretionary" selected>Discretionary Expenses</option>
+                        <option value="investments">Investments / Savings</option>
+                    </select>
+                </div>
+                <button onclick="forceSyncOrder()" class="btn-add" style="margin: 0; width: auto; padding: 0.75rem 1rem; font-size: 0.75rem; background: var(--primary-bg); color: var(--primary); border: 1px solid var(--primary-border);">🔄 Sync Order Everywhere</button>
             </div>
             <div id="reorder-list" style="display: flex; flex-direction: column; gap: 0.5rem;"></div>
         </div>
@@ -717,9 +720,8 @@
     window.editCalculationRule = editCalculationRule; window.handleSaveCustomRule = handleSaveCustomRule; window.deleteCalculationRule = deleteCalculationRule;
     window.closeReorderModal = closeReorderModal; window.renderReorderList = renderReorderList; window.moveCategory = moveCategory;
     window.toggleSection = toggleSection; window.toggleAllSources = toggleAllSources; window.deleteRow = deleteRow;
-    window.closeSettingsModal = closeSettingsModal; window.forceCloudSave = forceCloudSave;
+    window.closeSettingsModal = closeSettingsModal; window.forceCloudSave = forceCloudSave; window.forceSyncOrder = forceSyncOrder;
     
-    // New Subscription toggles
     window.toggleAddSub = toggleAddSub; window.toggleEditSub = toggleEditSub;
 
     const fullMonthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -729,7 +731,6 @@
     let undoStack = [];
     const MAX_UNDO = 15;
 
-    // Helper function to get "1st", "2nd", "3rd", "15th", etc.
     function getOrdinal(n) {
         const s = ["th", "st", "nd", "rd"];
         const v = n % 100;
@@ -800,7 +801,6 @@
         renderMonthly();
         if(!document.getElementById('view-yearly').classList.contains('hidden')) renderYearly();
         
-        // Visual Feedback
         const btn = document.getElementById('btn-undo');
         btn.innerHTML = "✅ Undone!";
         btn.style.backgroundColor = "var(--success)";
@@ -812,10 +812,7 @@
         }, 1500);
     }
 
-    function openSettingsModal() { 
-        document.getElementById('settings-modal').classList.add('active'); 
-    }
-    
+    function openSettingsModal() { document.getElementById('settings-modal').classList.add('active'); }
     function closeSettingsModal() { document.getElementById('settings-modal').classList.remove('active'); }
 
     async function forceCloudSave() {
@@ -1030,27 +1027,64 @@
 
     function moveCategory(secId, idx, dir) {
         pushUndoState();
-        const arr = budgetData[currentMonthStr][secId];
-        const targetName = arr[idx].name;
+        const currentArr = budgetData[currentMonthStr][secId];
         const newIdx = idx + dir;
         
-        if (newIdx >= 0 && newIdx < arr.length) {
+        if (newIdx >= 0 && newIdx < currentArr.length) {
+            // 1. Swap the items in the current month
+            const temp = currentArr[idx];
+            currentArr[idx] = currentArr[newIdx];
+            currentArr[newIdx] = temp;
+            
+            // 2. Create the new Master Order based on this visual layout
+            const masterOrder = currentArr.map(item => item.name);
+            
+            // 3. Force EVERY other month to perfectly match this master order
             Object.keys(budgetData).forEach(m => {
-                const mArr = budgetData[m][secId];
-                const matchIdx = mArr.findIndex(x => x.name === targetName);
-                if (matchIdx !== -1) {
-                    const swapIdx = matchIdx + dir;
-                    if (swapIdx >= 0 && swapIdx < mArr.length) {
-                        const temp = mArr[matchIdx];
-                        mArr[matchIdx] = mArr[swapIdx];
-                        mArr[swapIdx] = temp;
-                    }
+                if (m !== currentMonthStr) {
+                    budgetData[m][secId].sort((a, b) => {
+                        let idxA = masterOrder.indexOf(a.name);
+                        let idxB = masterOrder.indexOf(b.name);
+                        
+                        // Push old/deleted categories to the bottom
+                        if (idxA === -1) idxA = 9999;
+                        if (idxB === -1) idxB = 9999;
+                        
+                        return idxA - idxB;
+                    });
                 }
             });
+            
             saveData();
             renderReorderList();
             renderMonthly();
+            if (!document.getElementById('view-yearly').classList.contains('hidden')) {
+                renderYearly();
+            }
         }
+    }
+    
+    function forceSyncOrder() {
+        pushUndoState();
+        const secId = document.getElementById('reorder-section-select').value;
+        const currentArr = budgetData[currentMonthStr][secId];
+        const masterOrder = currentArr.map(item => item.name);
+        
+        Object.keys(budgetData).forEach(m => {
+            if (m !== currentMonthStr) {
+                budgetData[m][secId].sort((a, b) => {
+                    let idxA = masterOrder.indexOf(a.name);
+                    let idxB = masterOrder.indexOf(b.name);
+                    if (idxA === -1) idxA = 9999;
+                    if (idxB === -1) idxB = 9999;
+                    return idxA - idxB;
+                });
+            }
+        });
+        saveData();
+        renderMonthly();
+        if (!document.getElementById('view-yearly').classList.contains('hidden')) renderYearly();
+        alert("Success! The order of " + secId.toUpperCase() + " for all past and future months now perfectly matches this month's layout.");
     }
 
     function openQuickAddModal() {
@@ -1110,7 +1144,6 @@
         const isSub = document.getElementById('new-row-is-sub').checked;
         document.getElementById('new-sub-details').style.display = isSub ? 'flex' : 'none';
         if (isSub) {
-            // Suggest 0 for monthly budget if they check subscription, but don't force it
             const budgetInput = document.getElementById('new-row-budget');
             if (budgetInput.value === '') budgetInput.value = '0.00';
         }
@@ -1186,7 +1219,6 @@
                     yearlyBadge = `<span class="yearly-badge ${negClass}" title="Total Yearly Cost: ${formatCurrency(item.yearlyAmount)}">Fund: ${formatCurrency(ytdBalance)}</span>`;
                 }
 
-                // Subscription Badge Construction
                 let subBadge = '';
                 if (item.isSub) {
                     let dateDisplay = '';
@@ -1353,12 +1385,26 @@
             });
         } else {
             const sections = [{ id: 'income', title: 'Income' }, { id: 'necessary', title: 'Necessary Expenses' }, { id: 'discretionary', title: 'Discretionary Expenses' }, { id: 'investments', title: 'Investments / Savings' }];
+            
+            // Build the master template directly from the CURRENT month to enforce the unified order!
             let masterTemplate = { income: [], necessary: [], discretionary: [], investments: [] };
+            
+            if (budgetData[currentMonthStr]) {
+                sections.forEach(sec => {
+                    budgetData[currentMonthStr][sec.id].forEach(item => {
+                        masterTemplate[sec.id].push({ name: item.name });
+                    });
+                });
+            }
+            
+            // Check past months for deleted categories and push them to the bottom
             yearMonths.forEach(m => {
                 if (budgetData[m]) {
                     sections.forEach(sec => {
                         budgetData[m][sec.id].forEach(item => {
-                            if (!masterTemplate[sec.id].find(x => x.name === item.name)) masterTemplate[sec.id].push({ name: item.name });
+                            if (!masterTemplate[sec.id].find(x => x.name === item.name)) {
+                                masterTemplate[sec.id].push({ name: item.name });
+                            }
                         });
                     });
                 }
@@ -1548,7 +1594,6 @@
         const inputValue = parseFloat(document.getElementById('new-row-budget').value) || 0;
         const isYearly = document.getElementById('new-row-is-yearly').checked;
         
-        // Sub details
         const isSub = document.getElementById('new-row-is-sub').checked;
         const subType = document.getElementById('new-sub-type').value;
         const subCost = parseFloat(document.getElementById('new-sub-cost').value) || 0;
@@ -1591,7 +1636,6 @@
         const isYearlyCheckbox = document.getElementById('edit-row-is-yearly');
         const isSubCheckbox = document.getElementById('edit-row-is-sub');
         
-        // Sub data populate
         isSubCheckbox.checked = item.isSub || false;
         document.getElementById('edit-sub-type').value = item.subType || 'monthly';
         document.getElementById('edit-sub-cost').value = item.subCost || '';
