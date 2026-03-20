@@ -20,6 +20,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
+        // Apply theme immediately to prevent flashing
         const savedTheme = localStorage.getItem('budgetTheme');
         if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.setAttribute('data-theme', 'dark');
@@ -238,16 +239,13 @@
         tr.spacer-row td { height: 1rem; padding: 0; border: none; background-color: transparent; }
 
         /* --- THE MAGIC MOBILE APP UI CONVERSION --- */
-        /* Only triggers on screens smaller than 768px (Phones/Small Tablets) */
         @media (max-width: 767px) {
-            
-            /* Target ONLY the main monthly planner tables, not the yearly view */
             #tables-container table, 
             #tables-container tbody { 
                 display: flex; flex-direction: column; gap: 0.75rem; width: 100%; 
             }
             
-            #tables-container thead { display: none; } /* Hide spreadsheet column headers */
+            #tables-container thead { display: none; } 
             
             #tables-container tr.table-row {
                 display: grid;
@@ -271,37 +269,30 @@
                 text-align: left !important; white-space: normal; 
             }
             
-            /* Category Name (Top Left) */
             #tables-container td:nth-child(1) { grid-area: name; }
             .cat-name-wrapper { align-items: flex-start; flex-direction: column; gap: 0.35rem; }
             .cat-name-wrapper > span:first-child { font-size: 1.1rem; font-weight: 700; color: var(--text-strong); line-height: 1.2; }
             
-            /* Budget (Bottom Left) */
             #tables-container td:nth-child(2) { grid-area: budget; font-size: 0.85rem; color: var(--text-muted); display: flex; align-items: center; }
             #tables-container td:nth-child(2)::before { content: 'Budget: '; margin-right: 0.25rem; font-weight: 500; color: var(--text-light); }
             
-            /* Huge Actual Amount (Middle Full Width) */
             #tables-container td:nth-child(3) { grid-area: actual; margin: 0.75rem 0; }
             .actual-cell-wrapper { align-items: flex-start !important; width: 100%; }
             .btn-actual { justify-content: flex-start !important; padding: 0 !important; width: 100%; }
             .btn-actual .amount { font-size: 2rem !important; font-weight: 700; letter-spacing: -0.03em; color: var(--text-strong); }
-            .btn-actual svg.action-icon { margin-left: auto; width: 1.5rem; height: 1.5rem; opacity: 0.3; } /* Hint it's clickable */
+            .btn-actual svg.action-icon { margin-left: auto; width: 1.5rem; height: 1.5rem; opacity: 0.3; } 
             #tables-container td:nth-child(3) > div:last-child { text-align: left !important; margin-top: 0.35rem !important; }
             
-            /* Diff (Bottom Right) */
             #tables-container td:nth-child(4) { grid-area: diff; font-size: 0.85rem; display: flex; align-items: center; justify-content: flex-end; font-weight: 600; }
             #tables-container td:nth-child(4)::before { content: 'Diff: '; color: var(--text-muted); font-weight: 500; margin-right: 0.25rem; }
             
-            /* Action Buttons (Top Right) - Always visible on mobile */
             #tables-container td:nth-child(5) { grid-area: actions; width: auto; }
             .action-buttons-wrapper { flex-direction: row !important; gap: 0.5rem !important; justify-content: flex-end; }
             .btn-row-action { opacity: 1; pointer-events: auto; background: var(--bg-alt); padding: 0.45rem; border-radius: var(--radius-md); border: 1px solid var(--border); }
             .btn-row-action svg { width: 1.15rem; height: 1.15rem; }
 
-            /* Modern Mobile Section Wrappers */
             .section-card { background: transparent; border: none; box-shadow: none; margin-bottom: 2rem; overflow: visible; }
             
-            /* Sticky Header for easy scrolling */
             .section-header { 
                 border-radius: var(--radius-xl); 
                 margin-bottom: 1rem; 
@@ -389,7 +380,7 @@
             <h1 class="header-title">
                 Budget Dashboard 
                 <span id="sync-status" style="font-size: 0.7rem; font-weight: 600; color: var(--text-light); margin-left: 0.75rem; background: var(--bg-alt); padding: 0.2rem 0.5rem; border-radius: 99px;">
-                    Checking Sync...
+                    Loading...
                 </span>
             </h1>
             <p class="header-subtitle">Manage your household finances tracking</p>
@@ -585,7 +576,7 @@
 
 <!-- Settings Modal -->
 <div id="settings-modal" class="modal-overlay">
-    <div class="modal-content" style="max-width: 24rem;">
+    <div class="modal-content" style="max-width: 26rem;">
         <div class="modal-header">
             <h3 class="modal-title">Data Settings</h3>
             <button onclick="closeSettingsModal()" class="btn-close">
@@ -593,21 +584,21 @@
             </button>
         </div>
         <div class="modal-body">
-            <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1.5rem;">Manage your locally stored budget data safely.</p>
+            <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1.5rem;">Your app is securely synced to your private Firebase database.</p>
             
-            <div style="display: flex; flex-direction: column; gap: 1rem;">
+            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
                 <button onclick="forceCloudSave()" class="btn-add" style="margin: 0; background: var(--primary-bg); color: var(--primary); border: 1px solid var(--primary-border);">⬆️ Force Push Displayed Data to Cloud</button>
                 
-                <div style="height: 1px; background: var(--border); margin: 0.25rem 0;"></div>
+                <div style="height: 1px; background: var(--border); margin: 0.5rem 0;"></div>
 
                 <button onclick="exportToCSV()" class="btn-add" style="margin: 0; background: var(--success);">📊 Export Transactions (.csv)</button>
                 <button onclick="exportData()" class="btn-add" style="margin: 0;">📥 Download Backup (.json)</button>
                 <button onclick="document.getElementById('import-file-settings').click()" class="btn-add" style="margin: 0; background: var(--bg-alt); color: var(--text-strong); border: 1px solid var(--border);">📤 Restore from Backup</button>
                 <input type="file" id="import-file-settings" style="display: none;" accept=".json" onchange="importData(event)">
                 
-                <div style="height: 1px; background: var(--border); margin: 0.25rem 0;"></div>
+                <div style="height: 1px; background: var(--border); margin: 0.5rem 0;"></div>
                 
-                <button onclick="resetData()" class="btn-add" style="margin: 0; background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger);">🚨 Reset All Data to Default</button>
+                <button onclick="resetData()" class="btn-add" style="margin-top: 1rem; background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger);">🚨 Reset All Data to Default</button>
             </div>
         </div>
     </div>
@@ -665,7 +656,6 @@
             <div class="tx-add-section">
                 <h4 class="tx-add-title">Add New Transaction</h4>
                 <form class="add-form" onsubmit="handleAddTransaction(event)">
-                    <!-- REORDERED FORM: Amount -> Description -> Date -->
                     <div class="form-group">
                         <label class="form-label" for="tx-amount">Amount</label>
                         <input type="number" id="tx-amount" class="input-number" placeholder="$0.00" step="0.01" required>
@@ -719,7 +709,6 @@
 
                     <div style="height: 1px; background: var(--border); margin: 0.25rem 0;"></div>
 
-                    <!-- Toggle to automatically divide yearly expenses by 12 -->
                     <div class="form-group" style="flex-direction: row; align-items: center; gap: 0.5rem;">
                         <input type="checkbox" id="new-row-is-yearly" onchange="toggleAddYearly()" style="width: 1rem; height: 1rem; accent-color: var(--primary); cursor: pointer;">
                         <label for="new-row-is-yearly" style="font-size: 0.8rem; font-weight: 500; color: var(--text-strong); cursor: pointer;">Sinking Fund (Divides total by 12)</label>
@@ -731,7 +720,6 @@
                     </div>
                 </div>
 
-                <!-- Hidden Subscription Details Panel -->
                 <div id="new-sub-details" style="display: none; flex-direction: column; gap: 0.75rem; background: var(--bg-card); padding: 0.75rem; border-radius: var(--radius-md); border: 1px dashed var(--primary-border); margin-top: 0.5rem;">
                     <div class="form-group">
                         <label class="form-label" for="new-sub-type">Subscription Type</label>
@@ -786,7 +774,6 @@
 
                     <div style="height: 1px; background: var(--border); margin: 0.25rem 0;"></div>
 
-                    <!-- Toggle to automatically divide yearly expenses by 12 -->
                     <div class="form-group" id="edit-yearly-wrapper" style="flex-direction: row; align-items: center; gap: 0.5rem;">
                         <input type="checkbox" id="edit-row-is-yearly" onchange="toggleEditYearly()" style="width: 1rem; height: 1rem; accent-color: var(--primary); cursor: pointer;">
                         <label for="edit-row-is-yearly" style="font-size: 0.8rem; font-weight: 500; color: var(--text-strong); cursor: pointer;">Sinking Fund (Divides total by 12)</label>
@@ -798,7 +785,6 @@
                     </div>
                 </div>
 
-                <!-- Hidden Subscription Details Panel -->
                 <div id="edit-sub-details" style="display: none; flex-direction: column; gap: 0.75rem; background: var(--bg-card); padding: 0.75rem; border-radius: var(--radius-md); border: 1px dashed var(--primary-border); margin-top: 0.5rem;">
                     <div class="form-group">
                         <label class="form-label" for="edit-sub-type">Subscription Type</label>
@@ -1643,1082 +1629,4 @@
                     const remainingToTarget = vals.suggestedActual - vals.actual;
                     if (vals.suggestedActual === 0 && vals.actual === 0) {
                         diffText = '-'; diffClass = 'neutral';
-                    } else if (remainingToTarget > 0.001) {
-                        diffText = 'Need: ' + formatCurrency(remainingToTarget); diffClass = 'primary';
-                    } else {
-                        diffText = 'Goal Met ✓'; diffClass = 'positive';
-                    }
-                } else {
-                    const diff = vals.actual - vals.budget;
-                    if (vals.actual > 0 || diff !== 0) {
-                        diffText = formatCurrency(diff);
-                        if (sec.id === 'income') { diffClass = diff >= 0 ? 'positive' : 'negative'; } 
-                        else { diffClass = diff <= 0 ? 'positive' : 'negative'; }
-                    }
-                }
-
-                // Progress Bar Logic
-                let pct = 0;
-                let barColor = 'var(--primary)';
-                const budgetRef = vals.isCalculated ? vals.suggestedActual : vals.budget;
-                
-                if (budgetRef > 0) {
-                    pct = Math.min((vals.actual / budgetRef) * 100, 100);
-                    if (sec.id === 'income') {
-                        barColor = pct >= 100 ? 'var(--success)' : 'var(--primary)';
-                    } else {
-                        barColor = (vals.actual > budgetRef) ? 'var(--danger)' : 'var(--primary)';
-                    }
-                } else if (vals.actual > 0) {
-                    pct = 100;
-                    barColor = sec.id === 'income' ? 'var(--success)' : 'var(--danger)';
-                }
-
-                const progressBarHtml = `
-                    <div class="progress-bar-container">
-                        <div class="progress-bar-fill" style="width: ${pct}%; background-color: ${barColor};"></div>
-                    </div>
-                `;
-
-                const transactionCount = item.transactions.length;
-                const badgeHtml = transactionCount > 0 ? `<span class="badge">${transactionCount}</span>` : '';
-                const amtClass = vals.actual === 0 ? 'amount zero' : 'amount';
-
-                const openIconHtml = `<svg class="action-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>`;
-                const calcBadge = `<span class="calc-badge" title="${vals.calcDesc}"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg> Auto</span>`;
-
-                // Sinking Fund Badge
-                let yearlyBadge = '';
-                if (item.yearlyAmount) {
-                    const ytdBalance = getYTDBalance(currentMonthStr, sec.id, idx);
-                    const negClass = ytdBalance < 0 ? 'negative' : '';
-                    yearlyBadge = `<span class="yearly-badge ${negClass}" title="Total Yearly Cost: ${formatCurrency(item.yearlyAmount)}">Fund: ${formatCurrency(ytdBalance)}</span>`;
-                }
-
-                // Subscription Badge
-                let subBadge = '';
-                if (item.isSub) {
-                    let dateDisplay = '';
-                    if (item.subDate) {
-                        const [y, m, d] = item.subDate.split('-');
-                        const dObj = new Date(y, m - 1, d);
-                        if (item.subType === 'monthly') {
-                            dateDisplay = ` on the ${getOrdinal(dObj.getDate())}`;
-                        } else {
-                            dateDisplay = ` on ${dObj.toLocaleDateString('en-US', {month:'short', day:'numeric'})}`;
-                        }
-                    }
-                    const costStr = formatCurrency(item.subCost || 0);
-                    const typeStr = item.subType === 'monthly' ? 'Monthly' : 'Annual';
-                    subBadge = `<span class="sub-badge" title="Subscription Details"><svg width="0.75rem" height="0.75rem" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> ${typeStr}: ${costStr}${dateDisplay}</span>`;
-                }
-
-                // Rollover Badge
-                let rolloverBadge = '';
-                if (item.isRollover) {
-                    const sign = vals.rolloverAmt >= 0 ? '+' : '';
-                    rolloverBadge = `<span class="yearly-badge" style="border-color:var(--primary); color:var(--primary)" title="YTD Rollover added to base budget">🔄 Roll: ${sign}${formatCurrency(vals.rolloverAmt)}</span>`;
-                }
-
-                const targetHtml = vals.isCalculated 
-                    ? `<div style="font-size: 0.65rem; color: var(--primary); text-align: right; margin-top: 0.15rem; font-weight: 600;">Target: ${formatCurrency(vals.suggestedActual)}</div>`
-                    : '';
-
-                rowsHtml += `
-                    <tr class="table-row">
-                        <td class="cat-name">
-                            <div class="cat-name-wrapper">
-                                <span>${item.name}</span>
-                                <div style="display: flex; gap: 0.25rem; flex-wrap: wrap;">
-                                    ${vals.isCalculated ? calcBadge : ''}
-                                    ${yearlyBadge}
-                                    ${subBadge}
-                                    ${rolloverBadge}
-                                </div>
-                            </div>
-                        </td>
-                        <td class="text-right">${formatCurrency(vals.budget)}</td>
-                        <td class="text-right">
-                            <div class="actual-cell-wrapper">
-                                <button onclick="openModal('${sec.id}', ${idx})" class="btn-actual">
-                                    <span class="${amtClass}">${formatCurrency(vals.actual)}</span>
-                                    ${badgeHtml}
-                                    ${openIconHtml}
-                                </button>
-                                ${progressBarHtml}
-                            </div>
-                            ${targetHtml}
-                        </td>
-                        <td class="text-right val-diff ${diffClass}">${diffText}</td>
-                        <td style="padding: 0 0.25rem; width: 40px;">
-                            <div class="action-buttons-wrapper">
-                                <button class="btn-row-action" onclick="openEditRowModal('${sec.id}', ${idx})" title="Edit Category">
-                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-                                </button>
-                                <button class="btn-row-action delete" onclick="deleteRow('${sec.id}', ${idx})" title="Delete Category">
-                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-            });
-
-            const isCollapsed = collapsedSections[sec.id];
-
-            const sectionHtml = `
-                <div class="section-card">
-                    <div class="section-header ${isCollapsed ? 'collapsed' : ''}" onclick="toggleSection('${sec.id}')">
-                        <div style="display: flex; align-items: center; gap: 0.5rem;">
-                            <svg class="icon-collapse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                            <h2 class="section-title">${sec.title}</h2>
-                        </div>
-                        <div class="section-totals">
-                            Budget: <span class="val-budget">${formatCurrency(sectionTotalBudget)}</span> 
-                            <span class="divider">|</span> 
-                            Actual: <span class="val-actual">${formatCurrency(sectionTotalActual)}</span>
-                        </div>
-                    </div>
-                    <div class="${isCollapsed ? 'hidden' : ''}">
-                        <div style="overflow-x: auto;">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th style="width: 35%;">Category</th>
-                                        <th style="width: 20%;" class="text-right">Budget</th>
-                                        <th style="width: 20%;" class="text-right">Actual</th>
-                                        <th style="width: 20%;" class="text-right">Diff</th>
-                                        <th style="width: 5%;"></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${rowsHtml}
-                                </tbody>
-                            </table>
-                        </div>
-                        <button class="btn-add-row" onclick="openRowModal('${sec.id}')">+ Add New Category</button>
-                    </div>
-                </div>
-            `;
-            container.innerHTML += sectionHtml;
-        });
-
-        document.getElementById('card-income').innerText = formatCurrency(grandTotals.income);
-        document.getElementById('card-necessary').innerText = formatCurrency(grandTotals.necessary);
-        document.getElementById('card-discretionary').innerText = formatCurrency(grandTotals.discretionary + grandTotals.investments);
-        
-        const remaining = grandTotals.income - (grandTotals.necessary + grandTotals.discretionary + grandTotals.investments);
-        document.getElementById('card-remaining').innerText = formatCurrency(remaining);
-
-        const totalInc = grandTotals.income > 0 ? grandTotals.income : 1; 
-        const pctNec = ((grandTotals.necessary / totalInc) * 100).toFixed(1);
-        const pctDiscInv = (((grandTotals.discretionary + grandTotals.investments) / totalInc) * 100).toFixed(1);
-        const pctRem = ((remaining / totalInc) * 100).toFixed(1);
-
-        document.getElementById('pct-necessary').innerText = `${pctNec}%`;
-        document.getElementById('pct-discretionary').innerText = `${pctDiscInv}%`;
-        document.getElementById('pct-remaining').innerText = `${pctRem}%`;
-    }
-
-    async function deleteRow(secId, idx) {
-        const item = budgetData[currentMonthStr][secId][idx];
-        if(await customConfirm(`Are you sure you want to delete "${item.name}" from this month onwards?\n\n(It will still be saved in past months if it existed previously)`, "Delete", true)) {
-            pushUndoState();
-            const targetName = item.name;
-            const [currM, currY] = currentMonthStr.split(' ');
-            
-            const currDate = new Date(`${currM} 1, ${currY}`);
-
-            Object.keys(budgetData).forEach(m => {
-                const [checkM, checkY] = m.split(' ');
-                const checkDate = new Date(`${checkM} 1, ${checkY}`);
-                
-                if (checkDate >= currDate) {
-                    const matchIdx = budgetData[m][secId].findIndex(x => x.name === targetName);
-                    if (matchIdx !== -1) {
-                        budgetData[m][secId].splice(matchIdx, 1);
-                    }
-                }
-            });
-            saveData();
-            renderMonthly();
-        }
-    }
-
-    // --- RENDER YEARLY VIEW ---
-    function renderYearly() {
-        const year = document.getElementById('year-selector').value;
-        const thead = document.getElementById('yearly-thead');
-        const tbody = document.getElementById('yearly-tbody');
-        
-        const yearMonths = monthNames.map(m => `${m} ${year}`);
-
-        let headHtml = `<tr><th>Category</th>`;
-        monthNames.forEach(m => headHtml += `<th class="text-right">${m}</th>`);
-        headHtml += `<th class="text-right col-ytd">YTD Total</th></tr>`;
-        thead.innerHTML = headHtml;
-
-        let html = '';
-
-        if (yearlyViewMode === 'summary') {
-            const rowData = {
-                income: { title: "Total Income", vals: [], total: 0 },
-                necessary: { title: "Total Necessary Expenses", vals: [], total: 0 },
-                discretionaryInc: { title: "Discretionary Income", vals: [], total: 0 },
-                investments: { title: "Investment Expenses", vals: [], total: 0 },
-                discretLessInv: { title: "Discret Inc Less Investments", vals: [], total: 0 },
-                discretionaryExp: { title: "Discretionary Expenses", vals: [], total: 0 },
-                remaining: { title: "AMOUNT REMAINING", vals: [], total: 0, isBold: true }
-            };
-
-            yearMonths.forEach(m => {
-                let totals = { income: 0, necessary: 0, discretionary: 0, investments: 0 };
-                if (budgetData[m]) totals = getMonthTotals(budgetData[m], m);
-
-                const discInc = totals.income - totals.necessary;
-                const discLessInv = discInc - totals.investments;
-                const remaining = discLessInv - totals.discretionary;
-
-                rowData.income.vals.push(totals.income);
-                rowData.necessary.vals.push(totals.necessary);
-                rowData.discretionaryInc.vals.push(discInc);
-                rowData.investments.vals.push(totals.investments);
-                rowData.discretLessInv.vals.push(discLessInv);
-                rowData.discretionaryExp.vals.push(totals.discretionary);
-                rowData.remaining.vals.push(remaining);
-
-                rowData.income.total += totals.income;
-                rowData.necessary.total += totals.necessary;
-                rowData.discretionaryInc.total += discInc;
-                rowData.investments.total += totals.investments;
-                rowData.discretLessInv.total += discLessInv;
-                rowData.discretionaryExp.total += totals.discretionary;
-                rowData.remaining.total += remaining;
-            });
-
-            Object.keys(rowData).forEach((key, index) => {
-                const r = rowData[key];
-                const rowClass = r.isBold ? 'row-bold' : (index % 2 === 0 ? '' : 'row-alt');
-
-                html += `<tr class="table-row ${rowClass}"><td style="font-weight: ${r.isBold ? '700' : '500'};">${r.title}</td>`;
-                r.vals.forEach(val => html += `<td class="text-right">${val === 0 ? '-' : formatCurrency(val)}</td>`);
-                html += `<td class="text-right col-ytd">${formatCurrency(r.total)}</td></tr>`;
-                
-                if(key === 'discretionaryExp') html += `<tr class="table-row spacer-row"><td colspan="14"></td></tr>`;
-            });
-        } else {
-            // DETAILED VIEW
-            const sections = [
-                { id: 'income', title: 'Income' },
-                { id: 'necessary', title: 'Necessary Expenses' },
-                { id: 'discretionary', title: 'Discretionary Expenses' },
-                { id: 'investments', title: 'Investments / Savings' }
-            ];
-
-            let masterTemplate = { income: [], necessary: [], discretionary: [], investments: [] };
-            
-            if (budgetData[currentMonthStr]) {
-                sections.forEach(sec => {
-                    budgetData[currentMonthStr][sec.id].forEach(item => {
-                        masterTemplate[sec.id].push({ name: item.name });
-                    });
-                });
-            }
-            
-            yearMonths.forEach(m => {
-                if (budgetData[m]) {
-                    sections.forEach(sec => {
-                        budgetData[m][sec.id].forEach(item => {
-                            if (!masterTemplate[sec.id].find(x => x.name === item.name)) {
-                                masterTemplate[sec.id].push({ name: item.name });
-                            }
-                        });
-                    });
-                }
-            });
-
-            sections.forEach(sec => {
-                let sectionTotals = Array(12).fill(0);
-                let sectionYtdTotal = 0;
-                let rowsHtml = '';
-
-                masterTemplate[sec.id].forEach((item) => {
-                    let catYtdTotal = 0;
-                    rowsHtml += `<tr class="table-row row-alt"><td style="padding-left: 2rem;">${item.name}</td>`;
-                    
-                    yearMonths.forEach((m, mIdx) => {
-                        let actual = 0;
-                        if (budgetData[m]) {
-                            const matchItem = budgetData[m][sec.id].find(x => x.name === item.name);
-                            if (matchItem) {
-                                actual = sumTransactions(matchItem.transactions);
-                            }
-                        }
-                        catYtdTotal += actual;
-                        sectionTotals[mIdx] += actual;
-                        rowsHtml += `<td class="text-right">${actual === 0 ? '-' : formatCurrency(actual)}</td>`;
-                    });
-                    
-                    sectionYtdTotal += catYtdTotal;
-                    rowsHtml += `<td class="text-right col-ytd">${formatCurrency(catYtdTotal)}</td></tr>`;
-                });
-
-                const isCollapsed = collapsedSections[sec.id];
-                
-                html += `<tr class="table-row row-bold" style="cursor: pointer;" onclick="toggleSection('${sec.id}')">
-                    <td>
-                        <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--primary-text);">
-                            <svg class="icon-collapse" style="${isCollapsed ? 'transform: rotate(-90deg); transition: transform 0.2s;' : 'transition: transform 0.2s;'}" width="1.25rem" height="1.25rem" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                            ${sec.title.toUpperCase()}
-                        </div>
-                    </td>`;
-                
-                sectionTotals.forEach(t => {
-                    html += `<td class="text-right">${t === 0 ? '-' : formatCurrency(t)}</td>`;
-                });
-                html += `<td class="text-right col-ytd">${formatCurrency(sectionYtdTotal)}</td></tr>`;
-
-                if (!isCollapsed) {
-                    html += rowsHtml;
-                }
-                
-                html += `<tr class="table-row spacer-row"><td colspan="14"></td></tr>`;
-            });
-        }
-
-        tbody.innerHTML = html;
-    }
-
-    // --- RENDER ANALYTICS VIEW ---
-    function renderAnalytics() {
-        const monthDropdown = document.getElementById('analytics-month');
-        const yearDropdown = document.getElementById('analytics-year');
-        
-        if(monthDropdown.options.length === 0) {
-            fullMonthNames.forEach((m, idx) => monthDropdown.innerHTML += `<option value="${monthNames[idx]}">${m}</option>`);
-            for(let y = 2024; y <= 2036; y++) yearDropdown.innerHTML += `<option value="${y}">${y}</option>`;
-            
-            const [mName, yStr] = currentMonthStr.split(' ');
-            monthDropdown.value = mName;
-            yearDropdown.value = yStr;
-        }
-
-        const selMonthStr = `${monthDropdown.value} ${yearDropdown.value}`;
-        const selYearStr = yearDropdown.value;
-
-        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-        const textColor = isDark ? '#f1f5f9' : '#0f172a';
-        const gridColor = isDark ? '#334155' : '#e2e8f0';
-
-        // 1. Pie Chart Logic (Monthly Breakdown)
-        let necTotal = 0, discTotal = 0, invTotal = 0;
-        if (budgetData[selMonthStr]) {
-            const totals = getMonthTotals(budgetData[selMonthStr], selMonthStr);
-            necTotal = totals.necessary;
-            discTotal = totals.discretionary;
-            invTotal = totals.investments;
-        }
-
-        const pieCtx = document.getElementById('pieChart').getContext('2d');
-        if (pieChartInstance) pieChartInstance.destroy();
-        pieChartInstance = new Chart(pieCtx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Necessary', 'Discretionary', 'Investments'],
-                datasets: [{
-                    data: [necTotal, discTotal, invTotal],
-                    backgroundColor: ['#eab308', '#3b82f6', '#10b981'],
-                    borderColor: isDark ? '#1e293b' : '#ffffff',
-                    borderWidth: 2
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { position: 'bottom', labels: { color: textColor, padding: 20 } },
-                    tooltip: {
-                        callbacks: { label: (ctx) => ` ${ctx.label}: ${formatCurrency(ctx.raw)}` }
-                    }
-                }
-            }
-        });
-
-        // 2. Bar Chart Logic (Yearly Income vs Spending)
-        const yearMonths = monthNames.map(m => `${m} ${selYearStr}`);
-        let incData = [];
-        let expData = [];
-        
-        yearMonths.forEach(m => {
-            if (budgetData[m]) {
-                const totals = getMonthTotals(budgetData[m], m);
-                incData.push(totals.income);
-                expData.push(totals.necessary + totals.discretionary + totals.investments);
-            } else {
-                incData.push(0); expData.push(0);
-            }
-        });
-
-        const barCtx = document.getElementById('barChart').getContext('2d');
-        if (barChartInstance) barChartInstance.destroy();
-        barChartInstance = new Chart(barCtx, {
-            type: 'bar',
-            data: {
-                labels: monthNames,
-                datasets: [
-                    { label: 'Income', data: incData, backgroundColor: '#10b981', borderRadius: 4 },
-                    { label: 'Spending', data: expData, backgroundColor: '#ef4444', borderRadius: 4 }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    x: { ticks: { color: textColor }, grid: { display: false } },
-                    y: { ticks: { color: textColor, callback: (v) => '$' + v }, grid: { color: gridColor } }
-                },
-                plugins: {
-                    legend: { position: 'top', labels: { color: textColor } },
-                    tooltip: {
-                        callbacks: { label: (ctx) => ` ${ctx.dataset.label}: ${formatCurrency(ctx.raw)}` }
-                    }
-                }
-            }
-        });
-    }
-
-    // --- TRANSACTION MODAL ---
-    function openModal(categoryType, itemIndex) {
-        activeModalCategory = categoryType;
-        activeModalIndex = itemIndex;
-        
-        const item = budgetData[currentMonthStr][categoryType][itemIndex];
-        const vals = getItemValues(categoryType, item, budgetData[currentMonthStr], currentMonthStr);
-
-        document.getElementById('modal-title').innerText = `${item.name} Transactions`;
-        
-        const banner = document.getElementById('modal-target-banner');
-        if (vals.isCalculated) {
-            banner.innerHTML = `💡 Goal based on actual income: <strong>${formatCurrency(vals.suggestedActual)}</strong>`;
-            banner.style.display = 'block';
-        } else {
-            banner.style.display = 'none';
-        }
-
-        document.getElementById('transaction-modal').classList.add('active');
-        document.querySelector('#transaction-modal .add-form').reset();
-        
-        // Smart Date Inject
-        document.getElementById('tx-date').value = getSmartDateDefault(currentMonthStr);
-
-        editingTxIndex = null;
-        document.getElementById('btn-add-tx').innerText = "Add Transaction";
-        document.getElementById('btn-cancel-tx').style.display = "none";
-
-        setTimeout(() => document.getElementById('tx-amount').focus(), 100);
-        renderTransactionsList();
-    }
-
-    function closeModal() {
-        document.getElementById('transaction-modal').classList.remove('active');
-        activeModalCategory = null;
-        activeModalIndex = null;
-        editingTxIndex = null;
-    }
-
-    function renderTransactionsList() {
-        if (!activeModalCategory) return;
-        const item = budgetData[currentMonthStr][activeModalCategory][activeModalIndex];
-        const listContainer = document.getElementById('modal-tx-list');
-        const totalSpan = document.getElementById('modal-total');
-        
-        if (item.transactions.length === 0) {
-            listContainer.innerHTML = `<div class="tx-empty">No transactions added yet.</div>`;
-            totalSpan.innerText = '$0.00';
-            return;
-        }
-
-        let html = '';
-        let total = 0;
-        const sortedTx = [...item.transactions].sort((a, b) => new Date(a.date) - new Date(b.date));
-        
-        sortedTx.forEach((tx, sortedIdx) => {
-            const originalIdx = item.transactions.indexOf(tx); 
-            total += tx.amount;
-            
-            html += `
-                <div class="tx-item" ${editingTxIndex === originalIdx ? 'style="border-color: var(--primary); background: var(--primary-bg);"' : ''}>
-                    <div class="tx-info">
-                        <span class="tx-amount-large">${formatCurrency(tx.amount)}</span>
-                        <span class="tx-desc-stack">${tx.desc}</span>
-                        <span class="tx-date-stack">${formatDate(tx.date)}</span>
-                    </div>
-                    <div class="tx-actions">
-                        <button type="button" onclick="editTransaction(${originalIdx})" class="btn-tx-action edit" title="Edit Transaction">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-                        </button>
-                        <button type="button" onclick="deleteTransaction(${originalIdx})" class="btn-tx-action delete" title="Delete Transaction">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                        </button>
-                    </div>
-                </div>
-            `;
-        });
-        listContainer.innerHTML = html;
-        totalSpan.innerText = formatCurrency(total);
-        listContainer.scrollTop = listContainer.scrollHeight;
-    }
-
-    function editTransaction(txIndex) {
-        editingTxIndex = txIndex;
-        const tx = budgetData[currentMonthStr][activeModalCategory][activeModalIndex].transactions[txIndex];
-        
-        document.getElementById('tx-date').value = tx.date;
-        document.getElementById('tx-desc').value = tx.desc;
-        document.getElementById('tx-amount').value = tx.amount;
-        
-        document.getElementById('btn-add-tx').innerText = "Save Changes";
-        document.getElementById('btn-cancel-tx').style.display = "block";
-        
-        renderTransactionsList(); 
-        document.getElementById('tx-amount').focus();
-    }
-
-    function cancelEditTransaction() {
-        editingTxIndex = null;
-        document.querySelector('#transaction-modal .add-form').reset();
-        
-        document.getElementById('tx-date').value = getSmartDateDefault(currentMonthStr);
-        
-        document.getElementById('btn-add-tx').innerText = "Add Transaction";
-        document.getElementById('btn-cancel-tx').style.display = "none";
-        
-        renderTransactionsList(); 
-    }
-
-    function handleAddTransaction(e) {
-        e.preventDefault();
-        const date = document.getElementById('tx-date').value;
-        const desc = document.getElementById('tx-desc').value;
-        const amount = parseFloat(document.getElementById('tx-amount').value);
-        
-        if (desc && !isNaN(amount) && date) {
-            pushUndoState();
-            if (editingTxIndex !== null) {
-                budgetData[currentMonthStr][activeModalCategory][activeModalIndex].transactions[editingTxIndex] = {
-                    date: date, desc: desc, amount: amount
-                };
-                editingTxIndex = null;
-                document.getElementById('btn-add-tx').innerText = "Add Transaction";
-                document.getElementById('btn-cancel-tx').style.display = "none";
-            } else {
-                budgetData[currentMonthStr][activeModalCategory][activeModalIndex].transactions.push({
-                    date: date, desc: desc, amount: amount
-                });
-            }
-            
-            saveData();
-            renderTransactionsList();
-            renderMonthly();
-            if(!document.getElementById('view-analytics').classList.contains('hidden')) renderAnalytics();
-            
-            document.getElementById('tx-desc').value = '';
-            document.getElementById('tx-amount').value = '';
-            document.getElementById('tx-amount').focus(); 
-        }
-    }
-
-    function deleteTransaction(txIndex) {
-        pushUndoState();
-        budgetData[currentMonthStr][activeModalCategory][activeModalIndex].transactions.splice(txIndex, 1);
-        saveData();
-        renderTransactionsList();
-        renderMonthly();
-        if(!document.getElementById('view-analytics').classList.contains('hidden')) renderAnalytics();
-    }
-
-    // --- NEW ROW MODAL ---
-    function openRowModal(secId) {
-        activeRowSection = secId;
-        const titles = { 'income': 'Income', 'necessary': 'Necessary Expenses', 'discretionary': 'Discretionary Expenses', 'investments': 'Investments' };
-        
-        document.getElementById('row-modal-title').innerText = `Add New ${titles[secId]} Category`;
-        document.getElementById('row-modal').classList.add('active');
-        document.getElementById('add-row-form').reset();
-        
-        document.getElementById('new-row-is-rollover').checked = false;
-        document.getElementById('new-row-is-yearly').checked = false;
-        document.getElementById('new-row-is-sub').checked = false;
-        toggleAddYearly();
-        toggleAddSub();
-        
-        setTimeout(() => document.getElementById('new-row-name').focus(), 100);
-    }
-
-    function closeRowModal() {
-        document.getElementById('row-modal').classList.remove('active');
-        activeRowSection = null;
-    }
-
-    function handleAddRow(e) {
-        e.preventDefault();
-        const name = document.getElementById('new-row-name').value;
-        const inputValue = parseFloat(document.getElementById('new-row-budget').value) || 0;
-        
-        const isRollover = document.getElementById('new-row-is-rollover').checked;
-        const isYearly = document.getElementById('new-row-is-yearly').checked;
-        
-        const isSub = document.getElementById('new-row-is-sub').checked;
-        const subType = document.getElementById('new-sub-type').value;
-        const subCost = parseFloat(document.getElementById('new-sub-cost').value) || 0;
-        const subDate = document.getElementById('new-sub-date').value;
-
-        if (name && activeRowSection) {
-            pushUndoState();
-            let budget = inputValue;
-            let yearlyAmount = null;
-
-            if (isYearly) {
-                yearlyAmount = inputValue;
-                budget = inputValue / 12;
-            }
-
-            const [currM, currY] = currentMonthStr.split(' ');
-            const currDate = new Date(`${currM} 1, ${currY}`);
-
-            Object.keys(budgetData).forEach(m => {
-                const [checkM, checkY] = m.split(' ');
-                const checkDate = new Date(`${checkM} 1, ${checkY}`);
-                
-                if (checkDate >= currDate) {
-                    const exists = budgetData[m][activeRowSection].find(x => x.name === name);
-                    if (!exists) {
-                        budgetData[m][activeRowSection].push({ 
-                            name: name, budget: budget, yearlyAmount: yearlyAmount, transactions: [],
-                            isSub: isSub, subType: subType, subCost: subCost, subDate: subDate,
-                            isRollover: isRollover
-                        });
-                    }
-                }
-            });
-            
-            saveData();
-            closeRowModal();
-            renderMonthly();
-        }
-    }
-
-    // --- EDIT ROW MODAL ---
-    function openEditRowModal(secId, idx) {
-        activeEditSection = secId;
-        activeEditIndex = idx;
-        
-        const item = budgetData[currentMonthStr][secId][idx];
-        const vals = getItemValues(secId, item, budgetData[currentMonthStr], currentMonthStr);
-        
-        document.getElementById('edit-row-name').value = item.name;
-        
-        const budgetInput = document.getElementById('edit-row-budget');
-        const calcWarning = document.getElementById('edit-row-calc-warning');
-        
-        const isRolloverCb = document.getElementById('edit-row-is-rollover');
-        const isYearlyCb = document.getElementById('edit-row-is-yearly');
-        const isSubCb = document.getElementById('edit-row-is-sub');
-        
-        isRolloverCb.checked = item.isRollover || false;
-        
-        isSubCb.checked = item.isSub || false;
-        document.getElementById('edit-sub-type').value = item.subType || 'monthly';
-        document.getElementById('edit-sub-cost').value = item.subCost || '';
-        document.getElementById('edit-sub-date').value = item.subDate || '';
-        toggleEditSub();
-        
-        if (vals.isCalculated) {
-            budgetInput.value = vals.baseBudget.toFixed(2);
-            budgetInput.disabled = true;
-            budgetInput.style.backgroundColor = 'var(--bg-alt)';
-            budgetInput.style.color = 'var(--text-muted)';
-            calcWarning.style.display = 'block';
-            
-            isRolloverCb.disabled = true;
-            isYearlyCb.disabled = true;
-            isSubCb.disabled = true;
-            document.getElementById('edit-options-wrapper').style.display = 'none';
-        } else {
-            budgetInput.disabled = false;
-            budgetInput.style.backgroundColor = '';
-            budgetInput.style.color = '';
-            calcWarning.style.display = 'none';
-            
-            isRolloverCb.disabled = false;
-            isYearlyCb.disabled = false;
-            isSubCb.disabled = false;
-            document.getElementById('edit-options-wrapper').style.display = 'flex';
-
-            if (item.yearlyAmount) {
-                isYearlyCb.checked = true;
-                budgetInput.value = item.yearlyAmount.toFixed(2);
-                document.getElementById('edit-row-budget-label').innerText = "Total Yearly Cost";
-            } else {
-                isYearlyCb.checked = false;
-                budgetInput.value = (item.budget || 0).toFixed(2);
-                document.getElementById('edit-row-budget-label').innerText = "Monthly Budget";
-            }
-        }
-        
-        document.getElementById('edit-row-modal').classList.add('active');
-        setTimeout(() => document.getElementById('edit-row-budget').focus(), 100);
-    }
-
-    function closeEditRowModal() {
-        document.getElementById('edit-row-modal').classList.remove('active');
-        activeEditSection = null;
-        activeEditIndex = null;
-    }
-
-    function handleEditRow(e) {
-        e.preventDefault();
-        const newName = document.getElementById('edit-row-name').value;
-        const inputValue = parseFloat(document.getElementById('edit-row-budget').value) || 0;
-        
-        const isRollover = document.getElementById('edit-row-is-rollover').checked;
-        const isYearly = document.getElementById('edit-row-is-yearly').checked;
-        
-        const isSub = document.getElementById('edit-row-is-sub').checked;
-        const subType = document.getElementById('edit-sub-type').value;
-        const subCost = parseFloat(document.getElementById('edit-sub-cost').value) || 0;
-        const subDate = document.getElementById('edit-sub-date').value;
-
-        if (newName && activeEditSection !== null && activeEditIndex !== null) {
-            pushUndoState();
-            const oldName = budgetData[currentMonthStr][activeEditSection][activeEditIndex].name;
-            const [currM, currY] = currentMonthStr.split(' ');
-            const currDate = new Date(`${currM} 1, ${currY}`);
-
-            Object.keys(budgetData).forEach(m => {
-                const [checkM, checkY] = m.split(' ');
-                const checkDate = new Date(`${checkM} 1, ${checkY}`);
-                
-                if (checkDate >= currDate) {
-                    const itemToEdit = budgetData[m][activeEditSection].find(x => x.name === oldName);
-                    if (itemToEdit) {
-                        itemToEdit.name = newName;
-                        itemToEdit.isRollover = isRollover;
-                        itemToEdit.isSub = isSub;
-                        itemToEdit.subType = subType;
-                        itemToEdit.subCost = subCost;
-                        itemToEdit.subDate = subDate;
-                        
-                        if (!getItemValues(activeEditSection, itemToEdit, budgetData[m], m).isCalculated) {
-                            if (isYearly) {
-                                itemToEdit.yearlyAmount = inputValue;
-                                itemToEdit.budget = inputValue / 12;
-                            } else {
-                                itemToEdit.yearlyAmount = null;
-                                itemToEdit.budget = inputValue;
-                            }
-                        }
-                    }
-                }
-            });
-            
-            saveData();
-            closeEditRowModal();
-            renderMonthly();
-        }
-    }
-
-    // --- CALCULATION RULES MODAL LOGIC ---
-    function openRulesModal() {
-        editingRuleIndex = null; 
-        document.getElementById('rule-form-title').innerText = "+ Create Custom Rule";
-        document.getElementById('btn-submit-rule').innerText = "Add Rule";
-
-        const list = document.getElementById('rules-list');
-        list.innerHTML = '';
-        
-        calculationRules.forEach((rule, idx) => {
-            const currentPct = (rule.pct * 100).toFixed(1); 
-            list.innerHTML += `
-                <div style="background: var(--bg-alt); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border); position: relative;">
-                    <div style="position: absolute; right: 0.75rem; top: 0.75rem; display: flex; gap: 0.35rem;">
-                        <button type="button" onclick="editCalculationRule(${idx})" class="btn-row-action" title="Edit Rule" style="opacity: 1; pointer-events: auto; padding: 0.35rem; background: var(--bg-card); border: 1px solid var(--border); box-shadow: var(--shadow-sm);">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-                        </button>
-                        <button type="button" onclick="deleteCalculationRule(${idx})" class="btn-row-action delete" title="Delete Rule" style="opacity: 1; pointer-events: auto; padding: 0.35rem; background: var(--bg-card); border: 1px solid var(--border); box-shadow: var(--shadow-sm);">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                        </button>
-                    </div>
-                    <div style="font-weight: 600; color: var(--text-strong); margin-bottom: 0.25rem; padding-right: 5rem;">${rule.name}</div>
-                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.75rem;">Source: ${rule.sources === 'ALL' ? 'Total Income' : rule.sources.join(' + ')}</div>
-                    <div style="display: flex; align-items: center; gap: 0.5rem;">
-                        <input type="number" id="rule-input-${idx}" class="input-number" style="text-align: left; width: 6rem; padding: 0.35rem 0.5rem;" step="0.1" value="${currentPct}" required>
-                        <span style="font-weight: 500; color: var(--text-muted);">%</span>
-                    </div>
-                </div>
-            `;
-        });
-
-        const targetSelect = document.getElementById('new-rule-target');
-        targetSelect.innerHTML = '<option value="" disabled selected>Select an existing row...</option>';
-        ['necessary', 'discretionary', 'investments'].forEach(sec => {
-            const optgroup = document.createElement('optgroup');
-            optgroup.label = sec.toUpperCase();
-            budgetData[currentMonthStr][sec].forEach(item => {
-                optgroup.innerHTML += `<option value="${sec}|${item.name}">${item.name}</option>`;
-            });
-            targetSelect.appendChild(optgroup);
-        });
-
-        const sourceContainer = document.getElementById('new-rule-source-container');
-        sourceContainer.innerHTML = `
-            <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; cursor: pointer;">
-                <input type="checkbox" id="rule-source-all" value="ALL" onchange="toggleAllSources(this)" checked style="width: 1rem; height: 1rem; accent-color: var(--primary);">
-                <span style="font-weight: 600; color: var(--text-strong);">Total Income (All)</span>
-            </label>
-            <div style="height: 1px; background: var(--border); margin: 0.5rem 0;"></div>
-        `;
-        budgetData[currentMonthStr].income.forEach(item => {
-            sourceContainer.innerHTML += `
-                <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.35rem; cursor: pointer;">
-                    <input type="checkbox" class="rule-source-cb" value="${item.name}" disabled style="width: 1rem; height: 1rem; accent-color: var(--primary);">
-                    <span style="color: var(--text-main);">${item.name}</span>
-                </label>
-            `;
-        });
-        
-        document.getElementById('rules-modal').classList.add('active');
-    }
-
-    function toggleAllSources(checkbox) {
-        const cbs = document.querySelectorAll('.rule-source-cb');
-        cbs.forEach(cb => {
-            if (checkbox.checked) {
-                cb.checked = false;
-                cb.disabled = true;
-            } else {
-                cb.disabled = false;
-            }
-        });
-    }
-
-    function closeRulesModal() { document.getElementById('rules-modal').classList.remove('active'); }
-
-    function handleSaveRules(e) {
-        e.preventDefault();
-        pushUndoState();
-        calculationRules.forEach((rule, idx) => {
-            const inputVal = parseFloat(document.getElementById(`rule-input-${idx}`).value);
-            if (!isNaN(inputVal)) {
-                rule.pct = inputVal / 100;
-                rule.desc = `${inputVal}% of ${rule.sources === 'ALL' ? 'Total Income' : rule.sources.join(' + ')}`;
-            }
-        });
-        saveData();
-        closeRulesModal();
-        renderMonthly(); 
-    }
-
-    function editCalculationRule(idx) {
-        editingRuleIndex = idx;
-        const rule = calculationRules[idx];
-        
-        document.getElementById('rule-form-title').innerText = "✎ Edit Custom Rule";
-        document.getElementById('btn-submit-rule').innerText = "Update Rule";
-        document.getElementById('new-rule-target').value = `${rule.category}|${rule.name}`;
-        
-        const isAll = rule.sources === 'ALL';
-        const sourceAllCb = document.getElementById('rule-source-all');
-        sourceAllCb.checked = isAll;
-        toggleAllSources(sourceAllCb); 
-        
-        if (!isAll) {
-            const cbs = document.querySelectorAll('.rule-source-cb');
-            cbs.forEach(cb => { cb.checked = rule.sources.includes(cb.value); });
-        }
-        
-        document.getElementById('new-rule-pct').value = (rule.pct * 100).toFixed(1);
-        document.getElementById('rule-form-title').scrollIntoView({ behavior: 'smooth' });
-    }
-
-    function handleSaveCustomRule() {
-        const targetVal = document.getElementById('new-rule-target').value;
-        const pctVal = parseFloat(document.getElementById('new-rule-pct').value);
-        const isAll = document.getElementById('rule-source-all').checked;
-        let sources = [];
-        
-        if (isAll) { sources = 'ALL'; } 
-        else {
-            document.querySelectorAll('.rule-source-cb:checked').forEach(cb => sources.push(cb.value));
-        }
-
-        if(targetVal && !isNaN(pctVal) && (sources === 'ALL' || sources.length > 0)) {
-            pushUndoState();
-            const [category, name] = targetVal.split('|');
-            const newRule = {
-                category: category, name: name, pct: pctVal / 100,
-                sources: sources, desc: `${pctVal}% of ${sources === 'ALL' ? 'Total Income' : sources.join(' + ')}`
-            };
-
-            if (editingRuleIndex !== null) calculationRules[editingRuleIndex] = newRule;
-            else calculationRules.push(newRule);
-
-            saveData();
-            document.getElementById('new-rule-pct').value = '';
-            editingRuleIndex = null; 
-            openRulesModal(); 
-            renderMonthly();
-        } else {
-            customAlert('Please select a target row, at least one income source, and enter a valid percentage.');
-        }
-    }
-
-    async function deleteCalculationRule(idx) {
-        if(await customConfirm('Are you sure you want to delete this calculation rule?', "Delete", true)) {
-            pushUndoState();
-            calculationRules.splice(idx, 1);
-            saveData();
-            openRulesModal(); 
-            renderMonthly();
-        }
-    }
-
-    // Modal click-outside to close
-    document.querySelectorAll('.modal-overlay').forEach(modal => {
-        modal.addEventListener('click', function(e) {
-            if (e.target === this) {
-                this.classList.remove('active');
-                if(this.id === 'transaction-modal') {
-                    activeModalCategory = null; activeModalIndex = null; editingTxIndex = null;
-                }
-                if(this.id === 'row-modal') activeRowSection = null;
-                if(this.id === 'edit-row-modal') { activeEditSection = null; activeEditIndex = null; }
-            }
-        });
-    });
-
-    // --- BOOTSTRAP & CLOUD INIT ---
-    function renderApp() {
-        const yearSelect = document.getElementById('year-selector');
-        const analyticsYear = document.getElementById('analytics-year');
-        if (yearSelect.options.length === 0) {
-            for(let y = 2024; y <= 2036; y++) {
-                yearSelect.innerHTML += `<option value="${y}">${y}</option>`;
-                analyticsYear.innerHTML += `<option value="${y}">${y}</option>`;
-            }
-            yearSelect.value = "2026";
-            analyticsYear.value = "2026";
-        }
-
-        const monthDrop = document.getElementById('month-dropdown');
-        const yearDrop = document.getElementById('year-dropdown');
-        const analyticsMonth = document.getElementById('analytics-month');
-        
-        if (monthDrop.options.length === 0) {
-            fullMonthNames.forEach((m, idx) => {
-                monthDrop.innerHTML += `<option value="${monthNames[idx]}">${m}</option>`;
-                analyticsMonth.innerHTML += `<option value="${monthNames[idx]}">${m}</option>`;
-            });
-            for(let y = 2024; y <= 2036; y++) yearDrop.innerHTML += `<option value="${y}">${y}</option>`;
-        }
-
-        const [mName, yStr] = currentMonthStr.split(' ');
-        monthDrop.value = mName;
-        yearDrop.value = yStr;
-        analyticsMonth.value = mName;
-        analyticsYear.value = yStr;
-        
-        renderMonthly();
-        if(!document.getElementById('view-analytics').classList.contains('hidden')) renderAnalytics();
-    }
-
-    // Dynamic Cloud Importer
-    let db, auth, userId, appId, setDoc_fn, doc_fn;
-
-    async function initCloud() {
-        try {
-            document.getElementById('sync-status').innerText = "☁️ Connecting...";
-            
-            // Dynamically fetch Firebase libraries
-            const appModule = await import('https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js');
-            const authModule = await import('https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js');
-            const fsModule = await import('https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js');
-
-            const firebaseConfig = {
-              apiKey: "AIzaSyB9s5odA5RIBPXmBumdSl59D89DBv9cZIQ",
-              authDomain: "personal-budget-app-aeb06.firebaseapp.com",
-              projectId: "personal-budget-app-aeb06",
-              storageBucket: "personal-budget-app-aeb06.firebasestorage.app",
-              messagingSenderId: "116796553317",
-              appId: "1:116796553317:web:36fa900081551949226e8c"
-            };
-
-            const app = appModule.initializeApp(firebaseConfig);
-            auth = authModule.getAuth(app);
-            db = fsModule.getFirestore(app);
-            setDoc_fn = fsModule.setDoc;
-            doc_fn = fsModule.doc;
-            appId = 'personal-budget-app-aeb06'; 
-
-            // Log in silently
-            await authModule.signInAnonymously(auth);
-
-            setupCloudSync(fsModule);
-        } catch (e) {
-            console.warn("Cloud failed. Using local browser memory.", e);
-            document.getElementById('sync-status').innerText = "⚠️ Offline Mode";
-            loadLocalData();
-            renderApp();
-        }
-    }
-
-    function setupCloudSync(fsModule) {
-        const docRef = doc_fn(db, 'budget_data', 'master_save');
-        
-        fsModule.onSnapshot(docRef, (docSnap) => {
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                budgetData = data.budgetData || {};
-                calculationRules = data.calculationRules || [];
-                document.getElementById('sync-status').innerText = "☁️ Synced";
-                getOrCreateMonthData(currentMonthStr, true);
-                renderApp();
-            } else {
-                loadLocalData();
-                saveData(); 
-                renderApp();
-            }
-        }, (err) => {
-            console.error("Sync error", err);
-            document.getElementById('sync-status').innerText = "⚠️ Offline Mode";
-        });
-    }
-
-    // Override the original saveData to also push to the cloud
-    window.saveData = async function(skipCloud = false) {
-        // Always save locally as an absolute fail-safe
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(budgetData));
-        localStorage.setItem(RULES_KEY, JSON.stringify(calculationRules));
-
-        if (!skipCloud && db && setDoc_fn && doc_fn) {
-            document.getElementById('sync-status').innerText = "☁️ Saving...";
-            const docRef = doc_fn(db, 'budget_data', 'master_save');
-            try {
-                const saveTask = setDoc_fn(docRef, { budgetData: budgetData, calculationRules: calculationRules });
-                const timeoutTask = new Promise((_, reject) => setTimeout(() => reject(new Error("TIMEOUT")), 8000));
-                
-                await Promise.race([saveTask, timeoutTask]);
-                document.getElementById('sync-status').innerText = "☁️ Synced";
-            } catch(e) {
-                console.error("Cloud Save Failed", e);
-                document.getElementById('sync-status').innerText = "⚠️ Offline Mode";
-            }
-        }
-    };
-
-    // Ignite the engine
-    initCloud();
-
-</script>
-</body>
-</html>
+                    } else if (
