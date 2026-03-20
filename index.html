@@ -272,6 +272,7 @@
         .val-diff.negative { color: var(--danger); }
         .val-diff.neutral { color: var(--text-light); }
         .val-diff.primary { color: var(--primary); font-weight: 600; } 
+        .val-diff.warning { color: var(--warning); font-weight: 600; }
 
         /* Actual & Progress */
         .actual-content { display: flex; justify-content: space-between; align-items: center; width: 100%; }
@@ -283,6 +284,7 @@
         .btn-actual .amount { font-weight: 600; color: var(--text-strong); font-size: 1.05rem; }
         @media (min-width: 768px) { .btn-actual .amount { font-size: 0.875rem; } }
         .btn-actual .amount.zero { color: var(--text-light); font-weight: 400; }
+        .btn-actual .amount.unplanned { color: var(--warning); }
         
         .mobile-budget-context { color: var(--text-muted); font-size: 0.8rem; font-weight: 400; }
         @media (min-width: 768px) { .mobile-budget-context { display: none; } }
@@ -1522,6 +1524,7 @@
                 grandTotals[sec.id] = sectionTotalActual;
 
                 let diffClass = 'neutral'; let diffText = '-';
+                let isUnplannedExpense = false;
 
                 if (vals.isCalculated) {
                     const remainingToTarget = vals.suggestedActual - vals.actual;
@@ -1530,10 +1533,21 @@
                     else { diffText = 'Goal Met ✓'; diffClass = 'positive'; }
                 } else {
                     const diff = vals.actual - vals.budget;
-                    if (vals.actual > 0 || diff !== 0) {
+                    if (diff === 0 && vals.budget > 0) {
+                        diffText = 'Budget Met ✓';
+                        diffClass = 'positive';
+                    } else if (vals.actual > 0 || diff !== 0) {
                         diffText = formatCurrency(diff);
-                        if (sec.id === 'income') diffClass = diff >= 0 ? 'positive' : 'negative'; 
-                        else diffClass = diff <= 0 ? 'positive' : 'negative';
+                        if (sec.id === 'income') {
+                            diffClass = diff >= 0 ? 'positive' : 'negative'; 
+                        } else {
+                            if (vals.budget === 0 && vals.actual > 0) {
+                                diffClass = 'warning';
+                                isUnplannedExpense = true;
+                            } else {
+                                diffClass = diff <= 0 ? 'positive' : 'negative';
+                            }
+                        }
                     }
                 }
 
@@ -1542,16 +1556,37 @@
                 
                 if (budgetRef > 0) {
                     pct = Math.min((vals.actual / budgetRef) * 100, 100);
-                    if (sec.id === 'income') barColor = pct >= 100 ? 'var(--success)' : 'var(--primary)';
-                    else barColor = (vals.actual > budgetRef) ? 'var(--danger)' : 'var(--primary)';
+                    if (sec.id === 'income') {
+                        barColor = pct >= 100 ? 'var(--success)' : 'var(--primary)';
+                    } else if (vals.isCalculated) {
+                        barColor = pct >= 100 ? 'var(--success)' : 'var(--primary)';
+                    } else {
+                        if (vals.actual > budgetRef) {
+                            barColor = 'var(--danger)';
+                        } else if (vals.actual === budgetRef) {
+                            barColor = 'var(--success)';
+                        } else {
+                            barColor = 'var(--primary)';
+                        }
+                    }
                 } else if (vals.actual > 0) {
-                    pct = 100; barColor = sec.id === 'income' ? 'var(--success)' : 'var(--danger)';
+                    pct = 100; 
+                    if (sec.id === 'income') {
+                        barColor = 'var(--success)';
+                    } else {
+                        barColor = 'var(--warning)';
+                        isUnplannedExpense = true;
+                    }
                 }
 
                 const progressBarHtml = `<div class="progress-bar-container"><div class="progress-bar-fill" style="width: ${pct}%; background-color: ${barColor};"></div></div>`;
                 const transactionCount = item.transactions.length;
                 const badgeHtml = transactionCount > 0 ? `<span class="badge">${transactionCount}</span>` : '';
-                const amtClass = vals.actual === 0 ? 'amount zero' : 'amount';
+                
+                let amtClass = 'amount';
+                if (vals.actual === 0) amtClass = 'amount zero';
+                else if (isUnplannedExpense) amtClass = 'amount unplanned';
+                
                 const openIconHtml = `<svg class="action-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>`;
                 const calcBadge = `<span class="calc-badge" title="${vals.calcDesc}"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg> Auto</span>`;
 
@@ -1617,7 +1652,6 @@
                         </div>
                         
                         <div class="g-col-diff">
-                            <span class="mobile-hide" style="color: var(--text-muted);">Diff:</span>
                             <span class="val-diff ${diffClass}">${diffText}</span>
                         </div>
                         
