@@ -10,13 +10,10 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Budget">
 
-  <!-- Desktop Browser Tab Icon -->
-  <link rel="icon" href="app-icon.jpg">
-  <link rel="apple-touch-icon" href="app-icon.jpg">
-    
-    <!-- iOS Home Screen Icon -->
+    <!-- Desktop Browser Tab Icon -->
+    <link rel="icon" href="app-icon.jpg">
     <link rel="apple-touch-icon" href="app-icon.jpg">
-
+    
     <!-- Chart.js for Analytics -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -69,6 +66,8 @@
             --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
             --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
             --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+            
+            --nav-height: calc(4rem + env(safe-area-inset-bottom));
         }
 
         [data-theme="dark"] {
@@ -105,26 +104,30 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
         
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             background-color: var(--bg-page);
             color: var(--text-main);
-            padding: 2rem 1.5rem;
+            /* Native app padding fixes */
+            padding: env(safe-area-inset-top, 2rem) 1rem var(--nav-height);
             line-height: 1.5;
             transition: background-color 0.3s ease, color 0.3s ease;
-            padding-bottom: 6rem;
-            /* Support for native app safe areas */
-            padding-top: env(safe-area-inset-top, 2rem);
+        }
+        @media (min-width: 768px) {
+            body { padding: 2rem 1.5rem 6rem; }
         }
 
-        .container { max-width: 1200px; margin: 0 auto; }
+        .container { max-width: 1200px; margin: 0 auto; width: 100%; }
 
-        header { display: flex; flex-direction: column; gap: 1rem; margin-bottom: 2rem; }
-        @media (min-width: 768px) { header { flex-direction: row; justify-content: space-between; align-items: center; } }
+        header { display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.5rem; }
+        @media (min-width: 768px) { header { flex-direction: row; justify-content: space-between; align-items: center; margin-bottom: 2rem; } }
 
-        .header-title { font-size: 1.5rem; font-weight: 700; color: var(--text-strong); display: flex; align-items: center; }
+        .header-title { font-size: 1.5rem; font-weight: 700; color: var(--text-strong); display: flex; align-items: center; flex-wrap: wrap; gap: 0.5rem;}
         .header-subtitle { font-size: 0.875rem; color: var(--text-muted); margin-top: 0.25rem; }
 
-        .view-toggle { display: flex; gap: 0.5rem; background: var(--bg-card); padding: 0.25rem; border-radius: var(--radius-md); border: 1px solid var(--border); box-shadow: var(--shadow-sm); overflow-x: auto; }
+        /* Desktop Top Nav */
+        .view-toggle { display: none; gap: 0.5rem; background: var(--bg-card); padding: 0.25rem; border-radius: var(--radius-md); border: 1px solid var(--border); box-shadow: var(--shadow-sm); overflow-x: auto; }
+        @media (min-width: 768px) { .view-toggle { display: flex; } }
+        
         .btn-toggle { padding: 0.5rem 1rem; font-size: 0.875rem; font-weight: 500; border-radius: var(--radius-sm); border: none; cursor: pointer; background: transparent; color: var(--text-muted); transition: all 0.2s ease; white-space: nowrap; }
         .btn-toggle:hover:not(.active) { background: var(--bg-alt); }
         .btn-toggle.active { background: var(--text-strong); color: var(--bg-card); }
@@ -132,79 +135,136 @@
         .theme-btn { background: var(--bg-card); border: 1px solid var(--border); color: var(--text-strong); padding: 0.5rem 0.75rem; border-radius: var(--radius-md); cursor: pointer; box-shadow: var(--shadow-sm); display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; }
         .theme-btn:hover { background: var(--bg-alt); }
 
-        .controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
-        .month-selector { padding: 0.5rem 0.75rem; font-size: 0.875rem; font-weight: 500; border-radius: var(--radius-md); border: 1px solid var(--border); background-color: var(--bg-card); color: var(--text-strong); box-shadow: var(--shadow-sm); cursor: pointer; outline: none; font-family: inherit; }
-        .month-selector:focus { border-color: var(--primary); }
+        .controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.75rem; }
+        
+        /* Mobile Native Inputs Fix: Must be 16px to prevent zoom */
+        .month-selector, .input-text, .input-number, .input-date, select.input-text { 
+            padding: 0.75rem; 
+            font-size: 16px; /* Prevents iOS Zoom */
+            font-weight: 500; 
+            border-radius: var(--radius-md); 
+            border: 1px solid var(--border); 
+            background-color: var(--bg-card); 
+            color: var(--text-strong); 
+            box-shadow: var(--shadow-sm); 
+            cursor: pointer; outline: none; font-family: inherit; width: 100%;
+            appearance: none; -webkit-appearance: none;
+        }
+        select.month-selector { width: auto; padding-right: 2rem; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.5rem center; background-size: 1em; }
+        .month-selector:focus, .input-text:focus, .input-number:focus, .input-date:focus { border-color: var(--primary); }
+        .input-number { text-align: left; }
 
         /* Summary Cards */
         .summary-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin-bottom: 1.5rem; }
         @media (min-width: 768px) { .summary-grid { grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem; } }
         
-        .summary-card { background: var(--bg-card); padding: 1rem; border-radius: var(--radius-lg); border: 1px solid var(--border); box-shadow: var(--shadow-sm); }
+        .summary-card { background: var(--bg-card); padding: 0.75rem; border-radius: var(--radius-lg); border: 1px solid var(--border); box-shadow: var(--shadow-sm); display: flex; flex-direction: column; justify-content: space-between; }
         @media (min-width: 768px) { .summary-card { padding: 1.25rem; border-radius: var(--radius-xl); } }
         
         .summary-card.highlight { background: var(--primary-bg); border-color: var(--primary-border); position: relative; overflow: hidden; }
         .summary-card.highlight::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--primary); }
-        .summary-label-wrapper { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem; }
-        .summary-label { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); }
+        .summary-label-wrapper { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.25rem; gap: 0.25rem; }
+        .summary-label { font-size: 0.6rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); line-height: 1.2; word-wrap: break-word;}
         @media (min-width: 768px) { .summary-label { font-size: 0.75rem; } }
-        .pct-badge { font-size: 0.65rem; font-weight: 600; background: var(--bg-alt); color: var(--text-muted); padding: 0.15rem 0.4rem; border-radius: var(--radius-sm); }
+        .pct-badge { font-size: 0.6rem; font-weight: 600; background: var(--bg-alt); color: var(--text-muted); padding: 0.15rem 0.3rem; border-radius: var(--radius-sm); }
         .summary-card.highlight .summary-label { color: var(--primary); }
         .summary-card.highlight .pct-badge { background: var(--primary-badge-bg); color: var(--primary); }
-        .summary-value { font-size: 1.25rem; font-weight: 700; color: var(--text-strong); }
+        .summary-value { font-size: 1.05rem; font-weight: 700; color: var(--text-strong); margin-top: auto; }
         @media (min-width: 768px) { .summary-value { font-size: 1.5rem; } }
         .summary-card.highlight .summary-value { color: var(--primary-text); }
 
-        /* Tables & Sections */
-        .section-card { background: var(--bg-card); border-radius: var(--radius-xl); border: 1px solid var(--border); box-shadow: var(--shadow-sm); overflow: hidden; margin-bottom: 2rem; }
-        .section-header { padding: 1rem 1.5rem; background: var(--bg-alt); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; transition: background 0.2s; }
+        /* Monthly View Smart Section Headers (Mobile fixed) */
+        .section-card { background: var(--bg-card); border-radius: var(--radius-xl); border: 1px solid var(--border); box-shadow: var(--shadow-sm); overflow: hidden; margin-bottom: 1.5rem; }
+        
+        .section-header { padding: 1rem; background: var(--bg-alt); border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 0.75rem; cursor: pointer; user-select: none; transition: background 0.2s; }
+        .section-header-title { display: flex; align-items: center; gap: 0.5rem; width: 100%; }
+        .section-totals { display: flex; width: 100%; gap: 0.5rem; background: var(--bg-card); padding: 0.5rem; border-radius: var(--radius-md); border: 1px solid var(--border); justify-content: space-around; box-shadow: var(--shadow-sm); }
+        .tot-block { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .tot-lbl { font-size: 0.65rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; letter-spacing: 0.05em; }
+        .val-budget { color: var(--text-muted); font-weight: 600; font-size: 0.85rem; margin: 0; }
+        .val-actual { color: var(--text-strong); font-weight: 700; font-size: 0.85rem; margin: 0; }
+        
+        @media (min-width: 768px) { 
+            .section-header { flex-direction: row; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; gap: 0; } 
+            .section-header-title { width: auto; }
+            .section-totals { width: auto; background: transparent; padding: 0; border: none; box-shadow: none; flex-direction: row; align-items: center; gap: 0.75rem; }
+            .tot-block { flex-direction: row; gap: 0.35rem; align-items: center; }
+            .tot-lbl { font-size: 0.8rem; text-transform: none; font-weight: 600; letter-spacing: normal; }
+            .val-budget, .val-actual { font-size: 0.95rem; }
+            .tot-block:first-child::after { content: '|'; color: var(--text-light); margin-left: 0.4rem; font-weight: 400; }
+        }
+        
         .section-header:hover { background: var(--header-hover); }
-        .icon-collapse { width: 1.25rem; height: 1.25rem; color: var(--text-muted); transition: transform 0.2s ease; }
+        .icon-collapse { width: 1.25rem; height: 1.25rem; color: var(--text-muted); transition: transform 0.2s ease; flex-shrink: 0;}
         .section-header.collapsed .icon-collapse { transform: rotate(-90deg); }
         .section-title { font-size: 1rem; font-weight: 600; color: var(--text-strong); }
         @media (min-width: 768px) { .section-title { font-size: 1.125rem; } }
-        .section-totals { font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-align: right; }
-        @media (min-width: 768px) { .section-totals { font-size: 0.875rem; } }
-        .section-totals span.val-budget { color: var(--text-muted); margin-left: 0.25rem; }
-        .section-totals span.val-actual { color: var(--text-strong); margin-left: 0.25rem; }
-        .section-totals .divider { margin: 0 0.25rem; color: var(--text-light); }
-        @media (min-width: 768px) { .section-totals .divider { margin: 0 0.5rem; } }
 
-        table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; font-size: 0.8rem; }
-        @media (min-width: 768px) { table { font-size: 0.875rem; } }
-        th { padding: 0.75rem 0.5rem; font-size: 0.65rem; text-transform: uppercase; font-weight: 600; color: var(--text-muted); background-color: var(--bg-card); border-bottom: 1px solid var(--border); white-space: nowrap; }
-        @media (min-width: 768px) { th { padding: 0.75rem 1.5rem; font-size: 0.75rem; } }
-        th.text-right, td.text-right { text-align: right; }
-        th.text-center, td.text-center { text-align: center; }
-        tr.table-row { background-color: var(--bg-card); transition: background-color 0.15s ease; }
-        tr.table-row:hover { background-color: var(--bg-alt); }
-        td { padding: 0.75rem 0.5rem; color: var(--text-muted); white-space: nowrap; vertical-align: middle; border-bottom: 1px solid var(--border-light); background-color: transparent; }
-        @media (min-width: 768px) { td { padding: 1rem 1.5rem; } }
-        tr.table-row:last-child td { border-bottom: none; }
-
-        .btn-row-action { opacity: 1; pointer-events: auto; background: var(--bg-alt); border: 1px solid var(--border); color: var(--text-muted); cursor: pointer; padding: 0.25rem; border-radius: var(--radius-sm); transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
-        .btn-row-action svg { width: 1rem; height: 1rem; }
-        @media (min-width: 768px) { 
-            .btn-row-action { opacity: 0; pointer-events: none; background: transparent; border: none; padding: 0.35rem; color: var(--text-light); }
-            .btn-row-action svg { width: 1.125rem; height: 1.125rem; }
+        /* Custom Grid Table - Solves Mobile Smushing */
+        .grid-header {
+            display: none;
+            grid-template-columns: 2fr 1fr 1fr 1fr auto;
+            padding: 0.75rem 1.5rem;
+            background-color: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            font-size: 0.75rem; text-transform: uppercase; font-weight: 600; color: var(--text-muted);
         }
-        .table-row:hover .btn-row-action { opacity: 1; pointer-events: auto; }
+        @media (min-width: 768px) { .grid-header { display: grid; } }
+        
+        .grid-row {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0.5rem;
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-light);
+            background-color: var(--bg-card);
+            transition: background-color 0.15s ease;
+        }
+        .grid-row:hover { background-color: var(--bg-alt); }
+        .grid-row:last-child { border-bottom: none; }
+        
+        /* Mobile Layout for the Grid Row */
+        .g-col-name { display: flex; flex-direction: column; gap: 0.35rem; }
+        .g-col-budget { display: none; } /* Hidden on mobile */
+        .g-col-actual { display: flex; flex-direction: column; align-items: stretch; gap: 0.25rem; margin-top: 0.25rem; }
+        .g-col-diff { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; margin-top: 0.5rem; }
+        .g-col-actions { display: flex; gap: 0.5rem; }
+
+        @media (min-width: 768px) {
+            .grid-row {
+                grid-template-columns: 2fr 1fr 1fr 1fr 80px;
+                align-items: center;
+                gap: 1rem;
+                padding: 1rem 1.5rem;
+            }
+            .g-col-name { flex-direction: row; align-items: center; }
+            .g-col-budget { display: block; text-align: right; color: var(--text-muted); font-size: 0.875rem; }
+            .g-col-actual { margin-top: 0; align-items: flex-end; }
+            .g-col-diff { margin-top: 0; justify-content: flex-end; font-size: 0.875rem; }
+            .g-col-actions { justify-content: flex-end; opacity: 0; pointer-events: none; transition: opacity 0.2s;}
+            .grid-row:hover .g-col-actions { opacity: 1; pointer-events: auto; }
+        }
+
+        .cat-name-text { font-weight: 500; color: var(--text-strong); font-size: 0.95rem; }
+        @media (min-width: 768px) { .cat-name-text { font-size: 0.875rem; } }
+
+        .badges-wrapper { display: flex; flex-wrap: wrap; gap: 0.25rem; }
+        
+        /* Action Buttons */
+        .btn-row-action { background: var(--bg-alt); border: 1px solid var(--border); color: var(--text-muted); cursor: pointer; padding: 0.5rem; border-radius: var(--radius-sm); transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+        .btn-row-action svg { width: 1.125rem; height: 1.125rem; }
+        @media (min-width: 768px) { 
+            .btn-row-action { background: transparent; border: none; padding: 0.35rem; color: var(--text-light); }
+        }
         .btn-row-action:hover { color: var(--primary); background: var(--primary-bg); }
         .btn-row-action.delete:hover { color: var(--danger); background: var(--danger-bg); }
 
-        td.cat-name { font-weight: 500; color: var(--text-strong); }
-        .cat-name-wrapper { display: flex; flex-direction: column; align-items: flex-start; gap: 0.25rem; }
-        .action-buttons-wrapper { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.25rem; }
-        @media (min-width: 768px) { 
-            .cat-name-wrapper { flex-direction: row; align-items: center; gap: 0.5rem; } 
-            .action-buttons-wrapper { flex-direction: row; justify-content: flex-end; gap: 0.25rem; }
-        }
-        
-        .calc-badge { background: var(--calc-badge-bg); color: var(--calc-badge-text); font-size: 0.65rem; font-weight: 600; padding: 0.15rem 0.5rem; border-radius: 9999px; display: inline-flex; align-items: center; gap: 0.2rem; cursor: help; white-space: nowrap; }
-        .calc-badge svg { width: 0.75rem; height: 0.75rem; }
-        .yearly-badge { background: transparent; color: var(--text-muted); font-size: 0.65rem; font-weight: 600; padding: 0.15rem 0.5rem; border-radius: 9999px; display: inline-flex; align-items: center; gap: 0.2rem; cursor: help; white-space: nowrap; border: 1px dashed var(--text-light); }
+        /* Badges */
+        .calc-badge, .yearly-badge, .sub-badge { font-size: 0.65rem; font-weight: 600; padding: 0.2rem 0.5rem; border-radius: 9999px; display: inline-flex; align-items: center; gap: 0.2rem; white-space: nowrap; }
+        .calc-badge { background: var(--calc-badge-bg); color: var(--calc-badge-text); cursor: help; }
+        .yearly-badge { background: transparent; color: var(--text-muted); border: 1px dashed var(--text-light); cursor: help; }
         .yearly-badge.negative { color: var(--danger); border-color: var(--danger); }
-        .sub-badge { background: var(--primary-bg); color: var(--primary); font-size: 0.65rem; font-weight: 600; padding: 0.15rem 0.5rem; border-radius: 9999px; display: inline-flex; align-items: center; gap: 0.2rem; white-space: nowrap; border: 1px solid var(--primary-border); }
+        .sub-badge { background: var(--primary-bg); color: var(--primary); border: 1px solid var(--primary-border); }
 
         .val-diff { font-weight: 500; }
         .val-diff.positive { color: var(--success); }
@@ -212,20 +272,60 @@
         .val-diff.neutral { color: var(--text-light); }
         .val-diff.primary { color: var(--primary); font-weight: 600; } 
 
-        .actual-cell-wrapper { display: flex; flex-direction: column; align-items: flex-end; }
-        .btn-actual { display: inline-flex; align-items: center; justify-content: flex-end; width: 100%; background: transparent; border: none; cursor: pointer; font-size: inherit; font-family: inherit; padding: 0.25rem 0; border-radius: var(--radius-sm); transition: color 0.2s; }
+        /* Actual & Progress */
+        .actual-content { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+        @media (min-width: 768px) { .actual-content { justify-content: flex-end; } }
+        
+        .btn-actual { display: inline-flex; align-items: center; justify-content: space-between; width: 100%; background: transparent; border: none; cursor: pointer; font-size: inherit; font-family: inherit; padding: 0.35rem 0; border-radius: var(--radius-sm); transition: color 0.2s; }
+        @media (min-width: 768px) { .btn-actual { justify-content: flex-end; padding: 0.25rem 0; } }
         .btn-actual:hover { color: var(--primary); }
-        .btn-actual .amount { font-weight: 600; color: var(--text-strong); }
+        .btn-actual .amount { font-weight: 600; color: var(--text-strong); font-size: 1.05rem; }
+        @media (min-width: 768px) { .btn-actual .amount { font-size: 0.875rem; } }
         .btn-actual .amount.zero { color: var(--text-light); font-weight: 400; }
+        
+        .mobile-budget-context { color: var(--text-muted); font-size: 0.8rem; font-weight: 400; }
+        @media (min-width: 768px) { .mobile-budget-context { display: none; } }
+
         .badge { background: var(--bg-alt); color: var(--text-muted); font-size: 0.65rem; font-weight: 600; padding: 0.1rem 0.4rem; border-radius: 9999px; margin-left: 0.5rem; }
-        .btn-actual svg.action-icon { width: 1rem; height: 1rem; margin-left: 0.25rem; color: var(--text-light); opacity: 0; transition: opacity 0.2s; }
+        .btn-actual svg.action-icon { width: 1.125rem; height: 1.125rem; margin-left: 0.25rem; color: var(--text-light); opacity: 0.5; transition: opacity 0.2s; }
         .btn-actual:hover svg.action-icon { opacity: 1; }
 
-        .progress-bar-container { width: 100%; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; margin-top: 0.25rem; }
-        .progress-bar-fill { height: 100%; border-radius: 2px; transition: width 0.3s ease; }
+        .progress-bar-container { width: 100%; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin-top: 0.25rem; }
+        @media (min-width: 768px) { .progress-bar-container { height: 4px; border-radius: 2px;} }
+        .progress-bar-fill { height: 100%; border-radius: 3px; transition: width 0.3s ease; }
 
-        .btn-add-row { width: 100%; text-align: left; padding: 0.75rem 1.5rem; background: var(--bg-card); border: none; box-shadow: inset 0 1px 0 var(--border-light); color: var(--primary); font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: background 0.2s; }
+        .btn-add-row { width: 100%; text-align: left; padding: 1rem 1.5rem; background: var(--bg-card); border: none; box-shadow: inset 0 1px 0 var(--border-light); color: var(--primary); font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: background 0.2s; }
         .btn-add-row:hover { background: var(--bg-alt); }
+
+        /* Legacy Tables used ONLY for Yearly Detailed view now */
+        .table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: var(--radius-xl); border: 1px solid var(--border); box-shadow: var(--shadow-sm); background: var(--bg-card); }
+        table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; font-size: 0.8rem; min-width: 800px; }
+        @media (min-width: 768px) { table { font-size: 0.875rem; } }
+        th { padding: 0.85rem 0.5rem; font-size: 0.65rem; text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; color: var(--text-muted); background-color: var(--bg-card); border-bottom: 1px solid var(--border); white-space: nowrap; }
+        @media (min-width: 768px) { th { padding: 0.85rem 1.5rem; font-size: 0.75rem; } }
+        th.text-right, td.text-right { text-align: right; }
+        tr.table-row { background-color: var(--bg-card); transition: background-color 0.15s ease; }
+        tr.table-row:hover { background-color: var(--bg-alt); }
+        td { padding: 0.85rem 0.5rem; color: var(--text-muted); white-space: nowrap; vertical-align: middle; border-bottom: 1px solid var(--border-light); background-color: transparent; }
+        @media (min-width: 768px) { td { padding: 1rem 1.5rem; } }
+        
+        /* STICKY COLUMN MAGIC FOR YEARLY VIEW */
+        .table-yearly th:first-child, .table-yearly td:first-child { 
+            position: sticky; left: 0; z-index: 10; 
+            background-color: var(--bg-card); 
+            font-weight: 600; color: var(--text-strong);
+        }
+        /* Shadow effect to show it scrolls */
+        .table-yearly th:first-child::after, .table-yearly td:first-child::after {
+            content: ''; position: absolute; top: 0; right: -6px; bottom: 0; width: 6px;
+            background: linear-gradient(to right, rgba(0,0,0,0.08), transparent); pointer-events: none;
+        }
+        [data-theme="dark"] .table-yearly th:first-child::after, [data-theme="dark"] .table-yearly td:first-child::after {
+            background: linear-gradient(to right, rgba(0,0,0,0.4), transparent);
+        }
+        /* Match row colors for sticky column */
+        .table-yearly tr.row-alt td:first-child { background-color: var(--row-alt-bg); }
+        .table-yearly tr.row-bold td:first-child { background-color: var(--primary-bg); }
 
         tr.row-bold { background-color: var(--primary-bg) !important; }
         tr.row-bold td { border-top: 2px solid var(--primary-border); border-bottom: 1px solid var(--primary-border); font-weight: 700; color: var(--primary-text); background-color: transparent; }
@@ -235,6 +335,37 @@
         tr.spacer-row { background-color: var(--bg-card) !important; }
         tr.spacer-row td { height: 1rem; padding: 0; border: none; background-color: transparent; }
         
+        /* YEARLY SUMMARY MOBILE CARDS */
+        .yearly-mobile-cards { display: flex; flex-direction: column; gap: 1rem; padding-bottom: 1rem; }
+        .y-summary-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 1.25rem 0 1.25rem 1.25rem; box-shadow: var(--shadow-sm); overflow: hidden; }
+        .y-summary-card.highlight { background: var(--primary-bg); border-color: var(--primary-border); }
+        .y-card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; padding-right: 1.25rem; gap: 1rem;}
+        .y-card-title { font-weight: 600; color: var(--text-strong); font-size: 1rem; }
+        .y-summary-card.highlight .y-card-title { color: var(--primary-text); font-weight: 700; }
+        .y-card-ytd { font-weight: 700; color: var(--text-strong); font-size: 1.2rem; text-align: right; line-height: 1.1; }
+        .y-card-ytd small { display: block; font-size: 0.65rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; margin-top: 0.1rem; }
+        .y-summary-card.highlight .y-card-ytd { color: var(--primary); }
+        .y-summary-card.highlight .y-card-ytd small { color: var(--primary-text); opacity: 0.8; }
+        
+        .y-card-months-scroll { display: flex; overflow-x: auto; gap: 0.5rem; padding-bottom: 0.5rem; padding-right: 1.25rem; -webkit-overflow-scrolling: touch; scroll-snap-type: x mandatory; }
+        /* Hide scrollbar for clean look */
+        .y-card-months-scroll::-webkit-scrollbar { display: none; }
+        .y-card-months-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .y-month-pill { display: flex; flex-direction: column; background: var(--bg-alt); padding: 0.6rem 0.85rem; border-radius: var(--radius-md); min-width: 85px; align-items: center; scroll-snap-align: start; border: 1px solid var(--border-light); }
+        .y-summary-card.highlight .y-month-pill { background: var(--bg-card); border-color: var(--primary-border); }
+        .y-m-name { font-size: 0.65rem; text-transform: uppercase; font-weight: 700; color: var(--text-muted); margin-bottom: 0.25rem; letter-spacing: 0.05em; }
+        .y-m-val { font-size: 0.9rem; font-weight: 600; color: var(--text-strong); }
+        .y-summary-card.highlight .y-m-name { color: var(--primary); opacity: 0.8; }
+        .y-summary-card.highlight .y-m-val { color: var(--primary-text); }
+
+        .mobile-only { display: block; }
+        .desktop-only { display: none; }
+        @media (min-width: 768px) {
+            .mobile-only { display: none !important; }
+            .desktop-only { display: block !important; } 
+        }
+
         /* Analytics Tab Styles */
         .analytics-grid { display: grid; grid-template-columns: 1fr; gap: 1.5rem; margin-bottom: 2rem; }
         @media (min-width: 992px) { .analytics-grid { grid-template-columns: 1fr 1fr; } }
@@ -244,17 +375,23 @@
         .chart-wrapper { width: 100%; max-width: 500px; aspect-ratio: 1 / 1; position: relative; }
         .chart-wrapper.bar { aspect-ratio: 16 / 9; max-width: 100%; }
 
-        /* Modals */
-        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(2px); display: none; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
+        /* Mobile Bottom Sheet Modals */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(2px); display: none; align-items: flex-end; justify-content: center; z-index: 50; padding: 0; }
+        @media (min-width: 768px) { .modal-overlay { align-items: center; padding: 1rem; } }
         .modal-overlay.active { display: flex; }
-        .modal-content { background: var(--bg-card); width: 100%; max-width: 32rem; border-radius: var(--radius-xl); box-shadow: var(--shadow-xl); display: flex; flex-direction: column; max-height: 90vh; animation: modalIn 0.2s ease-out forwards; }
+        
+        .modal-content { background: var(--bg-card); width: 100%; max-width: 32rem; border-radius: var(--radius-xl) var(--radius-xl) 0 0; box-shadow: var(--shadow-xl); display: flex; flex-direction: column; max-height: 90vh; animation: modalSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @media (min-width: 768px) { .modal-content { border-radius: var(--radius-xl); animation: modalIn 0.2s ease-out forwards; } }
+        
+        @keyframes modalSlideUp { from { opacity: 0; transform: translateY(100%); } to { opacity: 1; transform: translateY(0); } }
         @keyframes modalIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
-        .modal-header { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); background: var(--bg-alt); display: flex; justify-content: space-between; align-items: center; border-radius: var(--radius-xl) var(--radius-xl) 0 0; }
-        .modal-title { font-weight: 600; color: var(--text-strong); }
-        .btn-close { background: none; border: none; color: var(--text-light); cursor: pointer; }
-        .btn-close:hover { color: var(--text-muted); }
+        
+        .modal-header { padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border); background: var(--bg-alt); display: flex; justify-content: space-between; align-items: center; border-radius: var(--radius-xl) var(--radius-xl) 0 0; }
+        .modal-title { font-weight: 600; color: var(--text-strong); font-size: 1.1rem; }
+        .btn-close { background: var(--border); border: none; color: var(--text-strong); cursor: pointer; border-radius: 50%; width: 2rem; height: 2rem; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
+        .btn-close:hover { background: var(--text-light); color: white; }
         .btn-close svg { width: 1.25rem; height: 1.25rem; }
-        .modal-body { padding: 1.5rem; overflow-y: auto; flex: 1; }
+        .modal-body { padding: 1.5rem; overflow-y: auto; flex: 1; padding-bottom: calc(1.5rem + env(safe-area-inset-bottom)); }
         
         .tx-list { display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.5rem; }
         .tx-empty { text-align: center; padding: 1.5rem; color: var(--text-light); font-size: 0.875rem; font-style: italic; border: 2px dashed var(--border); border-radius: var(--radius-md); }
@@ -266,32 +403,64 @@
         .tx-date-stack { font-size: 0.7rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
         .tx-actions { display: flex; align-items: center; gap: 0.35rem; }
         
-        .btn-tx-action { background: transparent; border: none; color: var(--text-light); cursor: pointer; padding: 0.35rem; border-radius: var(--radius-sm); transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+        .btn-tx-action { background: transparent; border: none; color: var(--text-light); cursor: pointer; padding: 0.5rem; border-radius: var(--radius-sm); transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
         .btn-tx-action:hover { background: var(--bg-alt); }
         .btn-tx-action.edit:hover { color: var(--primary); background: var(--primary-bg); }
         .btn-tx-action.delete:hover { color: var(--danger); background: var(--danger-bg); }
-        .btn-tx-action svg { width: 1.125rem; height: 1.125rem; }
+        .btn-tx-action svg { width: 1.25rem; height: 1.25rem; }
 
         .tx-add-section { border-top: 1px solid var(--border); padding-top: 1.25rem; }
         .tx-add-title { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: var(--text-muted); margin-bottom: 1rem; display: block; }
-        .add-form { display: flex; flex-direction: column; gap: 0.75rem; }
-        .form-group { display: flex; flex-direction: column; gap: 0.35rem; }
-        .form-label { font-size: 0.75rem; font-weight: 500; color: var(--text-muted); }
-        .input-text, .input-number, .input-date, select.input-text { padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 0.875rem; background: var(--bg-alt); color: var(--text-strong); outline: none; font-family: inherit; width: 100%; }
-        .input-text:focus, .input-number:focus, .input-date:focus { border-color: var(--primary); background: var(--bg-card); }
-        .input-date { color: var(--text-muted); }
-        .input-number { text-align: left; }
+        .add-form { display: flex; flex-direction: column; gap: 1rem; }
+        .form-group { display: flex; flex-direction: column; gap: 0.45rem; }
+        .form-label { font-size: 0.85rem; font-weight: 500; color: var(--text-muted); }
         
-        .btn-add { background: var(--primary); color: var(--text-strong); border: none; padding: 0.75rem 1rem; border-radius: var(--radius-md); font-weight: 500; cursor: pointer; width: 100%; transition: background 0.2s; margin-top: 0.25rem; color: #fff; }
+        .btn-add { background: var(--primary); color: #fff; border: none; padding: 1rem; border-radius: var(--radius-md); font-weight: 600; font-size: 16px; cursor: pointer; width: 100%; transition: background 0.2s; margin-top: 0.25rem; }
         .btn-add:hover { background: var(--primary-hover); }
 
-        .modal-footer { padding: 1rem 1.5rem; border-top: 1px solid var(--border); background: var(--bg-alt); display: flex; justify-content: space-between; align-items: center; border-radius: 0 0 var(--radius-xl) var(--radius-xl); }
+        .modal-footer { padding: 1rem 1.5rem calc(1rem + env(safe-area-inset-bottom)); border-top: 1px solid var(--border); background: var(--bg-alt); display: flex; justify-content: space-between; align-items: center; }
         .footer-label { font-size: 0.875rem; font-weight: 500; color: var(--text-muted); }
         .footer-total { font-size: 1.125rem; font-weight: 700; color: var(--text-strong); }
 
-        .fab { position: fixed; bottom: 2rem; right: 2rem; width: 3.5rem; height: 3.5rem; background: var(--primary); color: white; border-radius: 9999px; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-xl); cursor: pointer; border: none; transition: transform 0.2s, background 0.2s; z-index: 40; }
+        /* Floating Action Button */
+        .fab { position: fixed; bottom: calc(1.5rem + var(--nav-height)); right: 1.5rem; width: 3.5rem; height: 3.5rem; background: var(--primary); color: white; border-radius: 9999px; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-xl); cursor: pointer; border: none; transition: transform 0.2s, background 0.2s; z-index: 40; }
+        @media (min-width: 768px) { .fab { bottom: 2rem; right: 2rem; width: 4rem; height: 4rem; } }
         .fab:hover { transform: scale(1.05); background: var(--primary-hover); }
-        .fab svg { width: 1.5rem; height: 1.5rem; }
+        .fab svg { width: 1.75rem; height: 1.75rem; }
+
+        /* Native Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            background: var(--bg-card);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding-bottom: env(safe-area-inset-bottom);
+            z-index: 45;
+            box-shadow: 0 -4px 6px -1px rgb(0 0 0 / 0.05);
+        }
+        @media (min-width: 768px) { .bottom-nav { display: none; } }
+        
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 0;
+            color: var(--text-muted);
+            background: transparent; border: none;
+            font-size: 0.7rem; font-weight: 500;
+            cursor: pointer; transition: color 0.2s;
+        }
+        .nav-item svg { width: 1.5rem; height: 1.5rem; margin-bottom: 0.25rem; }
+        .nav-item.active { color: var(--primary); }
+
+        /* Mobile specific hiding */
+        @media (max-width: 767px) {
+            .mobile-hide { display: none !important; }
+        }
 
         .hidden { display: none !important; }
     </style>
@@ -302,16 +471,16 @@
     <header>
         <div>
             <h1 class="header-title">
-                Budget Dashboard 
-                <span id="sync-status" style="font-size: 0.7rem; font-weight: 600; color: var(--text-light); margin-left: 0.75rem; background: var(--bg-alt); padding: 0.2rem 0.5rem; border-radius: 99px;">
-                    ☁️ Connecting...
+                Budget
+                <span id="sync-status" style="font-size: 0.75rem; font-weight: 600; color: var(--text-light); background: var(--bg-alt); padding: 0.25rem 0.6rem; border-radius: 99px;">
+                    ☁️ Connecting
                 </span>
             </h1>
-            <p class="header-subtitle">Manage your household finances tracking</p>
+            <p class="header-subtitle">Household financial tracking</p>
         </div>
         
         <div style="display: flex; align-items: center; gap: 1rem;">
-            <!-- Updated Tabs -->
+            <!-- Desktop Tabs -->
             <div class="view-toggle">
                 <button id="tab-monthly" onclick="switchView('monthly')" class="btn-toggle active">Monthly</button>
                 <button id="tab-yearly" onclick="switchView('yearly')" class="btn-toggle">Yearly</button>
@@ -324,17 +493,15 @@
     <!-- MONTHLY PLANNER -->
     <div id="view-monthly">
         <div class="controls">
-            <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
-                <div style="display: flex; gap: 0.25rem;">
-                    <select id="month-dropdown" class="month-selector" onchange="handleTimeTravel()"></select>
-                    <select id="year-dropdown" class="month-selector" onchange="handleTimeTravel()"></select>
-                </div>
-                <button onclick="openRulesModal()" class="btn-toggle" style="background: var(--bg-card); border: 1px solid var(--border); padding: 0.5rem 0.75rem; box-shadow: var(--shadow-sm);">⚙️ Calc Rules</button>
-                <button onclick="openReorderModal()" class="btn-toggle" style="background: var(--bg-card); border: 1px solid var(--border); padding: 0.5rem 0.75rem; box-shadow: var(--shadow-sm);">⇅ Reorder</button>
+            <div style="display: flex; gap: 0.5rem; align-items: center; flex: 1; min-width: 250px;">
+                <select id="month-dropdown" class="month-selector" style="flex: 1;" onchange="handleTimeTravel()"></select>
+                <select id="year-dropdown" class="month-selector" style="flex: 1;" onchange="handleTimeTravel()"></select>
             </div>
-            <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
-                <button id="btn-undo" onclick="handleUndo()" class="btn-toggle" style="display: none; font-size: 0.75rem; padding: 0.35rem 0.75rem; background: var(--warning); color: #fff; border: none; box-shadow: var(--shadow-sm); font-weight: 600; transition: all 0.2s;" title="Undo Last Action">↩ Undo</button>
-                <button onclick="openSettingsModal()" class="btn-toggle" style="font-size: 0.75rem; padding: 0.35rem 0.75rem; background: var(--bg-card); border: 1px solid var(--border);">⚙️ Data Settings</button>
+            <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; justify-content: flex-end;">
+                <button onclick="openRulesModal()" class="theme-btn" style="font-size: 0.85rem;">⚙️ Rules</button>
+                <button onclick="openReorderModal()" class="theme-btn" style="font-size: 0.85rem;">⇅ Reorder</button>
+                <button onclick="openSettingsModal()" class="theme-btn" style="font-size: 0.85rem;">💾 Data</button>
+                <button id="btn-undo" onclick="handleUndo()" class="theme-btn" style="display: none; background: var(--warning); color: #fff; border: none;" title="Undo Last Action">↩ Undo</button>
             </div>
         </div>
 
@@ -342,7 +509,6 @@
             <div class="summary-card">
                 <div class="summary-label-wrapper">
                     <div class="summary-label">Total Income</div>
-                    <div class="pct-badge" style="opacity:0;">100%</div>
                 </div>
                 <div class="summary-value" id="card-income">$0.00</div>
             </div>
@@ -362,47 +528,40 @@
             </div>
             <div class="summary-card highlight">
                 <div class="summary-label-wrapper">
-                    <div class="summary-label">Remaining to Save</div>
+                    <div class="summary-label">Remaining To Save</div>
                     <div class="pct-badge" id="pct-remaining">0.0%</div>
                 </div>
                 <div class="summary-value" id="card-remaining">$0.00</div>
             </div>
         </div>
+        
         <div id="tables-container"></div>
     </div>
 
     <!-- YEARLY SUMMARY -->
     <div id="view-yearly" class="hidden">
-        <div class="controls" style="justify-content: flex-end;">
-            <select id="year-selector" class="month-selector" onchange="renderYearly()"></select>
+        <div class="controls" style="justify-content: space-between;">
+            <div class="view-toggle" style="display: flex; box-shadow: none; margin: 0;">
+                <button id="ytab-summary" onclick="setYearlyMode('summary')" class="btn-toggle active">Summary</button>
+                <button id="ytab-detailed" onclick="setYearlyMode('detailed')" class="btn-toggle">Detailed</button>
+            </div>
+            <select id="year-selector" class="month-selector" style="width: auto;" onchange="renderYearly()"></select>
         </div>
-        <div class="section-card">
-            <div class="section-header" style="cursor: default;">
-                <h2 class="section-title">Budget Summaries</h2>
-                <div class="view-toggle" style="margin-bottom:0; box-shadow:none;">
-                    <button id="ytab-summary" onclick="setYearlyMode('summary')" class="btn-toggle active">Summary</button>
-                    <button id="ytab-detailed" onclick="setYearlyMode('detailed')" class="btn-toggle">Detailed</button>
-                </div>
-            </div>
-            <div style="overflow-x: auto;">
-                <table>
-                    <thead id="yearly-thead"></thead>
-                    <tbody id="yearly-tbody"></tbody>
-                </table>
-            </div>
+        <div id="yearly-container">
+            <!-- Populated by JS for mobile cards or desktop table -->
         </div>
     </div>
 
-    <!-- NEW: ANALYTICS VIEW -->
+    <!-- ANALYTICS VIEW -->
     <div id="view-analytics" class="hidden">
         <div class="controls" style="justify-content: flex-end;">
-            <select id="analytics-month" class="month-selector" onchange="renderAnalytics()"></select>
-            <select id="analytics-year" class="month-selector" onchange="renderAnalytics()"></select>
+            <select id="analytics-month" class="month-selector" style="width: auto;" onchange="renderAnalytics()"></select>
+            <select id="analytics-year" class="month-selector" style="width: auto;" onchange="renderAnalytics()"></select>
         </div>
         <div class="analytics-grid">
             <div class="chart-container">
                 <div class="chart-header">
-                    <h3 class="chart-title">Monthly Spending Breakdown</h3>
+                    <h3 class="chart-title">Monthly Spending</h3>
                 </div>
                 <div class="chart-wrapper">
                     <canvas id="pieChart"></canvas>
@@ -420,13 +579,29 @@
     </div>
 </div>
 
+<!-- Mobile Bottom Navigation -->
+<nav class="bottom-nav">
+    <button id="nav-monthly" class="nav-item active" onclick="switchView('monthly')">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+        Monthly
+    </button>
+    <button id="nav-yearly" class="nav-item" onclick="switchView('yearly')">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+        Yearly
+    </button>
+    <button id="nav-analytics" class="nav-item" onclick="switchView('analytics')">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path></svg>
+        Analytics
+    </button>
+</nav>
+
 <button class="fab" onclick="openQuickAddModal()" title="Quick Add Transaction">
     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg>
 </button>
 
 <!-- Custom Alert Modal -->
 <div id="alert-modal" class="modal-overlay" style="z-index: 100;">
-    <div class="modal-content" style="max-width: 24rem; text-align: center;">
+    <div class="modal-content" style="max-width: 24rem; text-align: center; border-radius: var(--radius-xl);">
         <div class="modal-body" style="padding: 2rem 1.5rem;">
             <p id="alert-message" style="margin-bottom: 1.5rem; font-weight: 500; color: var(--text-strong); line-height: 1.5;"></p>
             <button onclick="closeCustomAlert()" class="btn-add" style="margin: 0 auto; max-width: 150px;">OK</button>
@@ -436,7 +611,7 @@
 
 <!-- Custom Confirm Modal -->
 <div id="confirm-modal" class="modal-overlay" style="z-index: 100;">
-    <div class="modal-content" style="max-width: 24rem; text-align: center;">
+    <div class="modal-content" style="max-width: 24rem; text-align: center; border-radius: var(--radius-xl);">
         <div class="modal-body" style="padding: 2rem 1.5rem;">
             <p id="confirm-message" style="margin-bottom: 1.5rem; font-weight: 500; color: var(--text-strong); line-height: 1.5;"></p>
             <div style="display: flex; gap: 0.75rem; justify-content: center;">
@@ -449,7 +624,7 @@
 
 <!-- Quick Add Modal -->
 <div id="quick-add-modal" class="modal-overlay">
-    <div class="modal-content" style="max-width: 24rem;">
+    <div class="modal-content" style="max-width: 26rem;">
         <div class="modal-header">
             <h3 class="modal-title">Quick Add Transaction</h3>
             <button onclick="closeQuickAddModal()" class="btn-close">
@@ -459,7 +634,7 @@
         <div class="modal-body">
             <form class="add-form" onsubmit="handleQuickAdd(event)">
                 <div class="form-group">
-                    <label class="form-label" for="qa-category">Select Category</label>
+                    <label class="form-label" for="qa-category">Category</label>
                     <select id="qa-category" class="input-text" required></select>
                 </div>
                 <div class="form-group">
@@ -493,7 +668,7 @@
             <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1.5rem;">Your app is securely synced to your private Firebase database.</p>
             
             <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-                <button onclick="forceCloudSave()" class="btn-add" style="margin: 0; background: var(--primary-bg); color: var(--primary); border: 1px solid var(--primary-border);">⬆️ Force Push Displayed Data to Cloud</button>
+                <button onclick="forceCloudSave()" class="btn-add" style="margin: 0; background: var(--primary-bg); color: var(--primary); border: 1px solid var(--primary-border);">⬆️ Force Push to Cloud</button>
                 
                 <div style="height: 1px; background: var(--border); margin: 0.5rem 0;"></div>
 
@@ -502,7 +677,7 @@
                 <button onclick="document.getElementById('import-file-settings').click()" class="btn-add" style="margin: 0; background: var(--bg-alt); color: var(--text-strong); border: 1px solid var(--border);">📤 Restore from Backup</button>
                 <input type="file" id="import-file-settings" style="display: none;" accept=".json" onchange="importData(event)">
                 
-                <button onclick="resetData()" class="btn-add" style="margin-top: 1rem; background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger);">🚨 Reset All Data to Default</button>
+                <button onclick="resetData()" class="btn-add" style="margin-top: 1rem; background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger);">🚨 Reset All Data</button>
             </div>
         </div>
     </div>
@@ -518,8 +693,8 @@
             </button>
         </div>
         <div class="modal-body">
-            <div class="form-group" style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: flex-end;">
-                <div style="flex: 1; margin-right: 1rem;">
+            <div class="form-group" style="margin-bottom: 1.5rem; display: flex; flex-direction: column; gap: 0.75rem;">
+                <div>
                     <label class="form-label" for="reorder-section-select">Select Section</label>
                     <select id="reorder-section-select" class="input-text" onchange="renderReorderList()">
                         <option value="income">Income</option>
@@ -528,7 +703,7 @@
                         <option value="investments">Investments / Savings</option>
                     </select>
                 </div>
-                <button onclick="forceSyncOrder()" class="btn-add" style="margin: 0; width: auto; padding: 0.75rem 1rem; font-size: 0.75rem; background: var(--primary-bg); color: var(--primary); border: 1px solid var(--primary-border);">🔄 Sync Order Everywhere</button>
+                <button onclick="forceSyncOrder()" class="btn-add" style="margin: 0; padding: 0.75rem 1rem; background: var(--primary-bg); color: var(--primary); border: 1px solid var(--primary-border);">🔄 Sync Order Everywhere</button>
             </div>
             <div id="reorder-list" style="display: flex; flex-direction: column; gap: 0.5rem;"></div>
         </div>
@@ -559,14 +734,14 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="tx-desc">Description</label>
-                        <input type="text" id="tx-desc" class="input-text" placeholder="e.g. Walmart, Transfer to Brokerage" required>
+                        <input type="text" id="tx-desc" class="input-text" placeholder="e.g. Walmart, Transfer" required>
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="tx-date">Date</label>
                         <input type="date" id="tx-date" class="input-date" required>
                     </div>
                     <div style="display: flex; gap: 0.5rem; margin-top: 0.25rem;">
-                        <button type="submit" id="btn-add-tx" class="btn-add" style="margin-top: 0;">Add Transaction</button>
+                        <button type="submit" id="btn-add-tx" class="btn-add" style="margin-top: 0;">Add</button>
                         <button type="button" id="btn-cancel-tx" onclick="cancelEditTransaction()" class="btn-add" style="margin-top: 0; background: var(--bg-alt); color: var(--text-strong); display: none;">Cancel</button>
                     </div>
                 </form>
@@ -582,7 +757,7 @@
 
 <!-- Add Row Modal -->
 <div id="row-modal" class="modal-overlay">
-    <div class="modal-content" style="max-width: 24rem;">
+    <div class="modal-content" style="max-width: 26rem;">
         <div class="modal-header">
             <h3 class="modal-title" id="row-modal-title">Add New Category</h3>
             <button onclick="closeRowModal()" class="btn-close">
@@ -597,27 +772,26 @@
                     <input type="text" id="new-row-name" class="input-text" placeholder="e.g. Vacation Fund" required>
                 </div>
                 
-                <div style="background: var(--bg-alt); padding: 0.75rem; border-radius: var(--radius-md); border: 1px solid var(--border); margin-top: 0.5rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                <div style="background: var(--bg-alt); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border); display: flex; flex-direction: column; gap: 0.75rem;">
+                    <label class="form-group" style="flex-direction: row; align-items: center; gap: 0.75rem; cursor: pointer;">
+                        <input type="checkbox" id="new-row-is-rollover" style="width: 1.25rem; height: 1.25rem; accent-color: var(--primary);">
+                        <span style="font-size: 0.9rem; font-weight: 500; color: var(--text-strong);">Roll Over Unspent Budget (YTD)</span>
+                    </label>
                     
-                    <div class="form-group" style="flex-direction: row; align-items: center; gap: 0.5rem;">
-                        <input type="checkbox" id="new-row-is-rollover" style="width: 1rem; height: 1rem; accent-color: var(--primary); cursor: pointer;">
-                        <label for="new-row-is-rollover" style="font-size: 0.8rem; font-weight: 500; color: var(--text-strong); cursor: pointer;">Roll Over Unspent Budget (YTD)</label>
-                    </div>
+                    <div style="height: 1px; background: var(--border);"></div>
                     
-                    <div style="height: 1px; background: var(--border); margin: 0.25rem 0;"></div>
+                    <label class="form-group" style="flex-direction: row; align-items: center; gap: 0.75rem; cursor: pointer;">
+                        <input type="checkbox" id="new-row-is-yearly" onchange="toggleAddYearly()" style="width: 1.25rem; height: 1.25rem; accent-color: var(--primary);">
+                        <span style="font-size: 0.9rem; font-weight: 500; color: var(--text-strong);">Sinking Fund (Divides total by 12)</span>
+                    </label>
                     
-                    <div class="form-group" style="flex-direction: row; align-items: center; gap: 0.5rem;">
-                        <input type="checkbox" id="new-row-is-yearly" onchange="toggleAddYearly()" style="width: 1rem; height: 1rem; accent-color: var(--primary); cursor: pointer;">
-                        <label for="new-row-is-yearly" style="font-size: 0.8rem; font-weight: 500; color: var(--text-strong); cursor: pointer;">Sinking Fund (Divides total by 12)</label>
-                    </div>
-                    
-                    <div class="form-group" style="flex-direction: row; align-items: center; gap: 0.5rem;">
-                        <input type="checkbox" id="new-row-is-sub" onchange="toggleAddSub()" style="width: 1rem; height: 1rem; accent-color: var(--primary); cursor: pointer;">
-                        <label for="new-row-is-sub" style="font-size: 0.8rem; font-weight: 500; color: var(--text-strong); cursor: pointer;">Mark as Subscription (Visual Badge)</label>
-                    </div>
+                    <label class="form-group" style="flex-direction: row; align-items: center; gap: 0.75rem; cursor: pointer;">
+                        <input type="checkbox" id="new-row-is-sub" onchange="toggleAddSub()" style="width: 1.25rem; height: 1.25rem; accent-color: var(--primary);">
+                        <span style="font-size: 0.9rem; font-weight: 500; color: var(--text-strong);">Mark as Subscription</span>
+                    </label>
                 </div>
 
-                <div id="new-sub-details" style="display: none; flex-direction: column; gap: 0.75rem; background: var(--bg-card); padding: 0.75rem; border-radius: var(--radius-md); border: 1px dashed var(--primary-border); margin-top: 0.5rem;">
+                <div id="new-sub-details" style="display: none; flex-direction: column; gap: 0.75rem; background: var(--bg-card); padding: 1rem; border-radius: var(--radius-md); border: 1px dashed var(--primary-border);">
                     <div class="form-group">
                         <label class="form-label" for="new-sub-type">Subscription Type</label>
                         <select id="new-sub-type" class="input-text">
@@ -635,7 +809,7 @@
                     </div>
                 </div>
 
-                <div class="form-group" style="margin-top: 0.5rem;">
+                <div class="form-group">
                     <label class="form-label" id="new-row-budget-label" for="new-row-budget">Monthly Budget</label>
                     <input type="number" id="new-row-budget" class="input-number" step="0.01" placeholder="0.00" required>
                 </div>
@@ -647,7 +821,7 @@
 
 <!-- Edit Row Modal -->
 <div id="edit-row-modal" class="modal-overlay">
-    <div class="modal-content" style="max-width: 24rem;">
+    <div class="modal-content" style="max-width: 26rem;">
         <div class="modal-header">
             <h3 class="modal-title">Edit Category</h3>
             <button onclick="closeEditRowModal()" class="btn-close">
@@ -662,27 +836,27 @@
                     <input type="text" id="edit-row-name" class="input-text" required>
                 </div>
                 
-                <div id="edit-options-wrapper" style="background: var(--bg-alt); padding: 0.75rem; border-radius: var(--radius-md); border: 1px solid var(--border); margin-top: 0.5rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                <div id="edit-options-wrapper" style="background: var(--bg-alt); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border); display: flex; flex-direction: column; gap: 0.75rem;">
                     
-                    <div class="form-group" style="flex-direction: row; align-items: center; gap: 0.5rem;">
-                        <input type="checkbox" id="edit-row-is-rollover" style="width: 1rem; height: 1rem; accent-color: var(--primary); cursor: pointer;">
-                        <label for="edit-row-is-rollover" style="font-size: 0.8rem; font-weight: 500; color: var(--text-strong); cursor: pointer;">Roll Over Unspent Budget (YTD)</label>
-                    </div>
+                    <label class="form-group" style="flex-direction: row; align-items: center; gap: 0.75rem; cursor: pointer;">
+                        <input type="checkbox" id="edit-row-is-rollover" style="width: 1.25rem; height: 1.25rem; accent-color: var(--primary);">
+                        <span style="font-size: 0.9rem; font-weight: 500; color: var(--text-strong);">Roll Over Unspent Budget</span>
+                    </label>
 
-                    <div style="height: 1px; background: var(--border); margin: 0.25rem 0;"></div>
+                    <div style="height: 1px; background: var(--border);"></div>
 
-                    <div class="form-group" id="edit-yearly-wrapper" style="flex-direction: row; align-items: center; gap: 0.5rem;">
-                        <input type="checkbox" id="edit-row-is-yearly" onchange="toggleEditYearly()" style="width: 1rem; height: 1rem; accent-color: var(--primary); cursor: pointer;">
-                        <label for="edit-row-is-yearly" style="font-size: 0.8rem; font-weight: 500; color: var(--text-strong); cursor: pointer;">Sinking Fund (Divides total by 12)</label>
-                    </div>
+                    <label class="form-group" id="edit-yearly-wrapper" style="flex-direction: row; align-items: center; gap: 0.75rem; cursor: pointer;">
+                        <input type="checkbox" id="edit-row-is-yearly" onchange="toggleEditYearly()" style="width: 1.25rem; height: 1.25rem; accent-color: var(--primary);">
+                        <span style="font-size: 0.9rem; font-weight: 500; color: var(--text-strong);">Sinking Fund (Divides total by 12)</span>
+                    </label>
 
-                    <div class="form-group" id="edit-sub-wrapper" style="flex-direction: row; align-items: center; gap: 0.5rem;">
-                        <input type="checkbox" id="edit-row-is-sub" onchange="toggleEditSub()" style="width: 1rem; height: 1rem; accent-color: var(--primary); cursor: pointer;">
-                        <label for="edit-row-is-sub" style="font-size: 0.8rem; font-weight: 500; color: var(--text-strong); cursor: pointer;">Mark as Subscription (Visual Badge)</label>
-                    </div>
+                    <label class="form-group" id="edit-sub-wrapper" style="flex-direction: row; align-items: center; gap: 0.75rem; cursor: pointer;">
+                        <input type="checkbox" id="edit-row-is-sub" onchange="toggleEditSub()" style="width: 1.25rem; height: 1.25rem; accent-color: var(--primary);">
+                        <span style="font-size: 0.9rem; font-weight: 500; color: var(--text-strong);">Mark as Subscription</span>
+                    </label>
                 </div>
 
-                <div id="edit-sub-details" style="display: none; flex-direction: column; gap: 0.75rem; background: var(--bg-card); padding: 0.75rem; border-radius: var(--radius-md); border: 1px dashed var(--primary-border); margin-top: 0.5rem;">
+                <div id="edit-sub-details" style="display: none; flex-direction: column; gap: 0.75rem; background: var(--bg-card); padding: 1rem; border-radius: var(--radius-md); border: 1px dashed var(--primary-border);">
                     <div class="form-group">
                         <label class="form-label" for="edit-sub-type">Subscription Type</label>
                         <select id="edit-sub-type" class="input-text">
@@ -700,11 +874,11 @@
                     </div>
                 </div>
 
-                <div class="form-group" style="margin-top: 0.5rem;">
+                <div class="form-group">
                     <label class="form-label" id="edit-row-budget-label" for="edit-row-budget">Monthly Budget</label>
                     <input type="number" id="edit-row-budget" class="input-number" step="0.01" required>
-                    <p id="edit-row-calc-warning" style="font-size: 0.75rem; color: var(--primary); margin-top: 0.25rem; display: none;">
-                        🔒 The budget for this row is calculated dynamically based on your Income rules.
+                    <p id="edit-row-calc-warning" style="font-size: 0.8rem; color: var(--primary); margin-top: 0.25rem; display: none; line-height: 1.4;">
+                        🔒 Budget is calculated dynamically via Income rules.
                     </p>
                 </div>
                 <button type="submit" class="btn-add">Save Changes</button>
@@ -739,13 +913,13 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label">Source Income</label>
-                        <div id="new-rule-source-container" class="input-text" style="height: auto; max-height: 140px; overflow-y: auto; padding: 0.75rem;"></div>
+                        <div id="new-rule-source-container" class="input-text" style="height: auto; max-height: 160px; overflow-y: auto; padding: 0.75rem;"></div>
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="new-rule-pct">Percentage To Allocate (%)</label>
                         <div style="display: flex; align-items: center; gap: 0.5rem;">
                             <input type="number" id="new-rule-pct" class="input-number" step="0.1" placeholder="e.g. 5">
-                            <button type="button" id="btn-submit-rule" onclick="handleSaveCustomRule()" class="btn-add" style="margin-top: 0; width: auto; padding: 0.75rem 1.5rem;">Add Rule</button>
+                            <button type="button" id="btn-submit-rule" onclick="handleSaveCustomRule()" class="btn-add" style="margin-top: 0; width: auto; padding: 0.75rem 1.5rem;">Add</button>
                         </div>
                     </div>
                 </div>
@@ -784,20 +958,18 @@
     let pieChartInstance = null;
     let barChartInstance = null;
 
-    // --- NEW SMART DATE HELPER ---
+    // --- SMART DATE HELPER ---
     function getSmartDateDefault(targetMonthStr) {
         const today = new Date();
         const [mName, yStr] = targetMonthStr.split(' ');
         const mIdx = monthNames.indexOf(mName);
 
-        // If the user is viewing the current calendar month, default to EXACTLY today.
         if (today.getFullYear() === parseInt(yStr) && today.getMonth() === mIdx) {
             const y = today.getFullYear();
             const m = String(today.getMonth() + 1).padStart(2, '0');
             const d = String(today.getDate()).padStart(2, '0');
             return `${y}-${m}-${d}`;
         } else {
-            // If they are viewing a past/future month, lock the Year and Month to that view!
             const mPad = String(mIdx + 1).padStart(2, '0');
             return `${yStr}-${mPad}-01`;
         }
@@ -868,8 +1040,8 @@
     let collapsedSections = { income: false, necessary: false, discretionary: false, investments: false };
     let calculationRules = [];
 
-    const STORAGE_KEY = 'budgetAppV12'; 
-    const RULES_KEY = 'budgetRulesV3';
+    const STORAGE_KEY = 'budgetAppV13'; 
+    const RULES_KEY = 'budgetRulesV4';
 
     function loadLocalData() {
         const saved = localStorage.getItem(STORAGE_KEY);
@@ -956,7 +1128,6 @@
         let csvContent = "data:text/csv;charset=utf-8,";
         csvContent += "Date,Month,Year,Section,Category,Description,Amount\r\n";
 
-        // Sort months chronologically
         const sortedMonths = Object.keys(budgetData).sort((a, b) => {
             const [mA, yA] = a.split(' '); const [mB, yB] = b.split(' ');
             return new Date(`${mA} 1, ${yA}`) - new Date(`${mB} 1, ${yB}`);
@@ -968,7 +1139,6 @@
                 budgetData[monthStr][sec].forEach(item => {
                     if (item.transactions && item.transactions.length > 0) {
                         item.transactions.forEach(tx => {
-                            // Escape commas and quotes in description
                             const desc = `"${(tx.desc || '').replace(/"/g, '""')}"`;
                             csvContent += `${tx.date},${mName},${yStr},${sec},"${item.name}",${desc},${tx.amount}\r\n`;
                         });
@@ -1045,13 +1215,11 @@
 
     const sumTransactions = (transactions) => transactions.reduce((acc, curr) => acc + curr.amount, 0);
 
-    // NEW: Calculate Rollover (YTD)
     function calculateRollover(secId, targetName, targetMonthStr) {
         const [currMName, currYStr] = targetMonthStr.split(' ');
         const mIdx = monthNames.indexOf(currMName);
         let rollover = 0;
         
-        // Loop from Jan up to the month BEFORE the current month
         for (let i = 0; i < mIdx; i++) {
             const checkMonth = `${monthNames[i]} ${currYStr}`;
             if (budgetData[checkMonth]) {
@@ -1094,9 +1262,7 @@
             rolloverAmt = calculateRollover(secId, item.name, currentTargetMonthStr);
         }
         
-        // Display Budget is Base + Rollover
         let budget = baseBudget + rolloverAmt;
-
         return { budget, actual, isCalculated, calcDesc, suggestedActual, baseBudget, rolloverAmt };
     }
 
@@ -1137,9 +1303,15 @@
         document.getElementById('view-yearly').classList.toggle('hidden', view !== 'yearly');
         document.getElementById('view-analytics').classList.toggle('hidden', view !== 'analytics');
         
+        // Desktop Top Toggles
         document.getElementById('tab-monthly').classList.toggle('active', view === 'monthly');
         document.getElementById('tab-yearly').classList.toggle('active', view === 'yearly');
         document.getElementById('tab-analytics').classList.toggle('active', view === 'analytics');
+        
+        // Mobile Bottom Nav Toggles
+        document.getElementById('nav-monthly').classList.toggle('active', view === 'monthly');
+        document.getElementById('nav-yearly').classList.toggle('active', view === 'yearly');
+        document.getElementById('nav-analytics').classList.toggle('active', view === 'analytics');
         
         if (view === 'monthly') renderMonthly(); 
         else if (view === 'yearly') renderYearly();
@@ -1274,7 +1446,6 @@
             select.appendChild(optgroup);
         });
 
-        // Inject the new Smart Date here!
         document.getElementById('qa-date').value = getSmartDateDefault(currentMonthStr);
 
         setTimeout(() => document.getElementById('qa-amount').focus(), 100);
@@ -1380,7 +1551,7 @@
                 const transactionCount = item.transactions.length;
                 const badgeHtml = transactionCount > 0 ? `<span class="badge">${transactionCount}</span>` : '';
                 const amtClass = vals.actual === 0 ? 'amount zero' : 'amount';
-                const openIconHtml = `<svg class="action-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>`;
+                const openIconHtml = `<svg class="action-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>`;
                 const calcBadge = `<span class="calc-badge" title="${vals.calcDesc}"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg> Auto</span>`;
 
                 let yearlyBadge = '';
@@ -1413,44 +1584,51 @@
                     rolloverBadge = `<span class="yearly-badge" style="border-color:var(--primary); color:var(--primary)" title="YTD Rollover added to base budget">🔄 Roll: ${sign}${formatCurrency(vals.rolloverAmt)}</span>`;
                 }
 
-                const targetHtml = vals.isCalculated ? `<div style="font-size: 0.65rem; color: var(--primary); text-align: right; margin-top: 0.15rem; font-weight: 600;">Target: ${formatCurrency(vals.suggestedActual)}</div>` : '';
+                const targetHtml = vals.isCalculated ? `<div style="font-size: 0.75rem; color: var(--primary); margin-top: 0.25rem; font-weight: 600;">Target: ${formatCurrency(vals.suggestedActual)}</div>` : '';
 
+                // SMART ROW LAYOUT (Mobile Grid -> Desktop Flex/Grid)
                 rowsHtml += `
-                    <tr class="table-row">
-                        <td class="cat-name">
-                            <div class="cat-name-wrapper">
-                                <span>${item.name}</span>
-                                <div style="display: flex; gap: 0.25rem; flex-wrap: wrap;">
-                                    ${vals.isCalculated ? calcBadge : ''} 
-                                    ${yearlyBadge}
-                                    ${subBadge}
-                                    ${rolloverBadge}
-                                </div>
+                    <div class="grid-row">
+                        <div class="g-col-name">
+                            <span class="cat-name-text">${item.name}</span>
+                            <div class="badges-wrapper">
+                                ${vals.isCalculated ? calcBadge : ''} 
+                                ${yearlyBadge}
+                                ${subBadge}
+                                ${rolloverBadge}
                             </div>
-                        </td>
-                        <td class="text-right">${formatCurrency(vals.budget)}</td>
-                        <td class="text-right">
-                            <div class="actual-cell-wrapper">
+                        </div>
+                        
+                        <div class="g-col-budget">${formatCurrency(vals.budget)}</div>
+                        
+                        <div class="g-col-actual">
+                            <div class="actual-content">
                                 <button onclick="openModal('${sec.id}', ${idx})" class="btn-actual">
                                     <span class="${amtClass}">${formatCurrency(vals.actual)}</span>
-                                    ${badgeHtml} ${openIconHtml}
+                                    <span class="mobile-budget-context mobile-hide">of ${formatCurrency(vals.budget)}</span>
+                                    <div>${badgeHtml} ${openIconHtml}</div>
                                 </button>
+                            </div>
+                            <div style="width: 100%;">
                                 ${progressBarHtml}
+                                ${targetHtml}
                             </div>
-                            ${targetHtml}
-                        </td>
-                        <td class="text-right val-diff ${diffClass}">${diffText}</td>
-                        <td style="padding: 0 0.25rem; width: 40px;">
-                            <div class="action-buttons-wrapper">
-                                <button class="btn-row-action" onclick="openEditRowModal('${sec.id}', ${idx})" title="Edit Category">
-                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-                                </button>
-                                <button class="btn-row-action delete" onclick="deleteRow('${sec.id}', ${idx})" title="Delete Category">
-                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
+                        </div>
+                        
+                        <div class="g-col-diff">
+                            <span class="mobile-hide" style="color: var(--text-muted);">Diff:</span>
+                            <span class="val-diff ${diffClass}">${diffText}</span>
+                        </div>
+                        
+                        <div class="g-col-actions">
+                            <button class="btn-row-action" onclick="openEditRowModal('${sec.id}', ${idx})" title="Edit Category">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                            </button>
+                            <button class="btn-row-action delete" onclick="deleteRow('${sec.id}', ${idx})" title="Delete Category">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </button>
+                        </div>
+                    </div>
                 `;
             });
 
@@ -1458,20 +1636,27 @@
             const sectionHtml = `
                 <div class="section-card">
                     <div class="section-header ${isCollapsed ? 'collapsed' : ''}" onclick="toggleSection('${sec.id}')">
-                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <div class="section-header-title">
                             <svg class="icon-collapse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                             <h2 class="section-title">${sec.title}</h2>
                         </div>
                         <div class="section-totals">
-                            Budget: <span class="val-budget">${formatCurrency(sectionTotalBudget)}</span> <span class="divider">|</span> Actual: <span class="val-actual">${formatCurrency(sectionTotalActual)}</span>
+                            <div class="tot-block"><span class="tot-lbl">Budget</span> <span class="val-budget">${formatCurrency(sectionTotalBudget)}</span></div>
+                            <div class="tot-block"><span class="tot-lbl">Actual</span> <span class="val-actual">${formatCurrency(sectionTotalActual)}</span></div>
                         </div>
                     </div>
                     <div class="${isCollapsed ? 'hidden' : ''}">
-                        <div style="overflow-x: auto;">
-                            <table>
-                                <thead><tr><th style="width: 35%;">Category</th><th style="width: 20%;" class="text-right">Budget</th><th style="width: 20%;" class="text-right">Actual</th><th style="width: 20%;" class="text-right">Diff</th><th style="width: 5%;"></th></tr></thead>
-                                <tbody>${rowsHtml}</tbody>
-                            </table>
+                        <div class="grid-table">
+                            <div class="grid-header">
+                                <div>Category</div>
+                                <div class="text-right">Budget</div>
+                                <div class="text-right">Actual</div>
+                                <div class="text-right">Diff</div>
+                                <div></div>
+                            </div>
+                            <div class="grid-body">
+                                ${rowsHtml}
+                            </div>
                         </div>
                         <button class="btn-add-row" onclick="openRowModal('${sec.id}')">+ Add New Category</button>
                     </div>
@@ -1516,14 +1701,8 @@
 
     function renderYearly() {
         const year = document.getElementById('year-selector').value;
-        const thead = document.getElementById('yearly-thead');
-        const tbody = document.getElementById('yearly-tbody');
+        const container = document.getElementById('yearly-container');
         const yearMonths = monthNames.map(m => `${m} ${year}`);
-
-        let headHtml = `<tr><th>Category</th>`;
-        monthNames.forEach(m => headHtml += `<th class="text-right">${m}</th>`);
-        headHtml += `<th class="text-right col-ytd">YTD Total</th></tr>`;
-        thead.innerHTML = headHtml;
 
         let html = '';
 
@@ -1553,17 +1732,56 @@
                 rowData.remaining.total += remaining;
             });
 
+            // 1. Build Mobile Cards (Only shows on mobile via CSS)
+            let mobileHtml = `<div class="yearly-mobile-cards mobile-only">`;
+            Object.keys(rowData).forEach(key => {
+                const r = rowData[key];
+                let monthsHtml = '';
+                r.vals.forEach((val, idx) => {
+                    monthsHtml += `<div class="y-month-pill"><span class="y-m-name">${monthNames[idx]}</span><span class="y-m-val">${val === 0 ? '-' : formatCurrency(val)}</span></div>`;
+                });
+                
+                mobileHtml += `
+                    <div class="y-summary-card ${r.isBold ? 'highlight' : ''}">
+                        <div class="y-card-top">
+                            <span class="y-card-title">${r.title}</span>
+                            <span class="y-card-ytd">${formatCurrency(r.total)} <small>YTD Total</small></span>
+                        </div>
+                        <div class="y-card-months-scroll">
+                            ${monthsHtml}
+                        </div>
+                    </div>
+                `;
+            });
+            mobileHtml += `</div>`;
+
+            // 2. Build Desktop Table (Only shows on desktop via CSS)
+            let desktopHtml = `
+            <div class="section-card desktop-only">
+                <div class="table-wrapper">
+                    <table class="table-yearly">
+                        <thead>
+                            <tr><th>Category</th>`;
+            monthNames.forEach(m => desktopHtml += `<th class="text-right">${m}</th>`);
+            desktopHtml += `<th class="text-right col-ytd">YTD Total</th></tr>
+                        </thead>
+                        <tbody>`;
+            
             Object.keys(rowData).forEach((key, index) => {
                 const r = rowData[key];
                 const rowClass = r.isBold ? 'row-bold' : (index % 2 === 0 ? '' : 'row-alt');
-                html += `<tr class="table-row ${rowClass}"><td style="font-weight: ${r.isBold ? '700' : '500'};">${r.title}</td>`;
-                r.vals.forEach(val => html += `<td class="text-right">${val === 0 ? '-' : formatCurrency(val)}</td>`);
-                html += `<td class="text-right col-ytd">${formatCurrency(r.total)}</td></tr>`;
-                if(key === 'discretionaryExp') html += `<tr class="table-row spacer-row"><td colspan="14"></td></tr>`;
+                desktopHtml += `<tr class="table-row ${rowClass}"><td style="font-weight: ${r.isBold ? '700' : '500'};">${r.title}</td>`;
+                r.vals.forEach(val => desktopHtml += `<td class="text-right">${val === 0 ? '-' : formatCurrency(val)}</td>`);
+                desktopHtml += `<td class="text-right col-ytd">${formatCurrency(r.total)}</td></tr>`;
+                if(key === 'discretionaryExp') desktopHtml += `<tr class="table-row spacer-row"><td colspan="14"></td></tr>`;
             });
-        } else {
-            const sections = [{ id: 'income', title: 'Income' }, { id: 'necessary', title: 'Necessary Expenses' }, { id: 'discretionary', title: 'Discretionary Expenses' }, { id: 'investments', title: 'Investments / Savings' }];
+            desktopHtml += `</tbody></table></div></div>`;
             
+            html = mobileHtml + desktopHtml;
+
+        } else {
+            // Detailed View - Uses traditional table for both desktop & mobile but optimized
+            const sections = [{ id: 'income', title: 'Income' }, { id: 'necessary', title: 'Necessary Expenses' }, { id: 'discretionary', title: 'Discretionary Expenses' }, { id: 'investments', title: 'Investments / Savings' }];
             let masterTemplate = { income: [], necessary: [], discretionary: [], investments: [] };
             
             if (budgetData[currentMonthStr]) {
@@ -1585,6 +1803,17 @@
                     });
                 }
             });
+
+            let tableHtml = `
+            <div class="section-card">
+                <div class="table-wrapper">
+                    <table class="table-yearly">
+                        <thead>
+                            <tr><th>Category</th>`;
+            monthNames.forEach(m => tableHtml += `<th class="text-right">${m}</th>`);
+            tableHtml += `<th class="text-right col-ytd">YTD Total</th></tr>
+                        </thead>
+                        <tbody>`;
 
             sections.forEach(sec => {
                 let sectionTotals = Array(12).fill(0); 
@@ -1609,7 +1838,7 @@
 
                 const isCollapsed = collapsedSections[sec.id];
                 
-                html += `<tr class="table-row row-bold" style="cursor: pointer;" onclick="toggleSection('${sec.id}')">
+                tableHtml += `<tr class="table-row row-bold" style="cursor: pointer;" onclick="toggleSection('${sec.id}')">
                     <td>
                         <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--primary-text);">
                             <svg class="icon-collapse" style="${isCollapsed ? 'transform: rotate(-90deg); transition: transform 0.2s;' : 'transition: transform 0.2s;'}" width="1.25rem" height="1.25rem" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
@@ -1618,21 +1847,23 @@
                     </td>`;
                 
                 sectionTotals.forEach(t => {
-                    html += `<td class="text-right">${t === 0 ? '-' : formatCurrency(t)}</td>`;
+                    tableHtml += `<td class="text-right">${t === 0 ? '-' : formatCurrency(t)}</td>`;
                 });
-                html += `<td class="text-right col-ytd">${formatCurrency(sectionYtdTotal)}</td></tr>`;
+                tableHtml += `<td class="text-right col-ytd">${formatCurrency(sectionYtdTotal)}</td></tr>`;
 
                 if (!isCollapsed) {
-                    html += rowsHtml;
+                    tableHtml += rowsHtml;
                 }
                 
-                html += `<tr class="table-row spacer-row"><td colspan="14"></td></tr>`;
+                tableHtml += `<tr class="table-row spacer-row"><td colspan="14"></td></tr>`;
             });
+            tableHtml += `</tbody></table></div></div>`;
+            html = tableHtml;
         }
-        tbody.innerHTML = html;
+        
+        container.innerHTML = html;
     }
 
-    // NEW: Analytics Render Function
     function renderAnalytics() {
         const monthDropdown = document.getElementById('analytics-month');
         const yearDropdown = document.getElementById('analytics-year');
@@ -1735,7 +1966,7 @@
         const item = budgetData[currentMonthStr][categoryType][itemIndex];
         const vals = getItemValues(categoryType, item, budgetData[currentMonthStr], currentMonthStr);
 
-        document.getElementById('modal-title').innerText = `${item.name} Transactions`;
+        document.getElementById('modal-title').innerText = `${item.name}`;
         const banner = document.getElementById('modal-target-banner');
         if (vals.isCalculated) {
             banner.innerHTML = `💡 Goal based on actual income: <strong>${formatCurrency(vals.suggestedActual)}</strong>`;
@@ -1745,7 +1976,6 @@
         document.getElementById('transaction-modal').classList.add('active');
         document.querySelector('#transaction-modal .add-form').reset();
         
-        // Inject the new Smart Date here!
         document.getElementById('tx-date').value = getSmartDateDefault(currentMonthStr); 
 
         editingTxIndex = null;
@@ -1804,7 +2034,6 @@
         editingTxIndex = null;
         document.querySelector('#transaction-modal .add-form').reset();
         
-        // Re-inject the Smart Date if they cancel an edit
         document.getElementById('tx-date').value = getSmartDateDefault(currentMonthStr); 
         
         document.getElementById('btn-add-tx').innerText = "Add Transaction";
@@ -1848,7 +2077,7 @@
     function openRowModal(secId) {
         activeRowSection = secId;
         const titles = { 'income': 'Income', 'necessary': 'Necessary Expenses', 'discretionary': 'Discretionary Expenses', 'investments': 'Investments' };
-        document.getElementById('row-modal-title').innerText = `Add New ${titles[secId]} Category`;
+        document.getElementById('row-modal-title').innerText = `Add New ${titles[secId]}`;
         document.getElementById('row-modal').classList.add('active');
         document.getElementById('add-row-form').reset();
         
@@ -2000,7 +2229,7 @@
     function openRulesModal() {
         editingRuleIndex = null; 
         document.getElementById('rule-form-title').innerText = "+ Create Custom Rule";
-        document.getElementById('btn-submit-rule').innerText = "Add Rule";
+        document.getElementById('btn-submit-rule').innerText = "Add";
 
         const list = document.getElementById('rules-list'); list.innerHTML = '';
         calculationRules.forEach((rule, idx) => {
@@ -2014,7 +2243,7 @@
                     <div style="font-weight: 600; color: var(--text-strong); margin-bottom: 0.25rem; padding-right: 5rem;">${rule.name}</div>
                     <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.75rem;">Source: ${rule.sources === 'ALL' ? 'Total Income' : rule.sources.join(' + ')}</div>
                     <div style="display: flex; align-items: center; gap: 0.5rem;">
-                        <input type="number" id="rule-input-${idx}" class="input-number" style="text-align: left; width: 6rem; padding: 0.35rem 0.5rem;" step="0.1" value="${currentPct}" required>
+                        <input type="number" id="rule-input-${idx}" class="input-number" style="text-align: left; width: 6rem; padding: 0.5rem;" step="0.1" value="${currentPct}" required>
                         <span style="font-weight: 500; color: var(--text-muted);">%</span>
                     </div>
                 </div>
@@ -2032,13 +2261,13 @@
         const sourceContainer = document.getElementById('new-rule-source-container');
         sourceContainer.innerHTML = `
             <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; cursor: pointer;">
-                <input type="checkbox" id="rule-source-all" value="ALL" onchange="toggleAllSources(this)" checked style="width: 1rem; height: 1rem; accent-color: var(--primary);">
+                <input type="checkbox" id="rule-source-all" value="ALL" onchange="toggleAllSources(this)" checked style="width: 1.25rem; height: 1.25rem; accent-color: var(--primary);">
                 <span style="font-weight: 600; color: var(--text-strong);">Total Income (All)</span>
             </label><div style="height: 1px; background: var(--border); margin: 0.5rem 0;"></div>`;
         budgetData[currentMonthStr].income.forEach(item => {
             sourceContainer.innerHTML += `
-                <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.35rem; cursor: pointer;">
-                    <input type="checkbox" class="rule-source-cb" value="${item.name}" disabled style="width: 1rem; height: 1rem; accent-color: var(--primary);">
+                <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; cursor: pointer;">
+                    <input type="checkbox" class="rule-source-cb" value="${item.name}" disabled style="width: 1.25rem; height: 1.25rem; accent-color: var(--primary);">
                     <span style="color: var(--text-main);">${item.name}</span>
                 </label>`;
         });
@@ -2067,7 +2296,7 @@
         editingRuleIndex = idx;
         const rule = calculationRules[idx];
         document.getElementById('rule-form-title').innerText = "✎ Edit Custom Rule";
-        document.getElementById('btn-submit-rule').innerText = "Update Rule";
+        document.getElementById('btn-submit-rule').innerText = "Update";
         document.getElementById('new-rule-target').value = `${rule.category}|${rule.name}`;
         
         const isAll = rule.sources === 'ALL';
@@ -2142,7 +2371,7 @@
 
     async function initCloud() {
         try {
-            document.getElementById('sync-status').innerText = "☁️ Connecting...";
+            document.getElementById('sync-status').innerText = "☁️ Connecting";
             
             const appModule = await import('https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js');
             const authModule = await import('https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js');
@@ -2168,7 +2397,7 @@
             setupCloudSync(fsModule);
         } catch (e) {
             console.warn("Cloud failed. Using local browser memory.", e);
-            document.getElementById('sync-status').innerText = "⚠️ Offline Mode";
+            document.getElementById('sync-status').innerText = "⚠️ Offline";
             loadLocalData();
             renderApp();
         }
@@ -2200,7 +2429,7 @@
             }
         }, (err) => {
             console.error("Sync error", err);
-            document.getElementById('sync-status').innerText = "⚠️ Offline Mode";
+            document.getElementById('sync-status').innerText = "⚠️ Offline";
         });
     }
 
@@ -2209,7 +2438,7 @@
         localStorage.setItem(RULES_KEY, JSON.stringify(calculationRules));
 
         if (!skipCloud && db && setDoc_fn && doc_fn) {
-            document.getElementById('sync-status').innerText = "☁️ Saving...";
+            document.getElementById('sync-status').innerText = "☁️ Saving";
             const docRef = doc_fn(db, 'budget_data', 'master_save');
             try {
                 const saveTask = setDoc_fn(docRef, { budgetData: budgetData, calculationRules: calculationRules });
@@ -2219,7 +2448,7 @@
                 document.getElementById('sync-status').innerText = "☁️ Synced";
             } catch(e) {
                 console.error("Cloud Save Failed", e);
-                document.getElementById('sync-status').innerText = "⚠️ Offline Mode";
+                document.getElementById('sync-status').innerText = "⚠️ Offline";
             }
         }
     };
