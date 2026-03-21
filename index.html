@@ -154,10 +154,10 @@
         .summary-label-wrapper { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.25rem; gap: 0.25rem; }
         .summary-label { font-size: 0.6rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); line-height: 1.2; word-wrap: break-word;}
         @media (min-width: 768px) { .summary-label { font-size: 0.75rem; } }
-        .pct-badge { font-size: 0.6rem; font-weight: 600; background: var(--bg-alt); color: var(--text-muted); padding: 0.15rem 0.3rem; border-radius: var(--radius-sm); }
+        .pct-badge { font-size: 0.6rem; font-weight: 600; background: var(--bg-alt); color: var(--text-muted); padding: 0.15rem 0.3rem; border-radius: var(--radius-sm); font-variant-numeric: tabular-nums; }
         .summary-card.highlight .summary-label { color: var(--primary); }
         .summary-card.highlight .pct-badge { background: var(--primary-badge-bg); color: var(--primary); }
-        .summary-value { font-size: 1.05rem; font-weight: 700; color: var(--text-strong); margin-top: auto; }
+        .summary-value { font-size: 1.05rem; font-weight: 700; color: var(--text-strong); margin-top: auto; font-variant-numeric: tabular-nums; }
         @media (min-width: 768px) { .summary-value { font-size: 1.5rem; } }
         .summary-card.highlight .summary-value { color: var(--primary-text); }
 
@@ -169,8 +169,8 @@
         .section-totals { display: flex; width: 100%; gap: 0.5rem; background: var(--bg-card); padding: 0.5rem; border-radius: var(--radius-md); border: 1px solid var(--border); justify-content: space-around; box-shadow: var(--shadow-sm); }
         .tot-block { display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .tot-lbl { font-size: 0.65rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; letter-spacing: 0.05em; }
-        .val-budget { color: var(--text-muted); font-weight: 600; font-size: 0.85rem; margin: 0; }
-        .val-actual { color: var(--text-strong); font-weight: 700; font-size: 0.85rem; margin: 0; }
+        .val-budget { color: var(--text-muted); font-weight: 600; font-size: 0.85rem; margin: 0; font-variant-numeric: tabular-nums; }
+        .val-actual { color: var(--text-strong); font-weight: 700; font-size: 0.85rem; margin: 0; font-variant-numeric: tabular-nums; }
         
         @media (min-width: 768px) { 
             .section-header { flex-direction: row; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; gap: 0; } 
@@ -195,7 +195,7 @@
             scroll-snap-type: x mandatory;
             scrollbar-width: none;
             -ms-overflow-style: none;
-            -webkit-overflow-scrolling: touch; /* Momentum scrolling on iOS */
+            -webkit-overflow-scrolling: touch;
             background: var(--bg-card);
             border-bottom: 1px solid var(--border-light);
             transition: background-color 0.15s ease;
@@ -214,10 +214,10 @@
         }
         
         .grid-row {
-            flex: 0 0 100%; /* Takes full width of device to force snap */
+            flex: 0 0 100%;
             scroll-snap-align: start;
             display: grid;
-            grid-template-columns: 1fr; /* Stacked layout on mobile */
+            grid-template-columns: 1fr;
             gap: 0.25rem 0.5rem;
             padding: 0.75rem 1rem;
             align-items: center;
@@ -246,7 +246,7 @@
         .g-col-budget { display: none; }
         .g-col-actual { display: flex; flex-direction: column; align-items: stretch; gap: 0.15rem; margin-top: 0.1rem; grid-column: 1 / -1; }
         .g-col-diff { display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; margin-top: 0.25rem; grid-column: 1 / -1; }
-        .g-col-actions { display: none; } /* Standard actions hidden on mobile, swipe actions used instead */
+        .g-col-actions { display: none; }
 
         /* DESKTOP LAYOUT (Kills swipe, turns into normal grid) */
         @media (min-width: 768px) {
@@ -258,20 +258,16 @@
                 padding: 1rem 1.5rem;
                 border-bottom: 1px solid var(--border-light);
             }
-            .swipe-actions { display: none; } /* Hide the swipe container */
+            .swipe-actions { display: none; }
             
             .g-col-name { flex-direction: row; align-items: center; grid-column: auto; }
-            .g-col-budget { display: block; text-align: right; color: var(--text-muted); font-size: 0.875rem; }
+            .g-col-budget { display: block; text-align: right; color: var(--text-muted); font-size: 0.875rem; font-variant-numeric: tabular-nums; }
             .g-col-actual { margin-top: 0; align-items: flex-end; grid-column: auto; }
             .g-col-diff { margin-top: 0; justify-content: flex-end; font-size: 0.875rem; grid-column: auto; }
             .g-col-actions { display: flex; grid-column: auto; margin-top: 0; justify-content: flex-end; opacity: 0; pointer-events: none; transition: opacity 0.2s;}
             .grid-row:hover .g-col-actions { opacity: 1; pointer-events: auto; }
             
-            .g-col-actions .btn-row-action {
-                background: transparent;
-                border: none;
-                padding: 0.35rem;
-            }
+            .g-col-actions .btn-row-action { background: transparent; border: none; padding: 0.35rem; }
         }
 
         .cat-name-text { font-weight: 500; color: var(--text-strong); font-size: 0.95rem; }
@@ -281,9 +277,7 @@
         
         .btn-row-action { background: var(--bg-alt); border: 1px solid var(--border); color: var(--text-muted); cursor: pointer; padding: 0.4rem; border-radius: var(--radius-sm); transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
         .btn-row-action svg { width: 1.1rem; height: 1.1rem; }
-        @media (min-width: 768px) { 
-            .btn-row-action { color: var(--text-light); }
-        }
+        @media (min-width: 768px) { .btn-row-action { color: var(--text-light); } }
         .btn-row-action:hover { color: var(--primary); background: var(--primary-bg); }
         .btn-row-action.delete:hover { color: var(--danger); background: var(--danger-bg); }
 
@@ -307,7 +301,7 @@
         .btn-actual { display: inline-flex; align-items: center; justify-content: space-between; width: 100%; background: transparent; border: none; cursor: pointer; font-size: inherit; font-family: inherit; padding: 0.2rem 0; border-radius: var(--radius-sm); transition: color 0.2s; }
         @media (min-width: 768px) { .btn-actual { justify-content: flex-end; padding: 0.25rem 0; } }
         .btn-actual:hover { color: var(--primary); }
-        .btn-actual .amount { font-weight: 600; color: var(--text-strong); font-size: 1.05rem; }
+        .btn-actual .amount { font-weight: 600; color: var(--text-strong); font-size: 1.05rem; font-variant-numeric: tabular-nums; }
         @media (min-width: 768px) { .btn-actual .amount { font-size: 0.875rem; } }
         .btn-actual .amount.zero { color: var(--text-light); font-weight: 400; }
         .btn-actual .amount.unplanned { color: var(--warning); }
@@ -338,18 +332,9 @@
         td { padding: 0.85rem 0.5rem; color: var(--text-muted); white-space: nowrap; vertical-align: middle; border-bottom: 1px solid var(--border-light); background-color: transparent; }
         @media (min-width: 768px) { td { padding: 1rem 1.5rem; } }
         
-        .table-yearly th:first-child, .table-yearly td:first-child { 
-            position: sticky; left: 0; z-index: 10; 
-            background-color: var(--bg-card); 
-            font-weight: 600; color: var(--text-strong);
-        }
-        .table-yearly th:first-child::after, .table-yearly td:first-child::after {
-            content: ''; position: absolute; top: 0; right: -6px; bottom: 0; width: 6px;
-            background: linear-gradient(to right, rgba(0,0,0,0.08), transparent); pointer-events: none;
-        }
-        [data-theme="dark"] .table-yearly th:first-child::after, [data-theme="dark"] .table-yearly td:first-child::after {
-            background: linear-gradient(to right, rgba(0,0,0,0.4), transparent);
-        }
+        .table-yearly th:first-child, .table-yearly td:first-child { position: sticky; left: 0; z-index: 10; background-color: var(--bg-card); font-weight: 600; color: var(--text-strong); }
+        .table-yearly th:first-child::after, .table-yearly td:first-child::after { content: ''; position: absolute; top: 0; right: -6px; bottom: 0; width: 6px; background: linear-gradient(to right, rgba(0,0,0,0.08), transparent); pointer-events: none; }
+        [data-theme="dark"] .table-yearly th:first-child::after, [data-theme="dark"] .table-yearly td:first-child::after { background: linear-gradient(to right, rgba(0,0,0,0.4), transparent); }
         .table-yearly tr.row-alt td:first-child { background-color: var(--row-alt-bg); }
         .table-yearly tr.row-bold td:first-child { background-color: var(--primary-bg); }
 
@@ -368,7 +353,7 @@
         .y-card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem; padding-right: 1rem; gap: 0.75rem;}
         .y-card-title { font-weight: 600; color: var(--text-strong); font-size: 0.95rem; }
         .y-summary-card.highlight .y-card-title { color: var(--primary-text); font-weight: 700; }
-        .y-card-ytd { font-weight: 700; color: var(--text-strong); font-size: 1.1rem; text-align: right; line-height: 1.1; }
+        .y-card-ytd { font-weight: 700; color: var(--text-strong); font-size: 1.1rem; text-align: right; line-height: 1.1; font-variant-numeric: tabular-nums; }
         .y-card-ytd small { display: block; font-size: 0.65rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; margin-top: 0.1rem; }
         .y-summary-card.highlight .y-card-ytd { color: var(--primary); }
         .y-summary-card.highlight .y-card-ytd small { color: var(--primary-text); opacity: 0.8; }
@@ -380,7 +365,7 @@
         .y-month-pill { display: flex; flex-direction: column; background: var(--bg-alt); padding: 0.6rem 0.85rem; border-radius: var(--radius-md); min-width: 85px; align-items: center; scroll-snap-align: start; border: 1px solid var(--border-light); }
         .y-summary-card.highlight .y-month-pill { background: var(--bg-card); border-color: var(--primary-border); }
         .y-m-name { font-size: 0.65rem; text-transform: uppercase; font-weight: 700; color: var(--text-muted); margin-bottom: 0.25rem; letter-spacing: 0.05em; }
-        .y-m-val { font-size: 0.9rem; font-weight: 600; color: var(--text-strong); }
+        .y-m-val { font-size: 0.9rem; font-weight: 600; color: var(--text-strong); font-variant-numeric: tabular-nums; }
         .y-summary-card.highlight .y-m-name { color: var(--primary); opacity: 0.8; }
         .y-summary-card.highlight .y-m-val { color: var(--primary-text); }
 
@@ -391,10 +376,24 @@
             .desktop-only { display: block !important; } 
         }
 
+        /* ACCOUNTS TAB STYLES */
+        .accounts-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1.5rem; }
+        .nw-label { font-size: 0.875rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 0.25rem; }
+        .nw-value { font-size: 2.2rem; font-weight: 700; color: var(--text-strong); font-variant-numeric: tabular-nums; line-height: 1; }
+        .account-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 1.25rem; margin-bottom: 1rem; box-shadow: var(--shadow-sm); display: flex; justify-content: space-between; align-items: center; }
+        .acct-info { display: flex; flex-direction: column; gap: 0.25rem; }
+        .acct-name { font-weight: 600; color: var(--text-strong); font-size: 1.05rem; }
+        .acct-bal { font-size: 1.25rem; font-weight: 700; color: var(--text-strong); font-variant-numeric: tabular-nums; }
+        
+        .update-banner { background: var(--primary-bg); border: 1px solid var(--primary-border); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; }
+        .update-banner p { color: var(--primary-text); font-weight: 500; font-size: 0.875rem; margin: 0; }
+        .update-banner button { background: var(--primary); color: white; border: none; padding: 0.5rem 1rem; border-radius: var(--radius-sm); font-weight: 600; font-size: 0.8rem; cursor: pointer; }
+
         /* Analytics Tab Styles */
         .analytics-grid { display: grid; grid-template-columns: 1fr; gap: 1.5rem; margin-bottom: 2rem; }
         @media (min-width: 992px) { .analytics-grid { grid-template-columns: 1fr 1fr; } }
         .chart-container { background: var(--bg-card); padding: 1.5rem; border-radius: var(--radius-xl); border: 1px solid var(--border); box-shadow: var(--shadow-sm); display: flex; flex-direction: column; align-items: center; }
+        .chart-container.full-width { grid-column: 1 / -1; }
         .chart-header { width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
         .chart-title { font-weight: 600; color: var(--text-strong); }
         .chart-wrapper { width: 100%; max-width: 500px; aspect-ratio: 1 / 1; position: relative; }
@@ -423,52 +422,22 @@
         
         /* SWIPEABLE TRANSACTION ITEMS */
         .tx-scroll-wrapper {
-            display: flex;
-            overflow-x: auto;
-            scroll-snap-type: x mandatory;
-            scrollbar-width: none;
-            -ms-overflow-style: none;
-            -webkit-overflow-scrolling: touch;
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-md);
-            box-shadow: var(--shadow-sm);
-            transition: border-color 0.2s;
+            display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; -ms-overflow-style: none; -webkit-overflow-scrolling: touch;
+            background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); transition: border-color 0.2s;
         }
         .tx-scroll-wrapper::-webkit-scrollbar { display: none; }
         .tx-scroll-wrapper:hover { border-color: var(--text-muted); }
 
-        .tx-item {
-            flex: 0 0 100%;
-            scroll-snap-align: start;
-            display: flex; justify-content: space-between; align-items: center; 
-            padding: 1rem; background: transparent;
-        }
+        .tx-item { flex: 0 0 100%; scroll-snap-align: start; display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: transparent; }
         
-        .tx-swipe-actions {
-            flex: 0 0 auto;
-            display: flex;
-            align-items: center;
-            scroll-snap-align: end;
-            padding: 0 1rem;
-            gap: 0.5rem;
-            background: var(--bg-alt);
-            border-left: 1px solid var(--border);
-            box-shadow: inset 4px 0 8px rgba(0,0,0,0.02);
-        }
-        .tx-swipe-actions .btn-tx-action {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            padding: 0.6rem;
-            border-radius: var(--radius-sm);
-            box-shadow: var(--shadow-sm);
-        }
+        .tx-swipe-actions { flex: 0 0 auto; display: flex; align-items: center; scroll-snap-align: end; padding: 0 1rem; gap: 0.5rem; background: var(--bg-alt); border-left: 1px solid var(--border); box-shadow: inset 4px 0 8px rgba(0,0,0,0.02); }
+        .tx-swipe-actions .btn-tx-action { background: var(--bg-card); border: 1px solid var(--border); padding: 0.6rem; border-radius: var(--radius-sm); box-shadow: var(--shadow-sm); }
 
         .tx-info { display: flex; flex-direction: column; gap: 0.25rem; }
-        .tx-amount-large { font-size: 1.25rem; font-weight: 700; color: var(--text-strong); line-height: 1.2; }
+        .tx-amount-large { font-size: 1.25rem; font-weight: 700; color: var(--text-strong); line-height: 1.2; font-variant-numeric: tabular-nums; }
         .tx-desc-stack { font-size: 0.875rem; font-weight: 500; color: var(--text-strong); }
         .tx-date-stack { font-size: 0.7rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
-        .tx-actions { display: none; } /* Hidden on mobile */
+        .tx-actions { display: none; } 
         
         .btn-tx-action { background: transparent; border: none; color: var(--text-light); cursor: pointer; padding: 0.5rem; border-radius: var(--radius-sm); transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
         .btn-tx-action:hover { background: var(--bg-alt); }
@@ -493,7 +462,7 @@
 
         .modal-footer { padding: 1rem 1.5rem calc(1rem + env(safe-area-inset-bottom)); border-top: 1px solid var(--border); background: var(--bg-alt); display: flex; justify-content: space-between; align-items: center; }
         .footer-label { font-size: 0.875rem; font-weight: 500; color: var(--text-muted); }
-        .footer-total { font-size: 1.125rem; font-weight: 700; color: var(--text-strong); }
+        .footer-total { font-size: 1.125rem; font-weight: 700; color: var(--text-strong); font-variant-numeric: tabular-nums; }
 
         /* Floating Action Button */
         .fab { position: fixed; bottom: calc(1.5rem + var(--nav-height)); right: 1.5rem; width: 3.5rem; height: 3.5rem; background: var(--primary); color: white; border-radius: 9999px; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-xl); cursor: pointer; border: none; transition: transform 0.2s, background 0.2s; z-index: 40; }
@@ -524,10 +493,10 @@
             padding: 0.75rem 0;
             color: var(--text-muted);
             background: transparent; border: none;
-            font-size: 0.7rem; font-weight: 500;
+            font-size: 0.65rem; font-weight: 500;
             cursor: pointer; transition: color 0.2s;
         }
-        .nav-item svg { width: 1.5rem; height: 1.5rem; margin-bottom: 0.25rem; }
+        .nav-item svg { width: 1.35rem; height: 1.35rem; margin-bottom: 0.25rem; }
         .nav-item.active { color: var(--primary); }
 
         .hidden { display: none !important; }
@@ -548,31 +517,28 @@
         </div>
         
         <div style="display: flex; align-items: center; gap: 1rem;">
-            <!-- Desktop Tabs -->
-            <div class="view-toggle">
-                <button id="tab-monthly" onclick="switchView('monthly')" class="btn-toggle active">Monthly</button>
-                <button id="tab-yearly" onclick="switchView('yearly')" class="btn-toggle">Yearly</button>
-                <button id="tab-analytics" onclick="switchView('analytics')" class="btn-toggle">Analytics</button>
-            </div>
+            <!-- Dynamic Desktop Tabs -->
+            <div id="top-nav-container" class="view-toggle"></div>
             <button id="theme-toggle" class="theme-btn" onclick="toggleTheme()" title="Toggle Dark Mode">🌙</button>
         </div>
     </header>
 
+    <!-- GLOBAL MONTH/YEAR CONTROLS -->
+    <div id="global-month-controls" class="controls" style="margin-bottom: 1.5rem; display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+        <div style="display: flex; gap: 0.5rem; align-items: center; flex: 1; min-width: 200px;">
+            <select id="month-dropdown" class="month-selector" style="flex: 1;" onchange="handleTimeTravel()"></select>
+            <select id="year-dropdown" class="month-selector" style="flex: 1;" onchange="handleTimeTravel()"></select>
+        </div>
+        <div id="monthly-actions-container" style="display: flex; gap: 0.5rem; align-items: center; justify-content: flex-end;">
+            <button onclick="openRulesModal()" class="theme-btn" style="font-size: 0.85rem;">⚙️ Rules</button>
+            <button onclick="openReorderModal()" class="theme-btn" style="font-size: 0.85rem;">⇅ Reorder</button>
+            <button onclick="openSettingsModal()" class="theme-btn" style="font-size: 0.85rem;">💾 Data</button>
+            <button id="btn-undo" onclick="handleUndo()" class="theme-btn" style="display: none; background: var(--warning); color: #fff; border: none;" title="Undo Last Action">↩ Undo</button>
+        </div>
+    </div>
+
     <!-- MONTHLY PLANNER -->
     <div id="view-monthly">
-        <div class="controls">
-            <div style="display: flex; gap: 0.5rem; align-items: center; flex: 1; min-width: 250px;">
-                <select id="month-dropdown" class="month-selector" style="flex: 1;" onchange="handleTimeTravel()"></select>
-                <select id="year-dropdown" class="month-selector" style="flex: 1;" onchange="handleTimeTravel()"></select>
-            </div>
-            <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; justify-content: flex-end;">
-                <button onclick="openRulesModal()" class="theme-btn" style="font-size: 0.85rem;">⚙️ Rules</button>
-                <button onclick="openReorderModal()" class="theme-btn" style="font-size: 0.85rem;">⇅ Reorder</button>
-                <button onclick="openSettingsModal()" class="theme-btn" style="font-size: 0.85rem;">💾 Data</button>
-                <button id="btn-undo" onclick="handleUndo()" class="theme-btn" style="display: none; background: var(--warning); color: #fff; border: none;" title="Undo Last Action">↩ Undo</button>
-            </div>
-        </div>
-
         <div class="summary-grid">
             <div class="summary-card">
                 <div class="summary-label-wrapper">
@@ -606,9 +572,32 @@
         <div id="tables-container"></div>
     </div>
 
+    <!-- ACCOUNTS VIEW -->
+    <div id="view-accounts" class="hidden">
+        <div id="accounts-reminder" class="update-banner" style="display: none;">
+            <p>🗓️ It's a new month! Please verify your actual account balances.</p>
+            <button onclick="openAccountsModal()">Update Now</button>
+        </div>
+        
+        <div class="accounts-header">
+            <div>
+                <div class="nw-label">Total Net Worth</div>
+                <div class="nw-value" id="total-net-worth">$0.00</div>
+            </div>
+            <button onclick="openAccountsModal()" class="theme-btn" style="background: var(--primary-bg); color: var(--primary); border-color: var(--primary-border);">
+                <svg fill="none" stroke="currentColor" style="width: 1rem; height: 1rem; margin-right: 0.25rem;" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                Update Balances
+            </button>
+        </div>
+
+        <div id="accounts-container">
+            <!-- Populated by JS -->
+        </div>
+    </div>
+
     <!-- YEARLY SUMMARY -->
     <div id="view-yearly" class="hidden">
-        <div class="controls" style="justify-content: space-between;">
+        <div class="controls" style="justify-content: space-between; margin-bottom: 1.5rem;">
             <div class="view-toggle" style="display: flex; box-shadow: none; margin: 0;">
                 <button id="ytab-summary" onclick="setYearlyMode('summary')" class="btn-toggle active">Summary</button>
                 <button id="ytab-detailed" onclick="setYearlyMode('detailed')" class="btn-toggle">Detailed</button>
@@ -622,11 +611,19 @@
 
     <!-- ANALYTICS VIEW -->
     <div id="view-analytics" class="hidden">
-        <div class="controls" style="justify-content: flex-end;">
-            <select id="analytics-month" class="month-selector" style="width: auto;" onchange="renderAnalytics()"></select>
+        <div class="controls" style="justify-content: flex-end; margin-bottom: 1.5rem;">
+            <select id="analytics-month" class="month-selector" style="width: auto; margin-right: 0.5rem;" onchange="renderAnalytics()"></select>
             <select id="analytics-year" class="month-selector" style="width: auto;" onchange="renderAnalytics()"></select>
         </div>
         <div class="analytics-grid">
+            <div class="chart-container full-width">
+                <div class="chart-header">
+                    <h3 class="chart-title">Net Worth Trend (Yearly)</h3>
+                </div>
+                <div class="chart-wrapper bar">
+                    <canvas id="nwChart"></canvas>
+                </div>
+            </div>
             <div class="chart-container">
                 <div class="chart-header">
                     <h3 class="chart-title">Monthly Spending</h3>
@@ -647,25 +644,52 @@
     </div>
 </div>
 
-<!-- Mobile Bottom Navigation -->
-<nav class="bottom-nav">
-    <button id="nav-monthly" class="nav-item active" onclick="switchView('monthly')">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
-        Monthly
-    </button>
-    <button id="nav-yearly" class="nav-item" onclick="switchView('yearly')">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-        Yearly
-    </button>
-    <button id="nav-analytics" class="nav-item" onclick="switchView('analytics')">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path></svg>
-        Analytics
-    </button>
-</nav>
+<!-- Dynamic Mobile Bottom Navigation -->
+<nav id="bottom-nav-container" class="bottom-nav"></nav>
 
-<button class="fab" onclick="openQuickAddModal()" title="Quick Add Transaction">
+<button class="fab" id="main-fab" onclick="openQuickAddModal()" title="Quick Add Transaction">
     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg>
 </button>
+
+<!-- Tabs Reorder Modal -->
+<div id="tabs-reorder-modal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 26rem;">
+        <div class="modal-header">
+            <h3 class="modal-title">Reorder Navigation</h3>
+            <button onclick="closeTabsReorderModal()" class="btn-close">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+        <div class="modal-body">
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">Arrange the bottom navigation tabs to fit your workflow.</p>
+            <div id="tabs-reorder-list" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Accounts Update Modal -->
+<div id="accounts-modal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 28rem;">
+        <div class="modal-header">
+            <h3 class="modal-title">Update Month Balances</h3>
+            <button onclick="closeAccountsModal()" class="btn-close">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+        <div class="modal-body">
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">Update these balances to reflect your actual bank/brokerage accounts for <strong style="color: var(--text-strong);" id="acct-modal-month"></strong>.</p>
+            <form class="add-form" id="accounts-form" onsubmit="handleUpdateAccounts(event)">
+                <div id="accounts-input-list" style="display: flex; flex-direction: column; gap: 1rem;">
+                    <!-- Injected by JS -->
+                </div>
+                <button type="button" onclick="addAccountRow()" class="btn-add" style="background: var(--bg-alt); color: var(--text-strong); border: 1px dashed var(--border); box-shadow: none; margin-top: 1rem; font-size: 0.85rem;">+ Add New Account Tracker</button>
+                <button type="submit" class="btn-add" style="margin-top: 1.5rem;">Save Balances</button>
+            </form>
+        </div>
+    </div>
+</div>
 
 <!-- Custom Alert Modal -->
 <div id="alert-modal" class="modal-overlay" style="z-index: 100;">
@@ -736,6 +760,10 @@
             <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1.5rem;">Your app is securely synced to your private Firebase database.</p>
             
             <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                <button onclick="openTabsReorderModal()" class="btn-add" style="margin: 0; background: var(--bg-card); color: var(--text-strong); border: 1px solid var(--border);">📱 Reorder Navigation Tabs</button>
+
+                <div style="height: 1px; background: var(--border); margin: 0.5rem 0;"></div>
+
                 <button onclick="forceCloudSave()" class="btn-add" style="margin: 0; background: var(--primary-bg); color: var(--primary); border: 1px solid var(--primary-border);">⬆️ Force Push to Cloud</button>
                 
                 <div style="height: 1px; background: var(--border); margin: 0.5rem 0;"></div>
@@ -1015,6 +1043,8 @@
     window.closeSettingsModal = closeSettingsModal; window.forceCloudSave = forceCloudSave; window.forceSyncOrder = forceSyncOrder;
     window.toggleAddSub = toggleAddSub; window.toggleEditSub = toggleEditSub; window.exportToCSV = exportToCSV;
     window.closeCustomAlert = closeCustomAlert;
+    window.openAccountsModal = openAccountsModal; window.closeAccountsModal = closeAccountsModal; window.handleUpdateAccounts = handleUpdateAccounts; window.addAccountRow = addAccountRow;
+    window.openTabsReorderModal = openTabsReorderModal; window.closeTabsReorderModal = closeTabsReorderModal; window.moveNavigationTab = moveNavigationTab;
 
     const fullMonthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -1026,6 +1056,90 @@
     // Chart instances
     let pieChartInstance = null;
     let barChartInstance = null;
+    let nwChartInstance = null;
+
+    // --- NAVIGATION LOGIC ---
+    const TAB_DEFS = {
+        monthly: { label: 'Budget', icon: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>' },
+        accounts: { label: 'Accounts', icon: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>' },
+        yearly: { label: 'Yearly', icon: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>' },
+        analytics: { label: 'Analytics', icon: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path>' }
+    };
+
+    let appTabsOrder = JSON.parse(localStorage.getItem('budgetTabOrder')) || ['monthly', 'accounts', 'yearly', 'analytics'];
+    let currentActiveView = appTabsOrder[0]; // dynamically start on first tab
+
+    function renderNavigation() {
+        const topContainer = document.getElementById('top-nav-container');
+        const bottomContainer = document.getElementById('bottom-nav-container');
+        
+        topContainer.innerHTML = '';
+        bottomContainer.innerHTML = '';
+        
+        appTabsOrder.forEach(tabId => {
+            const def = TAB_DEFS[tabId];
+            
+            // Top Nav
+            const topBtn = document.createElement('button');
+            topBtn.id = `tab-${tabId}`;
+            topBtn.className = `btn-toggle ${currentActiveView === tabId ? 'active' : ''}`;
+            topBtn.onclick = () => switchView(tabId);
+            topBtn.innerText = def.label;
+            topContainer.appendChild(topBtn);
+            
+            // Bottom Nav
+            const botBtn = document.createElement('button');
+            botBtn.id = `nav-${tabId}`;
+            botBtn.className = `nav-item ${currentActiveView === tabId ? 'active' : ''}`;
+            botBtn.onclick = () => switchView(tabId);
+            botBtn.innerHTML = `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">${def.icon}</svg>${def.label}`;
+            bottomContainer.appendChild(botBtn);
+        });
+    }
+
+    function openTabsReorderModal() {
+        document.getElementById('tabs-reorder-modal').classList.add('active');
+        renderTabsReorderList();
+    }
+
+    function closeTabsReorderModal() {
+        document.getElementById('tabs-reorder-modal').classList.remove('active');
+    }
+
+    function renderTabsReorderList() {
+        const list = document.getElementById('tabs-reorder-list');
+        list.innerHTML = '';
+        
+        appTabsOrder.forEach((tabId, idx) => {
+            list.innerHTML += `
+                <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); padding: 0.75rem 1rem; border: 1px solid var(--border); border-radius: var(--radius-md); box-shadow: var(--shadow-sm);">
+                    <span style="font-weight: 500; color: var(--text-strong);"><svg fill="none" stroke="currentColor" style="width:1rem; height:1rem; vertical-align:middle; margin-right:0.5rem;" viewBox="0 0 24 24">${TAB_DEFS[tabId].icon}</svg>${TAB_DEFS[tabId].label}</span>
+                    <div style="display: flex; gap: 0.25rem;">
+                        <button type="button" onclick="moveNavigationTab(${idx}, -1)" class="btn-tx-action" style="opacity: 1; pointer-events: auto; padding: 0.35rem; background: var(--bg-alt); border: 1px solid var(--border);" ${idx === 0 ? 'disabled style="opacity:0.3;"' : ''}>
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>
+                        </button>
+                        <button type="button" onclick="moveNavigationTab(${idx}, 1)" class="btn-tx-action" style="opacity: 1; pointer-events: auto; padding: 0.35rem; background: var(--bg-alt); border: 1px solid var(--border);" ${idx === appTabsOrder.length - 1 ? 'disabled style="opacity:0.3;"' : ''}>
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </button>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    function moveNavigationTab(idx, dir) {
+        const newIdx = idx + dir;
+        if (newIdx >= 0 && newIdx < appTabsOrder.length) {
+            const temp = appTabsOrder[idx];
+            appTabsOrder[idx] = appTabsOrder[newIdx];
+            appTabsOrder[newIdx] = temp;
+            
+            localStorage.setItem('budgetTabOrder', JSON.stringify(appTabsOrder));
+            renderTabsReorderList();
+            renderNavigation();
+        }
+    }
+
 
     // --- SMART DATE HELPER ---
     function getSmartDateDefault(targetMonthStr) {
@@ -1075,6 +1189,43 @@
         return n + (s[(v - 20) % 10] || s[v] || s[0]);
     }
 
+    // Smooth Number Rolling Animation with Memory Registry
+    const previousValuesRegistry = {};
+
+    function animateValue(elementId, endValue, duration, formatter) {
+        const obj = document.getElementById(elementId);
+        if (!obj) return;
+
+        let startValue = previousValuesRegistry[elementId] || 0;
+        
+        if (startValue === endValue) {
+            obj.innerText = formatter(endValue);
+            previousValuesRegistry[elementId] = endValue;
+            return;
+        }
+
+        if (obj.animationId) cancelAnimationFrame(obj.animationId);
+
+        let startTimestamp = null;
+        const step = (timestamp) => {
+            if (!startTimestamp) startTimestamp = timestamp;
+            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+            
+            const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+            const currentValue = startValue + (endValue - startValue) * easeOutQuart;
+            
+            obj.innerText = formatter(currentValue);
+            
+            if (progress < 1) {
+                obj.animationId = window.requestAnimationFrame(step);
+            } else {
+                obj.innerText = formatter(endValue);
+                previousValuesRegistry[elementId] = endValue;
+            }
+        };
+        obj.animationId = window.requestAnimationFrame(step);
+    }
+
     function toggleTheme() {
         const currentTheme = document.documentElement.getAttribute('data-theme');
         const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
@@ -1082,7 +1233,7 @@
         localStorage.setItem('budgetTheme', newTheme);
         document.getElementById('theme-toggle').innerText = newTheme === 'dark' ? '☀️' : '🌙';
         if (!document.getElementById('view-analytics').classList.contains('hidden')) {
-            renderAnalytics(); // Redraw charts for new colors
+            renderAnalytics(); 
         }
     }
 
@@ -1094,7 +1245,16 @@
         { category: 'investments', name: 'Brooklynne Roth IRA', pct: 0.06, sources: ['Peak Ent'], desc: '6% of Peak ENT' }
     ];
 
+    const defaultAccounts = [
+        { name: 'Checking Account', balance: 0 },
+        { name: 'Savings Account', balance: 0 },
+        { name: 'Joint Brokerage', balance: 0 },
+        { name: 'Jamason Roth IRA', balance: 0 },
+        { name: 'Brooklynne Roth IRA', balance: 0 }
+    ];
+
     const defaultDataTemplate = {
+        accounts: JSON.parse(JSON.stringify(defaultAccounts)),
         income: [{ name: "Peak Ent", budget: 2000.00, transactions: [] }, { name: "TA", budget: 45.00, transactions: [] }, { name: "STAT", budget: 800.00, transactions: [] }, { name: "Property Management", budget: 0.00, transactions: [] }, { name: "Taxes (Refund)", budget: 3211.00, transactions: [] }, { name: "Other Income", budget: 0.00, transactions: [] }],
         necessary: [{ name: "Mortgage / Rent", budget: 1150.00, transactions: [] }, { name: "Second Mortgage", budget: 0.00, transactions: [] }, { name: "Electricity", budget: 0.00, transactions: [] }, { name: "Gas / Oil", budget: 0.00, transactions: [] }, { name: "Water / Sewer", budget: 0.00, transactions: [] }, { name: "Trash / Internet / Cable", budget: 0.00, transactions: [] }, { name: "Cell / Land Line Phone", budget: 0.00, transactions: [] }, { name: "Auto Fuel", budget: 200.00, transactions: [] }, { name: "Auto Maintenance", budget: 25.00, transactions: [] }, { name: "Auto Insurance", budget: 0.00, transactions: [] }, { name: "Auto Registration / License", budget: 0.00, transactions: [] }, { name: "Groceries / Food", budget: 260.00, transactions: [] }, { name: "Home Supplies", budget: 25.00, transactions: [] }, { name: "Childcare / Dependents", budget: 0.00, transactions: [] }, { name: "Student Loans", budget: 0.00, transactions: [] }, { name: "Healthcare / Medical", budget: 126.42, transactions: [] }, { name: "Dental Care / Insurance", budget: 29.42, transactions: [] }, { name: "Vision Care / Insurance", budget: 9.90, transactions: [] }, { name: "Life Insurance", budget: 0.00, transactions: [] }, { name: "Medicine / Prescriptions", budget: 0.00, transactions: [] }, { name: "Veterinarian / Pets", budget: 0.00, transactions: [] }, { name: "Jamason School Things", budget: 0.00, transactions: [] }, { name: "Tithing Donations", budget: 0.00, transactions: [] }, { name: "Home / Rental Insurance", budget: 0.00, transactions: [] }, { name: "Property & School Taxes", budget: 0.00, transactions: [] }, { name: "Minimum Debt Payments", budget: 0.00, transactions: [] }],
         discretionary: [{ name: "Dining Out", budget: 100.00, transactions: [] }, { name: "Concerts / Plays / Sports", budget: 0.00, transactions: [] }, { name: "Outdoor Recreation", budget: 0.00, transactions: [] }, { name: "Other Entertainment", budget: 0.00, transactions: [] }, { name: "Gym Membership", budget: 26.84, transactions: [] }, { name: "Personal Care / Salon", budget: 0.00, transactions: [] }, { name: "Clothing", budget: 0.00, transactions: [] }, { name: "Furniture / Decor", budget: 0.00, transactions: [] }, { name: "Jamason Buying Things", budget: 50.00, transactions: [] }, { name: "Brooklynne Buying Things", budget: 50.00, transactions: [] }, { name: "Subscriptions (Apple/Spotify/etc)", budget: 12.66, transactions: [] }, { name: "Gifts / Donations", budget: 0.00, transactions: [] }, { name: "Travel / Vacation", budget: 0.00, transactions: [] }, { name: "Other Monthly Spending", budget: 0.00, transactions: [] }, { name: "Other Yearly Expense - VASA", budget: 8.95, yearlyAmount: 107.42, transactions: [] }, { name: "Other Yearly Expense - Sam's Club", budget: 4.48, yearlyAmount: 53.73, transactions: [] }, { name: "Other Yearly Expense - Bevel", budget: 4.17, yearlyAmount: 49.99, transactions: [] }, { name: "Other Yearly Expense - Generic", budget: 10.00, yearlyAmount: 120.00, transactions: [] }],
@@ -1109,8 +1269,21 @@
     let collapsedSections = { income: false, necessary: false, discretionary: false, investments: false };
     let calculationRules = [];
 
-    const STORAGE_KEY = 'budgetAppV13'; 
+    const STORAGE_KEY = 'budgetAppV15'; 
     const RULES_KEY = 'budgetRulesV4';
+
+    function getPreviousMonthStr(monthStr) {
+        const [mName, yStr] = monthStr.split(' ');
+        let mIdx = monthNames.indexOf(mName);
+        let year = parseInt(yStr);
+        if (mIdx === 0) {
+            mIdx = 11;
+            year -= 1;
+        } else {
+            mIdx -= 1;
+        }
+        return `${monthNames[mIdx]} ${year}`;
+    }
 
     function loadLocalData() {
         const saved = localStorage.getItem(STORAGE_KEY);
@@ -1139,9 +1312,9 @@
         budgetData = prevState.budgetData;
         calculationRules = prevState.calculationRules;
         saveData(true); 
-        renderMonthly();
-        if(!document.getElementById('view-yearly').classList.contains('hidden')) renderYearly();
-        if(!document.getElementById('view-analytics').classList.contains('hidden')) renderAnalytics();
+        
+        renderNavigation(); // Render logic to dynamically handle view
+        switchView(currentActiveView);
         
         const btn = document.getElementById('btn-undo');
         btn.innerHTML = "✅ Undone!";
@@ -1205,14 +1378,16 @@
         sortedMonths.forEach(monthStr => {
             const [mName, yStr] = monthStr.split(' ');
             ['income', 'necessary', 'discretionary', 'investments'].forEach(sec => {
-                budgetData[monthStr][sec].forEach(item => {
-                    if (item.transactions && item.transactions.length > 0) {
-                        item.transactions.forEach(tx => {
-                            const desc = `"${(tx.desc || '').replace(/"/g, '""')}"`;
-                            csvContent += `${tx.date},${mName},${yStr},${sec},"${item.name}",${desc},${tx.amount}\r\n`;
-                        });
-                    }
-                });
+                if(budgetData[monthStr][sec]) {
+                    budgetData[monthStr][sec].forEach(item => {
+                        if (item.transactions && item.transactions.length > 0) {
+                            item.transactions.forEach(tx => {
+                                const desc = `"${(tx.desc || '').replace(/"/g, '""')}"`;
+                                csvContent += `${tx.date},${mName},${yStr},${sec},"${item.name}",${desc},${tx.amount}\r\n`;
+                            });
+                        }
+                    });
+                }
             });
         });
 
@@ -1237,6 +1412,11 @@
                     pushUndoState();
                     budgetData = importedData.budgetData;
                     calculationRules = importedData.calculationRules;
+                    
+                    Object.keys(budgetData).forEach(m => {
+                        if (!budgetData[m].accounts) budgetData[m].accounts = JSON.parse(JSON.stringify(defaultAccounts));
+                    });
+
                     saveData();
                     renderApp();
                     closeSettingsModal();
@@ -1270,15 +1450,31 @@
                 const templateKey = keys[keys.length - 1]; 
                 const templateData = budgetData[templateKey];
                 let newMonth = JSON.parse(JSON.stringify(templateData));
+                
                 ['income', 'necessary', 'discretionary', 'investments'].forEach(sec => {
-                    newMonth[sec].forEach(item => { item.transactions = []; });
+                    if(newMonth[sec]) newMonth[sec].forEach(item => { item.transactions = []; });
                 });
+                
+                // Inherit exact accounts balances from the previous chronological month as a baseline
+                const prevMonthStr = getPreviousMonthStr(monthStr);
+                if (budgetData[prevMonthStr] && budgetData[prevMonthStr].accounts) {
+                    newMonth.accounts = JSON.parse(JSON.stringify(budgetData[prevMonthStr].accounts));
+                } else if (!newMonth.accounts) {
+                    newMonth.accounts = JSON.parse(JSON.stringify(defaultAccounts));
+                }
+                
                 budgetData[monthStr] = newMonth;
             } else {
                 budgetData[monthStr] = JSON.parse(JSON.stringify(defaultDataTemplate));
             }
             if(!skipSave) saveData();
         }
+        
+        if (!budgetData[monthStr].accounts) {
+            budgetData[monthStr].accounts = JSON.parse(JSON.stringify(defaultAccounts));
+            if(!skipSave) saveData();
+        }
+        
         return budgetData[monthStr];
     }
 
@@ -1368,21 +1564,45 @@
     };
 
     function switchView(view) {
-        document.getElementById('view-monthly').classList.toggle('hidden', view !== 'monthly');
-        document.getElementById('view-yearly').classList.toggle('hidden', view !== 'yearly');
-        document.getElementById('view-analytics').classList.toggle('hidden', view !== 'analytics');
+        currentActiveView = view;
         
-        // Desktop Top Toggles
-        document.getElementById('tab-monthly').classList.toggle('active', view === 'monthly');
-        document.getElementById('tab-yearly').classList.toggle('active', view === 'yearly');
-        document.getElementById('tab-analytics').classList.toggle('active', view === 'analytics');
+        // Loop through all possible tabs and correctly hide/show
+        appTabsOrder.forEach(tabId => {
+            const el = document.getElementById(`view-${tabId}`);
+            if(el) el.classList.toggle('hidden', view !== tabId);
+            
+            const tBtn = document.getElementById(`tab-${tabId}`);
+            if(tBtn) tBtn.classList.toggle('active', view === tabId);
+            
+            const nBtn = document.getElementById(`nav-${tabId}`);
+            if(nBtn) nBtn.classList.toggle('active', view === tabId);
+        });
+
+        // Manage global controls visibility
+        const globalControls = document.getElementById('global-month-controls');
+        if (view === 'monthly' || view === 'accounts') {
+            globalControls.style.display = 'flex';
+        } else {
+            globalControls.style.display = 'none';
+        }
         
-        // Mobile Bottom Nav Toggles
-        document.getElementById('nav-monthly').classList.toggle('active', view === 'monthly');
-        document.getElementById('nav-yearly').classList.toggle('active', view === 'yearly');
-        document.getElementById('nav-analytics').classList.toggle('active', view === 'analytics');
+        // Floating Action Button logic
+        const fab = document.getElementById('main-fab');
+        const monthlyActions = document.getElementById('monthly-actions-container');
         
+        if (view === 'accounts') {
+            if (fab) fab.style.display = 'none';
+            if (monthlyActions) monthlyActions.style.display = 'none';
+        } else if (view === 'monthly') {
+            if (fab) fab.style.display = 'flex';
+            if (monthlyActions) monthlyActions.style.display = 'flex';
+        } else {
+            if (fab) fab.style.display = 'none';
+            if (monthlyActions) monthlyActions.style.display = 'none';
+        }
+
         if (view === 'monthly') renderMonthly(); 
+        else if (view === 'accounts') renderAccounts();
         else if (view === 'yearly') renderYearly();
         else if (view === 'analytics') renderAnalytics();
     }
@@ -1395,7 +1615,8 @@
     }
 
     function handleTimeTravel() {
-        const isAnalytics = !document.getElementById('view-analytics').classList.contains('hidden');
+        const isAnalytics = currentActiveView === 'analytics';
+        const isAccounts = currentActiveView === 'accounts';
         
         if (isAnalytics) {
             currentMonthStr = `${document.getElementById('analytics-month').value} ${document.getElementById('analytics-year').value}`;
@@ -1404,11 +1625,135 @@
         }
         
         getOrCreateMonthData(currentMonthStr);
-        renderMonthly();
         
-        if (isAnalytics) renderAnalytics();
-        if (!document.getElementById('view-yearly').classList.contains('hidden')) renderYearly();
+        // Route dynamically to correct view
+        if (isAccounts) {
+            renderAccounts();
+        } else if (isAnalytics) {
+            renderAnalytics();
+        } else if (currentActiveView === 'yearly') {
+            renderYearly();
+        } else {
+            renderMonthly();
+        }
     }
+
+    // --- ACCOUNTS LOGIC ---
+
+    function renderAccounts() {
+        const data = getOrCreateMonthData(currentMonthStr);
+        const container = document.getElementById('accounts-container');
+        
+        let totalNetWorth = 0;
+        let html = '';
+
+        data.accounts.forEach((acct, idx) => {
+            totalNetWorth += acct.balance;
+            html += `
+                <div class="account-card">
+                    <div class="acct-info">
+                        <span class="acct-name">${acct.name}</span>
+                    </div>
+                    <div class="acct-bal">${formatCurrency(acct.balance)}</div>
+                </div>
+            `;
+        });
+
+        container.innerHTML = html;
+        animateValue('total-net-worth', totalNetWorth, 500, formatCurrency);
+
+        // Reminder Logic
+        const today = new Date();
+        const currentCalMonthStr = `${monthNames[today.getMonth()]} ${today.getFullYear()}`;
+        
+        let showReminder = false;
+        if (currentMonthStr === currentCalMonthStr) {
+            const prevMonthStr = getPreviousMonthStr(currentMonthStr);
+            if (budgetData[prevMonthStr] && budgetData[prevMonthStr].accounts) {
+                const isIdentical = data.accounts.every(currAcct => {
+                    const prevAcct = budgetData[prevMonthStr].accounts.find(a => a.name === currAcct.name);
+                    return prevAcct && prevAcct.balance === currAcct.balance;
+                });
+                
+                if (isIdentical && data.accounts.length > 0) {
+                    showReminder = true;
+                }
+            }
+        }
+        document.getElementById('accounts-reminder').style.display = showReminder ? 'flex' : 'none';
+    }
+
+    function openAccountsModal() {
+        const data = getOrCreateMonthData(currentMonthStr);
+        document.getElementById('acct-modal-month').innerText = currentMonthStr;
+        
+        const listContainer = document.getElementById('accounts-input-list');
+        listContainer.innerHTML = '';
+
+        data.accounts.forEach((acct, idx) => {
+            listContainer.innerHTML += `
+                <div class="form-group" id="acct-row-${idx}">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+                        <input type="text" id="acct-name-${idx}" class="input-text" value="${acct.name}" style="padding: 0.25rem 0.5rem; font-size: 0.85rem; font-weight: 600; border: none; background: transparent; width: 80%;" placeholder="Account Name">
+                        <button type="button" onclick="document.getElementById('acct-row-${idx}').remove()" style="background: none; border: none; color: var(--danger); font-size: 0.7rem; cursor: pointer; padding: 0.2rem;">Remove</button>
+                    </div>
+                    <div style="position: relative;">
+                        <span style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-weight: 500;">$</span>
+                        <input type="number" id="acct-val-${idx}" class="input-number" style="padding-left: 1.75rem;" step="0.01" value="${acct.balance}">
+                    </div>
+                </div>
+            `;
+        });
+
+        document.getElementById('accounts-modal').classList.add('active');
+    }
+
+    function addAccountRow() {
+        const listContainer = document.getElementById('accounts-input-list');
+        const idx = Date.now(); 
+        const html = `
+            <div class="form-group" id="acct-row-${idx}">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+                    <input type="text" id="acct-name-${idx}" class="input-text" value="" style="padding: 0.25rem 0.5rem; font-size: 0.85rem; font-weight: 600; border: none; background: transparent; width: 80%; border-bottom: 1px dashed var(--border);" placeholder="New Account Name" required>
+                    <button type="button" onclick="document.getElementById('acct-row-${idx}').remove()" style="background: none; border: none; color: var(--danger); font-size: 0.7rem; cursor: pointer; padding: 0.2rem;">Remove</button>
+                </div>
+                <div style="position: relative;">
+                    <span style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-weight: 500;">$</span>
+                    <input type="number" id="acct-val-${idx}" class="input-number" style="padding-left: 1.75rem;" step="0.01" value="0.00" required>
+                </div>
+            </div>
+        `;
+        listContainer.insertAdjacentHTML('beforeend', html);
+    }
+
+    function handleUpdateAccounts(e) {
+        e.preventDefault();
+        pushUndoState();
+        
+        const newAccounts = [];
+        const rows = document.getElementById('accounts-input-list').children;
+        
+        for(let row of rows) {
+            const nameInput = row.querySelector('input[type="text"]');
+            const valInput = row.querySelector('input[type="number"]');
+            
+            if(nameInput && valInput && nameInput.value.trim() !== '') {
+                newAccounts.push({
+                    name: nameInput.value.trim(),
+                    balance: parseFloat(valInput.value) || 0
+                });
+            }
+        }
+        
+        budgetData[currentMonthStr].accounts = newAccounts;
+        saveData();
+        closeAccountsModal();
+        renderAccounts();
+    }
+
+    function closeAccountsModal() { document.getElementById('accounts-modal').classList.remove('active'); }
+
+    // --- END ACCOUNTS LOGIC ---
 
     function toggleSection(secId) {
         collapsedSections[secId] = !collapsedSections[secId];
@@ -1580,6 +1925,7 @@
 
         const sections = [{ id: 'income', title: 'Income', data: data.income }, { id: 'necessary', title: 'Necessary Expenses', data: data.necessary }, { id: 'discretionary', title: 'Discretionary Expenses', data: data.discretionary }, { id: 'investments', title: 'Investments / Savings', data: data.investments }];
         let grandTotals = { income: 0, necessary: 0, discretionary: 0, investments: 0 };
+        let animationsToRun = [];
 
         sections.forEach(sec => {
             let sectionTotalActual = 0; let sectionTotalBudget = 0; let rowsHtml = '';
@@ -1711,12 +2057,12 @@
                                 </div>
                             </div>
                             
-                            <div class="g-col-budget">${formatCurrency(vals.budget)}</div>
+                            <div class="g-col-budget" id="row-budget-${sec.id}-${idx}">${formatCurrency(vals.budget)}</div>
                             
                             <div class="g-col-actual">
                                 <div class="actual-content">
                                     <button onclick="openModal('${sec.id}', ${idx})" class="btn-actual">
-                                        <span class="${amtClass}">${formatCurrency(vals.actual)}</span>
+                                        <span class="${amtClass}" id="row-actual-${sec.id}-${idx}">${formatCurrency(vals.actual)}</span>
                                         <span class="mobile-budget-context mobile-hide">of ${formatCurrency(vals.budget)}</span>
                                         <div>${badgeHtml} ${openIconHtml}</div>
                                     </button>
@@ -1741,6 +2087,10 @@
                         </div>
                     </div>
                 `;
+
+                // Add row specific numbers to the animation queue
+                animationsToRun.push({ id: `row-budget-${sec.id}-${idx}`, val: vals.budget, isPct: false });
+                animationsToRun.push({ id: `row-actual-${sec.id}-${idx}`, val: vals.actual, isPct: false });
             });
 
             const isCollapsed = collapsedSections[sec.id];
@@ -1752,8 +2102,8 @@
                             <h2 class="section-title">${sec.title}</h2>
                         </div>
                         <div class="section-totals">
-                            <div class="tot-block"><span class="tot-lbl">Budget</span> <span class="val-budget">${formatCurrency(sectionTotalBudget)}</span></div>
-                            <div class="tot-block"><span class="tot-lbl">Actual</span> <span class="val-actual">${formatCurrency(sectionTotalActual)}</span></div>
+                            <div class="tot-block"><span class="tot-lbl">Budget</span> <span class="val-budget" id="sec-budget-${sec.id}">${formatCurrency(sectionTotalBudget)}</span></div>
+                            <div class="tot-block"><span class="tot-lbl">Actual</span> <span class="val-actual" id="sec-actual-${sec.id}">${formatCurrency(sectionTotalActual)}</span></div>
                         </div>
                     </div>
                     <div class="${isCollapsed ? 'hidden' : ''}">
@@ -1774,19 +2124,33 @@
                 </div>
             `;
             container.innerHTML += sectionHtml;
+            
+            // Add section totals to the animation queue
+            animationsToRun.push({ id: `sec-budget-${sec.id}`, val: sectionTotalBudget, isPct: false });
+            animationsToRun.push({ id: `sec-actual-${sec.id}`, val: sectionTotalActual, isPct: false });
         });
 
-        document.getElementById('card-income').innerText = formatCurrency(grandTotals.income);
-        document.getElementById('card-necessary').innerText = formatCurrency(grandTotals.necessary);
-        document.getElementById('card-discretionary').innerText = formatCurrency(grandTotals.discretionary + grandTotals.investments);
-        
         const remaining = grandTotals.income - (grandTotals.necessary + grandTotals.discretionary + grandTotals.investments);
-        document.getElementById('card-remaining').innerText = formatCurrency(remaining);
-
         const totalInc = grandTotals.income > 0 ? grandTotals.income : 1; 
-        document.getElementById('pct-necessary').innerText = `${((grandTotals.necessary / totalInc) * 100).toFixed(1)}%`;
-        document.getElementById('pct-discretionary').innerText = `${(((grandTotals.discretionary + grandTotals.investments) / totalInc) * 100).toFixed(1)}%`;
-        document.getElementById('pct-remaining').innerText = `${((remaining / totalInc) * 100).toFixed(1)}%`;
+        
+        // Add top summary cards to the animation queue
+        animationsToRun.push({ id: 'card-income', val: grandTotals.income, isPct: false });
+        animationsToRun.push({ id: 'card-necessary', val: grandTotals.necessary, isPct: false });
+        animationsToRun.push({ id: 'card-discretionary', val: (grandTotals.discretionary + grandTotals.investments), isPct: false });
+        animationsToRun.push({ id: 'card-remaining', val: remaining, isPct: false });
+        
+        animationsToRun.push({ id: 'pct-necessary', val: ((grandTotals.necessary / totalInc) * 100), isPct: true });
+        animationsToRun.push({ id: 'pct-discretionary', val: (((grandTotals.discretionary + grandTotals.investments) / totalInc) * 100), isPct: true });
+        animationsToRun.push({ id: 'pct-remaining', val: ((remaining / totalInc) * 100), isPct: true });
+
+        const pctFormatter = (v) => `${v.toFixed(1)}%`;
+        
+        // Run all animations immediately after the HTML finishes rendering
+        requestAnimationFrame(() => {
+            animationsToRun.forEach(anim => {
+                animateValue(anim.id, anim.val, 500, anim.isPct ? pctFormatter : formatCurrency);
+            });
+        });
     }
 
     async function deleteRow(secId, idx) {
@@ -1811,7 +2175,9 @@
     }
 
     function renderYearly() {
-        const year = document.getElementById('year-selector').value;
+        const yearSelect = document.getElementById('year-selector');
+        // Safely extract the year from the selector, otherwise fallback to the global view's year.
+        const year = yearSelect && yearSelect.value ? yearSelect.value : currentMonthStr.split(' ')[1];
         const container = document.getElementById('yearly-container');
         const yearMonths = monthNames.map(m => `${m} ${year}`);
 
@@ -1979,7 +2345,7 @@
         const monthDropdown = document.getElementById('analytics-month');
         const yearDropdown = document.getElementById('analytics-year');
         
-        if(monthDropdown.options.length === 0) {
+        if(monthDropdown && monthDropdown.options.length === 0) {
             fullMonthNames.forEach((m, idx) => monthDropdown.innerHTML += `<option value="${monthNames[idx]}">${m}</option>`);
             for(let y = 2024; y <= 2036; y++) yearDropdown.innerHTML += `<option value="${y}">${y}</option>`;
             
@@ -1988,14 +2354,59 @@
             yearDropdown.value = yStr;
         }
 
-        const selMonthStr = `${monthDropdown.value} ${yearDropdown.value}`;
-        const selYearStr = yearDropdown.value;
+        const selMonthStr = (monthDropdown && yearDropdown) ? `${monthDropdown.value} ${yearDropdown.value}` : currentMonthStr;
+        const selYearStr = yearDropdown ? yearDropdown.value : currentMonthStr.split(' ')[1];
 
         const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
         const textColor = isDark ? '#f1f5f9' : '#0f172a';
         const gridColor = isDark ? '#334155' : '#e2e8f0';
 
-        // 1. Pie Chart Logic (Monthly Breakdown)
+        // 1. Net Worth Chart Logic (Yearly Trend)
+        const yearMonths = monthNames.map(m => `${m} ${selYearStr}`);
+        let nwData = [];
+        
+        yearMonths.forEach(m => {
+            let nw = 0;
+            if (budgetData[m] && budgetData[m].accounts) {
+                nw = budgetData[m].accounts.reduce((sum, acct) => sum + acct.balance, 0);
+            }
+            nwData.push(nw);
+        });
+
+        const nwCtx = document.getElementById('nwChart').getContext('2d');
+        if (nwChartInstance) nwChartInstance.destroy();
+        nwChartInstance = new Chart(nwCtx, {
+            type: 'line',
+            data: {
+                labels: monthNames,
+                datasets: [{
+                    label: 'Net Worth',
+                    data: nwData,
+                    borderColor: '#2563eb', // Primary color
+                    backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.3,
+                    pointBackgroundColor: '#2563eb'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { ticks: { color: textColor }, grid: { display: false } },
+                    y: { ticks: { color: textColor, callback: (v) => '$' + v }, grid: { color: gridColor } }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: { label: (ctx) => ` Net Worth: ${formatCurrency(ctx.raw)}` }
+                    }
+                }
+            }
+        });
+
+        // 2. Pie Chart Logic (Monthly Breakdown)
         let necTotal = 0, discTotal = 0, invTotal = 0;
         if (budgetData[selMonthStr]) {
             const totals = getMonthTotals(budgetData[selMonthStr], selMonthStr);
@@ -2029,8 +2440,7 @@
             }
         });
 
-        // 2. Bar Chart Logic (Yearly Income vs Spending)
-        const yearMonths = monthNames.map(m => `${m} ${selYearStr}`);
+        // 3. Bar Chart Logic (Yearly Income vs Spending)
         let incData = [];
         let expData = [];
         
@@ -2186,7 +2596,7 @@
             saveData();
             renderTransactionsList();
             renderMonthly();
-            if(!document.getElementById('view-analytics').classList.contains('hidden')) renderAnalytics();
+            if(document.getElementById('view-analytics') && !document.getElementById('view-analytics').classList.contains('hidden')) renderAnalytics();
             document.getElementById('tx-desc').value = '';
             document.getElementById('tx-amount').value = '';
             document.getElementById('tx-amount').focus(); 
@@ -2197,7 +2607,7 @@
         pushUndoState();
         budgetData[currentMonthStr][activeModalCategory][activeModalIndex].transactions.splice(txIndex, 1);
         saveData(); renderTransactionsList(); renderMonthly();
-        if(!document.getElementById('view-analytics').classList.contains('hidden')) renderAnalytics();
+        if(document.getElementById('view-analytics') && !document.getElementById('view-analytics').classList.contains('hidden')) renderAnalytics();
     }
 
     function openRowModal(secId) {
@@ -2458,39 +2868,42 @@
 
     // --- BOOTSTRAP & CLOUD INIT ---
     function renderApp() {
+        renderNavigation();
+
         const yearSelect = document.getElementById('year-selector');
         const analyticsYear = document.getElementById('analytics-year');
-        if (yearSelect.options.length === 0) {
+        if (yearSelect && yearSelect.options.length === 0) {
             for(let y = 2024; y <= 2036; y++) {
                 yearSelect.innerHTML += `<option value="${y}">${y}</option>`;
-                analyticsYear.innerHTML += `<option value="${y}">${y}</option>`;
+                if (analyticsYear) analyticsYear.innerHTML += `<option value="${y}">${y}</option>`;
             }
             yearSelect.value = "2026";
-            analyticsYear.value = "2026";
+            if (analyticsYear) analyticsYear.value = "2026";
         }
         
         const monthDrop = document.getElementById('month-dropdown');
         const yearDrop = document.getElementById('year-dropdown');
         const analyticsMonth = document.getElementById('analytics-month');
         
-        if (monthDrop.options.length === 0) {
+        if (monthDrop && monthDrop.options.length === 0) {
             fullMonthNames.forEach((m, idx) => {
                 monthDrop.innerHTML += `<option value="${monthNames[idx]}">${m}</option>`;
-                analyticsMonth.innerHTML += `<option value="${monthNames[idx]}">${m}</option>`;
+                if (analyticsMonth) analyticsMonth.innerHTML += `<option value="${monthNames[idx]}">${m}</option>`;
             });
-            for(let y = 2024; y <= 2036; y++) yearDrop.innerHTML += `<option value="${y}">${y}</option>`;
+            for(let y = 2024; y <= 2036; y++) {
+                if (yearDrop) yearDrop.innerHTML += `<option value="${y}">${y}</option>`;
+            }
         }
         
         if(currentMonthStr) {
             const [mName, yStr] = currentMonthStr.split(' ');
-            monthDrop.value = mName;
-            yearDrop.value = yStr;
-            analyticsMonth.value = mName;
-            analyticsYear.value = yStr;
+            if (monthDrop) monthDrop.value = mName;
+            if (yearDrop) yearDrop.value = yStr;
+            if (analyticsMonth) analyticsMonth.value = mName;
+            if (analyticsYear) analyticsYear.value = yStr;
         }
         
-        renderMonthly();
-        if(!document.getElementById('view-analytics').classList.contains('hidden')) renderAnalytics();
+        switchView(currentActiveView);
     }
 
     let db, auth, setDoc_fn, doc_fn;
