@@ -516,10 +516,17 @@
             <p class="header-subtitle">Household financial tracking</p>
         </div>
         
-        <div style="display: flex; align-items: center; gap: 1rem;">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <!-- Search Button (Icon Only, Minimal Space) -->
+            <button onclick="openSearchModal()" class="theme-btn" style="border: none; background: transparent; box-shadow: none; padding: 0.5rem; color: var(--text-strong);" title="Search Transactions">
+                <svg width="1.5rem" height="1.5rem" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            </button>
+            
             <!-- Dynamic Desktop Tabs -->
             <div id="top-nav-container" class="view-toggle"></div>
-            <button id="theme-toggle" class="theme-btn" onclick="toggleTheme()" title="Toggle Dark Mode">🌙</button>
+            
+            <!-- Theme Toggle (Desktop Only now, moved to settings on mobile) -->
+            <button id="theme-toggle" class="theme-btn desktop-only" onclick="toggleTheme()" title="Toggle Dark Mode">🌙</button>
         </div>
     </header>
 
@@ -651,6 +658,24 @@
     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg>
 </button>
 
+<!-- Global Search Modal -->
+<div id="search-modal" class="modal-overlay">
+    <div class="modal-content" style="height: 85vh; max-height: 85vh; display: flex; flex-direction: column;">
+        <div class="modal-header" style="padding: 1rem; display: flex; gap: 0.75rem; align-items: center;">
+            <div style="position: relative; flex: 1;">
+                <svg style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); width: 1.25rem; height: 1.25rem; color: var(--text-muted);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                <input type="text" id="global-search-input" class="input-text" style="padding-left: 2.5rem; width: 100%; background: var(--bg-page); border-color: transparent;" placeholder="Search transactions..." oninput="performGlobalSearch()">
+            </div>
+            <button onclick="closeSearchModal()" style="background: none; border: none; font-weight: 600; color: var(--primary); font-size: 0.95rem; cursor: pointer; padding: 0.5rem;">Cancel</button>
+        </div>
+        <div class="modal-body" style="padding: 0 1rem 1rem 1rem; overflow-y: auto; background: var(--bg-page);">
+            <div id="search-results-list" class="tx-list" style="margin-top: 1rem;">
+                <!-- Results go here -->
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Tabs Reorder Modal -->
 <div id="tabs-reorder-modal" class="modal-overlay">
     <div class="modal-content" style="max-width: 26rem;">
@@ -760,13 +785,18 @@
             <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1.5rem;">Your app is securely synced to your private Firebase database.</p>
             
             <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                <!-- Light/Dark Mode toggle moved here for mobile -->
+                <button onclick="toggleTheme();" class="btn-add" style="margin: 0; background: var(--bg-card); color: var(--text-strong); border: 1px solid var(--border);">🌓 Toggle Dark Mode</button>
+                
+                <div style="height: 1px; background: var(--border); margin: 0.25rem 0;"></div>
+
                 <button onclick="openTabsReorderModal()" class="btn-add" style="margin: 0; background: var(--bg-card); color: var(--text-strong); border: 1px solid var(--border);">📱 Reorder Navigation Tabs</button>
 
-                <div style="height: 1px; background: var(--border); margin: 0.5rem 0;"></div>
+                <div style="height: 1px; background: var(--border); margin: 0.25rem 0;"></div>
 
                 <button onclick="forceCloudSave()" class="btn-add" style="margin: 0; background: var(--primary-bg); color: var(--primary); border: 1px solid var(--primary-border);">⬆️ Force Push to Cloud</button>
                 
-                <div style="height: 1px; background: var(--border); margin: 0.5rem 0;"></div>
+                <div style="height: 1px; background: var(--border); margin: 0.25rem 0;"></div>
 
                 <button onclick="exportToCSV()" class="btn-add" style="margin: 0; background: var(--success);">📊 Export Transactions (.csv)</button>
                 <button onclick="exportData()" class="btn-add" style="margin: 0;">📥 Download Backup (.json)</button>
@@ -1045,6 +1075,7 @@
     window.closeCustomAlert = closeCustomAlert;
     window.openAccountsModal = openAccountsModal; window.closeAccountsModal = closeAccountsModal; window.handleUpdateAccounts = handleUpdateAccounts; window.addAccountRow = addAccountRow;
     window.openTabsReorderModal = openTabsReorderModal; window.closeTabsReorderModal = closeTabsReorderModal; window.moveNavigationTab = moveNavigationTab;
+    window.openSearchModal = openSearchModal; window.closeSearchModal = closeSearchModal; window.performGlobalSearch = performGlobalSearch; window.jumpToMonth = jumpToMonth;
 
     const fullMonthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -1067,7 +1098,7 @@
     };
 
     let appTabsOrder = JSON.parse(localStorage.getItem('budgetTabOrder')) || ['monthly', 'accounts', 'yearly', 'analytics'];
-    let currentActiveView = appTabsOrder[0]; // dynamically start on first tab
+    let currentActiveView = appTabsOrder[0]; 
 
     function renderNavigation() {
         const topContainer = document.getElementById('top-nav-container');
@@ -1138,6 +1169,90 @@
             renderTabsReorderList();
             renderNavigation();
         }
+    }
+
+
+    // --- GLOBAL SEARCH LOGIC ---
+    function openSearchModal() {
+        document.getElementById('search-modal').classList.add('active');
+        const input = document.getElementById('global-search-input');
+        input.value = '';
+        performGlobalSearch(); 
+        setTimeout(() => input.focus(), 100);
+    }
+    
+    function closeSearchModal() {
+        document.getElementById('search-modal').classList.remove('active');
+    }
+    
+    function performGlobalSearch() {
+        const term = document.getElementById('global-search-input').value.toLowerCase().trim();
+        const list = document.getElementById('search-results-list');
+        
+        if (!term) {
+            list.innerHTML = `<div class="tx-empty">Search by description, amount, or category...</div>`;
+            return;
+        }
+
+        let results = [];
+        
+        Object.keys(budgetData).forEach(monthKey => {
+            const mData = budgetData[monthKey];
+            ['income', 'necessary', 'discretionary', 'investments'].forEach(sec => {
+                if(mData[sec]) {
+                    mData[sec].forEach(item => {
+                        if(item.transactions) {
+                            item.transactions.forEach(tx => {
+                                const searchString = `${tx.desc} ${tx.amount} ${item.name} ${monthKey}`.toLowerCase();
+                                if (searchString.includes(term)) {
+                                    results.push({
+                                        tx: tx,
+                                        categoryName: item.name,
+                                        monthKey: monthKey
+                                    });
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        });
+
+        results.sort((a, b) => new Date(b.tx.date) - new Date(a.tx.date));
+
+        if (results.length === 0) {
+            list.innerHTML = `<div class="tx-empty">No matching transactions found.</div>`;
+            return;
+        }
+
+        let html = '';
+        results.forEach(res => {
+            html += `
+                <div class="tx-item" style="cursor: pointer; display: block; border-left: 4px solid var(--primary);" onclick="jumpToMonth('${res.monthKey}')">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.25rem;">
+                        <span class="tx-desc-stack" style="font-size: 0.95rem;">${res.tx.desc} <span style="color: var(--text-light); font-size: 0.75rem; font-weight: 400;">(${res.categoryName})</span></span>
+                        <span class="tx-amount-large" style="font-size: 1.1rem;">${formatCurrency(res.tx.amount)}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span class="tx-date-stack">${formatDate(res.tx.date)}</span>
+                        <span class="badge" style="margin:0; background: var(--primary-bg); color: var(--primary);">${res.monthKey}</span>
+                    </div>
+                </div>
+            `;
+        });
+        
+        list.innerHTML = html;
+    }
+    
+    function jumpToMonth(monthKey) {
+        closeSearchModal();
+        const [mName, yStr] = monthKey.split(' ');
+        
+        switchView('monthly');
+        
+        document.getElementById('month-dropdown').value = mName;
+        document.getElementById('year-dropdown').value = yStr;
+        handleTimeTravel();
     }
 
 
@@ -1231,7 +1346,10 @@
         const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
         document.documentElement.setAttribute('data-theme', newTheme);
         localStorage.setItem('budgetTheme', newTheme);
-        document.getElementById('theme-toggle').innerText = newTheme === 'dark' ? '☀️' : '🌙';
+        
+        const themeBtn = document.getElementById('theme-toggle');
+        if(themeBtn) themeBtn.innerText = newTheme === 'dark' ? '☀️' : '🌙';
+        
         if (!document.getElementById('view-analytics').classList.contains('hidden')) {
             renderAnalytics(); 
         }
@@ -1269,7 +1387,7 @@
     let collapsedSections = { income: false, necessary: false, discretionary: false, investments: false };
     let calculationRules = [];
 
-    const STORAGE_KEY = 'budgetAppV15'; 
+    const STORAGE_KEY = 'budgetAppV16'; 
     const RULES_KEY = 'budgetRulesV4';
 
     function getPreviousMonthStr(monthStr) {
@@ -1455,7 +1573,6 @@
                     if(newMonth[sec]) newMonth[sec].forEach(item => { item.transactions = []; });
                 });
                 
-                // Inherit exact accounts balances from the previous chronological month as a baseline
                 const prevMonthStr = getPreviousMonthStr(monthStr);
                 if (budgetData[prevMonthStr] && budgetData[prevMonthStr].accounts) {
                     newMonth.accounts = JSON.parse(JSON.stringify(budgetData[prevMonthStr].accounts));
@@ -1521,8 +1638,8 @@
                     }
                 });
             }
-            baseBudget = sourceBudget * rule.pct;
-            suggestedActual = sourceActual * rule.pct; 
+            baseBudget = Math.round(sourceBudget * rule.pct);
+            suggestedActual = Math.round(sourceActual * rule.pct); 
         } else if (item.isRollover && currentTargetMonthStr) {
             rolloverAmt = calculateRollover(secId, item.name, currentTargetMonthStr);
         }
@@ -1566,7 +1683,6 @@
     function switchView(view) {
         currentActiveView = view;
         
-        // Loop through all possible tabs and correctly hide/show
         appTabsOrder.forEach(tabId => {
             const el = document.getElementById(`view-${tabId}`);
             if(el) el.classList.toggle('hidden', view !== tabId);
@@ -1578,7 +1694,6 @@
             if(nBtn) nBtn.classList.toggle('active', view === tabId);
         });
 
-        // Manage global controls visibility
         const globalControls = document.getElementById('global-month-controls');
         if (view === 'monthly' || view === 'accounts') {
             globalControls.style.display = 'flex';
@@ -1586,7 +1701,6 @@
             globalControls.style.display = 'none';
         }
         
-        // Floating Action Button logic
         const fab = document.getElementById('main-fab');
         const monthlyActions = document.getElementById('monthly-actions-container');
         
@@ -1626,7 +1740,6 @@
         
         getOrCreateMonthData(currentMonthStr);
         
-        // Route dynamically to correct view
         if (isAccounts) {
             renderAccounts();
         } else if (isAnalytics) {
@@ -1662,7 +1775,6 @@
         container.innerHTML = html;
         animateValue('total-net-worth', totalNetWorth, 500, formatCurrency);
 
-        // Reminder Logic
         const today = new Date();
         const currentCalMonthStr = `${monthNames[today.getMonth()]} ${today.getFullYear()}`;
         
@@ -2382,7 +2494,7 @@
                 datasets: [{
                     label: 'Net Worth',
                     data: nwData,
-                    borderColor: '#2563eb', // Primary color
+                    borderColor: '#2563eb', 
                     backgroundColor: 'rgba(37, 99, 235, 0.1)',
                     borderWidth: 2,
                     fill: true,
