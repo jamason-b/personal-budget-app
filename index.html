@@ -340,28 +340,31 @@
         tr.spacer-row { background-color: var(--bg-card) !important; }
         tr.spacer-row td { height: 1rem; padding: 0; border: none; background-color: transparent; }
         
-        /* YEARLY SUMMARY MOBILE CARDS */
-        .yearly-mobile-cards { display: flex; flex-direction: column; gap: 0.75rem; padding-bottom: 1rem; }
-        .y-summary-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 1.25rem 0 1.25rem 1.25rem; box-shadow: var(--shadow-sm); overflow: hidden; }
+        /* YEARLY SUMMARY MOBILE CARDS (Updated for Compact Grid Layout) */
+        .yearly-mobile-cards { display: flex; flex-direction: column; gap: 1rem; padding-bottom: 1rem; }
+        .y-summary-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 1.25rem; box-shadow: var(--shadow-sm); }
         .y-summary-card.highlight { background: var(--primary-bg); border-color: var(--primary-border); }
-        .y-card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; padding-right: 1.25rem; gap: 0.75rem;}
-        .y-card-title { font-weight: 600; color: var(--text-strong); font-size: 1rem; }
-        .y-summary-card.highlight .y-card-title { color: var(--primary-text); font-weight: 700; }
-        .y-card-ytd { font-weight: 700; color: var(--text-strong); font-size: 1.2rem; text-align: right; line-height: 1.1; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
-        .y-card-ytd small { display: block; font-size: 0.65rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; margin-top: 0.15rem; }
-        .y-summary-card.highlight .y-card-ytd { color: var(--primary); }
-        .y-summary-card.highlight .y-card-ytd small { color: var(--primary-text); opacity: 0.8; }
         
-        .y-card-months-scroll { display: flex; overflow-x: auto; gap: 0.5rem; padding-bottom: 0.5rem; padding-right: 1.25rem; -webkit-overflow-scrolling: touch; scroll-snap-type: x mandatory; }
-        .y-card-months-scroll::-webkit-scrollbar { display: none; }
-        .y-card-months-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+        .y-card-top { display: flex; flex-direction: column; margin-bottom: 1.25rem; padding-bottom: 1.25rem; border-bottom: 1px solid var(--border-light); }
+        .y-summary-card.highlight .y-card-top { border-bottom-color: rgba(37, 99, 235, 0.2); }
+        [data-theme="dark"] .y-summary-card.highlight .y-card-top { border-bottom-color: rgba(96, 165, 250, 0.2); }
         
-        .y-month-pill { display: flex; flex-direction: column; background: var(--bg-alt); padding: 0.75rem 1rem; border-radius: var(--radius-lg); min-width: 90px; align-items: center; scroll-snap-align: start; border: 1px solid var(--border-light); }
-        .y-summary-card.highlight .y-month-pill { background: var(--bg-card); border-color: var(--primary-border); }
-        .y-m-name { font-size: 0.65rem; text-transform: uppercase; font-weight: 700; color: var(--text-muted); margin-bottom: 0.25rem; letter-spacing: 0.05em; }
-        .y-m-val { font-size: 0.95rem; font-weight: 600; color: var(--text-strong); font-variant-numeric: tabular-nums; }
+        .y-card-title { font-weight: 600; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.35rem; }
+        .y-summary-card.highlight .y-card-title { color: var(--primary); opacity: 0.9; }
+        
+        .y-card-ytd { font-weight: 800; color: var(--text-strong); font-size: 2rem; line-height: 1; font-variant-numeric: tabular-nums; letter-spacing: -0.03em; }
+        .y-summary-card.highlight .y-card-ytd { color: var(--primary-text); }
+        
+        .y-card-months-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem 0.5rem; }
+        
+        .y-month-cell { display: flex; flex-direction: column; }
+        .y-m-name { font-size: 0.65rem; text-transform: uppercase; font-weight: 700; color: var(--text-muted); margin-bottom: 0.15rem; letter-spacing: 0.05em; }
+        .y-m-val { font-size: 0.9rem; font-weight: 600; color: var(--text-strong); font-variant-numeric: tabular-nums; }
+        .y-m-val.zero { color: var(--text-light); font-weight: 500; }
+        
         .y-summary-card.highlight .y-m-name { color: var(--primary); opacity: 0.8; }
         .y-summary-card.highlight .y-m-val { color: var(--primary-text); }
+        .y-summary-card.highlight .y-m-val.zero { opacity: 0.6; }
 
         .mobile-only { display: block; }
         .desktop-only { display: none; }
@@ -2192,6 +2195,7 @@
                             </div>
                             
                             <div class="g-col-diff">
+                                <span class="mobile-hide" style="color: var(--text-muted);">Diff:</span>
                                 <span class="val-diff ${diffClass}">${diffText}</span>
                             </div>
                             
@@ -2333,16 +2337,18 @@
                 const r = rowData[key];
                 let monthsHtml = '';
                 r.vals.forEach((val, idx) => {
-                    monthsHtml += `<div class="y-month-pill"><span class="y-m-name">${monthNames[idx]}</span><span class="y-m-val">${val === 0 ? '-' : formatCurrency(val)}</span></div>`;
+                    const valClass = val === 0 ? 'y-m-val zero' : 'y-m-val';
+                    const displayVal = val === 0 ? '-' : formatCurrency(val);
+                    monthsHtml += `<div class="y-month-cell"><span class="y-m-name">${monthNames[idx]}</span><span class="${valClass}">${displayVal}</span></div>`;
                 });
                 
                 mobileHtml += `
                     <div class="y-summary-card ${r.isBold ? 'highlight' : ''}">
                         <div class="y-card-top">
-                            <span class="y-card-title">${r.title}</span>
-                            <span class="y-card-ytd">${formatCurrency(r.total)} <small>YTD Total</small></span>
+                            <span class="y-card-title">${r.title} (YTD)</span>
+                            <span class="y-card-ytd">${formatCurrency(r.total)}</span>
                         </div>
-                        <div class="y-card-months-scroll">
+                        <div class="y-card-months-grid">
                             ${monthsHtml}
                         </div>
                     </div>
