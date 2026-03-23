@@ -79,8 +79,8 @@
             --text-strong: #ffffff;
             --text-muted: #94a3b8;
             --text-light: #64748b;
-            --border: #334155;
-            --border-light: #1e293b;
+            --border: #475569;
+            --border-light: #334155;
             
             --primary: #3b82f6;
             --primary-hover: #60a5fa;
@@ -225,14 +225,14 @@
 
         /* DESKTOP LAYOUT (Kills swipe, turns into normal grid) */
         @media (min-width: 768px) {
-            .grid-header { display: grid; grid-template-columns: 2.5fr 1fr 1.5fr 1fr 80px; gap: 0; padding: 0; }
+            .grid-header { display: grid; grid-template-columns: 2.5fr 1fr 1.5fr 1fr 80px; gap: 0; padding: 0; align-items: stretch; }
             .grid-header > div { padding: 0.85rem 1rem; display: flex; align-items: center; }
             .grid-header > .text-right { justify-content: flex-end; }
             .grid-header > .text-center { justify-content: center; }
             .grid-header > div:not(:first-child):not(:last-child) { border-left: 1px solid var(--border); }
 
             .row-scroll-wrapper { display: block; overflow: visible; border-bottom: none; }
-            .grid-row { grid-template-columns: 2.5fr 1fr 1.5fr 1fr 80px; gap: 0; padding: 0; border-bottom: 1px solid var(--border-light); }
+            .grid-row { grid-template-columns: 2.5fr 1fr 1.5fr 1fr 80px; gap: 0; padding: 0; border-bottom: 1px solid var(--border-light); align-items: stretch; }
             .grid-row > div { padding: 1rem; }
             
             .grid-header > div:first-child, .grid-row > div:first-child { padding-left: 1.5rem; }
@@ -244,7 +244,7 @@
 
             .g-col-name { flex-direction: row; align-items: center; grid-column: auto; display: flex; }
             .g-col-budget { display: flex; flex-direction: column; justify-content: center; align-items: center; color: var(--text-muted); font-size: 0.9rem; font-variant-numeric: tabular-nums; text-align: center; }
-            .g-col-actual { margin-top: 0; justify-content: center; align-items: flex-end; grid-column: auto; display: flex; flex-direction: column; }
+            .g-col-actual { margin-top: 0; justify-content: center; align-items: center; grid-column: auto; display: flex; flex-direction: column; }
             .g-col-diff { margin-top: 0; justify-content: center; align-items: center; font-size: 0.9rem; grid-column: auto; display: flex; }
             .g-col-actions { display: flex; grid-column: auto; margin-top: 0; justify-content: flex-end; opacity: 0; pointer-events: none; transition: opacity 0.2s; align-items: center; }
             .grid-row:hover .g-col-actions { opacity: 1; pointer-events: auto; }
@@ -286,9 +286,8 @@
         .mobile-budget-context { color: var(--text-muted); font-size: 0.85rem; font-weight: 500; font-variant-numeric: tabular-nums; }
         @media (min-width: 768px) { .mobile-budget-context { display: none; } }
 
-        .badge { background: var(--bg-alt); color: var(--text-muted); font-size: 0.65rem; font-weight: 600; padding: 0.15rem 0.4rem; border-radius: 9999px; margin-left: 0.5rem; }
-        .btn-actual svg.action-icon { width: 1.125rem; height: 1.125rem; margin-left: 0.25rem; color: var(--text-light); opacity: 0.5; transition: opacity 0.2s; }
-        .btn-actual:hover svg.action-icon { opacity: 1; }
+        .badge { background: transparent; color: var(--text-muted); font-size: 0.65rem; font-weight: 600; padding: 0.15rem 0.35rem; border-radius: var(--radius-sm); border: 1px solid var(--border); transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; }
+        .btn-actual:hover .badge { background: var(--primary-bg); color: var(--primary); border-color: var(--primary-border); }
 
         .progress-bar-container { width: 100%; height: 6px; background: var(--border); border-radius: 99px; overflow: hidden; margin-top: 0.25rem; }
         @media (min-width: 768px) { .progress-bar-container { height: 4px; } }
@@ -2114,13 +2113,12 @@
 
                 const progressBarHtml = `<div class="progress-bar-container"><div class="progress-bar-fill" style="width: ${pct}%; background-color: ${barColor};"></div></div>`;
                 const transactionCount = item.transactions.length;
-                const badgeHtml = transactionCount > 0 ? `<span class="badge">${transactionCount}</span>` : '';
+                const badgeHtml = transactionCount > 0 ? `<span class="badge" title="${transactionCount} Transactions">${transactionCount}</span>` : '';
                 
                 let amtClass = 'amount';
                 if (vals.actual === 0) amtClass = 'amount zero';
                 else if (isUnplannedExpense) amtClass = 'amount unplanned';
                 
-                const openIconHtml = `<svg class="action-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>`;
                 const calcBadge = `<span class="calc-badge" title="${vals.calcDesc}"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg> Auto</span>`;
 
                 let yearlyBadge = '';
@@ -2182,10 +2180,12 @@
                             
                             <div class="g-col-actual">
                                 <div class="actual-content">
-                                    <button onclick="openModal('${sec.id}', ${idx})" class="btn-actual">
-                                        <span class="${amtClass}" id="row-actual-${sec.id}-${idx}">${formatCurrency(vals.actual)}</span>
+                                    <button onclick="openModal('${sec.id}', ${idx})" class="btn-actual" title="View Transactions">
+                                        <div style="display: flex; align-items: center; gap: 0.35rem;">
+                                            <span class="${amtClass}" id="row-actual-${sec.id}-${idx}">${formatCurrency(vals.actual)}</span>
+                                            ${badgeHtml}
+                                        </div>
                                         <span class="mobile-budget-context mobile-hide">of ${formatCurrency(vals.budget)}</span>
-                                        <div>${badgeHtml} ${openIconHtml}</div>
                                     </button>
                                 </div>
                                 <div style="width: 100%;">
@@ -2195,7 +2195,6 @@
                             </div>
                             
                             <div class="g-col-diff">
-                                <span class="mobile-hide" style="color: var(--text-muted);">Diff:</span>
                                 <span class="val-diff ${diffClass}">${diffText}</span>
                             </div>
                             
