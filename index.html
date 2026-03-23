@@ -225,14 +225,14 @@
 
         /* DESKTOP LAYOUT (Kills swipe, turns into normal grid) */
         @media (min-width: 768px) {
-            .grid-header { display: grid; grid-template-columns: 2.5fr 1fr 1.5fr 1fr 80px; gap: 0; padding: 0; align-items: stretch; }
+            .grid-header { display: grid; grid-template-columns: 1.5fr 130px 2fr 130px 80px; gap: 0; padding: 0; align-items: stretch; }
             .grid-header > div { padding: 0.85rem 1rem; display: flex; align-items: center; }
             .grid-header > .text-right { justify-content: flex-end; }
             .grid-header > .text-center { justify-content: center; }
             .grid-header > div:not(:first-child):not(:last-child) { border-left: 1px solid var(--border); }
 
             .row-scroll-wrapper { display: block; overflow: visible; border-bottom: none; }
-            .grid-row { grid-template-columns: 2.5fr 1fr 1.5fr 1fr 80px; gap: 0; padding: 0; border-bottom: 1px solid var(--border-light); align-items: stretch; }
+            .grid-row { grid-template-columns: 1.5fr 130px 2fr 130px 80px; gap: 0; padding: 0; border-bottom: 1px solid var(--border-light); align-items: stretch; }
             .grid-row > div { padding: 1rem; }
             
             .grid-header > div:first-child, .grid-row > div:first-child { padding-left: 1.5rem; }
