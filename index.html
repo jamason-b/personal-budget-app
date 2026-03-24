@@ -651,24 +651,6 @@
         </div>
         <div class="modal-body" style="padding: 0 1rem 1rem 1rem; overflow-y: auto; background: var(--bg-page);">
             <div id="search-results-list" class="tx-list" style="margin-top: 1rem;">
-                <div class="tx-empty" style="border:none; background: transparent;">Search by description, amount, or category...</div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Tabs Reorder Modal -->
-<div id="tabs-reorder-modal" class="modal-overlay">
-    <div class="modal-content" style="max-width: 26rem;">
-        <div class="modal-header">
-            <h3 class="modal-title">Reorder Navigation</h3>
-            <button onclick="closeTabsReorderModal()" class="btn-close">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </button>
-        </div>
-        <div class="modal-body">
-            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">Arrange the bottom navigation tabs to fit your workflow.</p>
-            <div id="tabs-reorder-list" style="display: flex; flex-direction: column; gap: 0.5rem;">
                 <!-- Populated by JS -->
             </div>
         </div>
@@ -1183,11 +1165,6 @@
     function performGlobalSearch() {
         const term = document.getElementById('global-search-input').value.toLowerCase().trim();
         const list = document.getElementById('search-results-list');
-        
-        if (!term) {
-            list.innerHTML = `<div class="tx-empty" style="border:none; background: transparent;">Search by description, amount, or category...</div>`;
-            return;
-        }
 
         let results = [];
         
@@ -1198,13 +1175,15 @@
                     mData[sec].forEach(item => {
                         if(item.transactions) {
                             item.transactions.forEach(tx => {
-                                const searchString = `${tx.desc} ${tx.amount} ${item.name} ${monthKey}`.toLowerCase();
-                                if (searchString.includes(term)) {
-                                    results.push({
-                                        tx: tx,
-                                        categoryName: item.name,
-                                        monthKey: monthKey
-                                    });
+                                if (!term) {
+                                    // If no search term, push all to find the most recent
+                                    results.push({ tx: tx, categoryName: item.name, monthKey: monthKey });
+                                } else {
+                                    // Active search
+                                    const searchString = `${tx.desc} ${tx.amount} ${item.name} ${monthKey}`.toLowerCase();
+                                    if (searchString.includes(term)) {
+                                        results.push({ tx: tx, categoryName: item.name, monthKey: monthKey });
+                                    }
                                 }
                             });
                         }
@@ -1213,17 +1192,34 @@
             });
         });
 
-        results.sort((a, b) => new Date(b.tx.date) - new Date(a.tx.date));
-
-        if (results.length === 0) {
-            list.innerHTML = `<div class="tx-empty" style="border:none; background: transparent;">No matching transactions found.</div>`;
-            return;
+        if (!term) {
+            // Default view: sort by true entry time (timestamp) or fallback to date
+            results.sort((a, b) => {
+                const timeA = a.tx.timestamp || new Date(a.tx.date).getTime();
+                const timeB = b.tx.timestamp || new Date(b.tx.date).getTime();
+                return timeB - timeA;
+            });
+            results = results.slice(0, 15); // Show top 15 most recent
+            
+            if (results.length === 0) {
+                list.innerHTML = `<div class="tx-empty" style="border:none; background: transparent;">No transactions recorded yet.</div>`;
+                return;
+            }
+        } else {
+            // Active search view: sort by transaction date
+            results.sort((a, b) => new Date(b.tx.date) - new Date(a.tx.date));
+            
+            if (results.length === 0) {
+                list.innerHTML = `<div class="tx-empty" style="border:none; background: transparent;">No matching transactions found.</div>`;
+                return;
+            }
         }
 
-        let html = '';
+        let html = !term ? `<div style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.75rem; letter-spacing: 0.05em;">Recently Added</div>` : '';
+        
         results.forEach(res => {
             html += `
-                <div class="tx-item" style="cursor: pointer; display: block; border-left: 4px solid var(--primary);" onclick="jumpToMonth('${res.monthKey}')">
+                <div class="tx-item" style="cursor: pointer; display: block; border-left: 4px solid var(--primary); margin-bottom: 0.75rem;" onclick="jumpToMonth('${res.monthKey}')">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.25rem;">
                         <span class="tx-desc-stack" style="font-size: 0.95rem;">${res.tx.desc} <span style="color: var(--text-light); font-size: 0.75rem; font-weight: 400;">(${res.categoryName})</span></span>
                         <span class="tx-amount-large" style="font-size: 1.1rem;">${formatCurrency(res.tx.amount)}</span>
@@ -2001,7 +1997,7 @@
             const targetMonthStr = monthNames[parseInt(m) - 1] + ' ' + y;
             
             getOrCreateMonthData(targetMonthStr);
-            budgetData[targetMonthStr][secId][idx].transactions.push({ date: dateStr, desc: desc, amount: amount });
+            budgetData[targetMonthStr][secId][idx].transactions.push({ date: dateStr, desc: desc, amount: amount, timestamp: Date.now() });
 
             saveData();
             closeQuickAddModal();
@@ -2713,12 +2709,13 @@
             pushUndoState();
             haptic('medium');
             if (editingTxIndex !== null) {
-                budgetData[currentMonthStr][activeModalCategory][activeModalIndex].transactions[editingTxIndex] = { date: date, desc: desc, amount: amount };
+                const oldTx = budgetData[currentMonthStr][activeModalCategory][activeModalIndex].transactions[editingTxIndex];
+                budgetData[currentMonthStr][activeModalCategory][activeModalIndex].transactions[editingTxIndex] = { date: date, desc: desc, amount: amount, timestamp: oldTx.timestamp || Date.now() };
                 editingTxIndex = null;
                 document.getElementById('btn-add-tx').innerText = "Add Transaction";
                 document.getElementById('btn-cancel-tx').style.display = "none";
             } else {
-                budgetData[currentMonthStr][activeModalCategory][activeModalIndex].transactions.push({ date: date, desc: desc, amount: amount });
+                budgetData[currentMonthStr][activeModalCategory][activeModalIndex].transactions.push({ date: date, desc: desc, amount: amount, timestamp: Date.now() });
             }
             saveData();
             renderTransactionsList();
