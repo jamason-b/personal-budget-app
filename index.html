@@ -14,7 +14,7 @@
     <link rel="icon" href="app-icon.jpg">
     <link rel="apple-touch-icon" href="app-icon.jpg">
     
-    <!-- Chart.js for Analytics -->
+    <!-- Chart.js for Analytics & Sparklines -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
@@ -32,6 +32,7 @@
             --bg-page: #f8fafc;
             --bg-card: #ffffff;
             --bg-alt: #f1f5f9;
+            --bg-alt-translucent: rgba(241, 245, 249, 0.85);
             --text-main: #0f172a;
             --text-strong: #1e293b;
             --text-muted: #64748b;
@@ -46,7 +47,7 @@
             --primary-border: #bfdbfe;
             --primary-badge-bg: #dbeafe;
             
-            --success: #16a34a;
+            --success: #22c55e;
             --danger: #ef4444;
             --danger-hover: #dc2626;
             --danger-bg: #fef2f2;
@@ -75,12 +76,13 @@
             --bg-page: #0f172a;
             --bg-card: #1e293b;
             --bg-alt: #334155;
+            --bg-alt-translucent: rgba(51, 65, 85, 0.85);
             --text-main: #f1f5f9;
             --text-strong: #ffffff;
             --text-muted: #94a3b8;
             --text-light: #64748b;
-            --border: #475569;
-            --border-light: #334155;
+            --border: #334155;
+            --border-light: #1e293b;
             
             --primary: #3b82f6;
             --primary-hover: #60a5fa;
@@ -169,9 +171,14 @@
         .summary-card.highlight .summary-value { color: var(--primary-text); }
 
         /* Monthly View Smart Section Headers */
-        .section-card { background: var(--bg-card); border-radius: var(--radius-xl); border: 1px solid var(--border); box-shadow: var(--shadow-sm); overflow: hidden; margin-bottom: 1.5rem; }
+        .section-card { background: var(--bg-card); border-radius: var(--radius-xl); border: 1px solid var(--border); box-shadow: var(--shadow-sm); margin-bottom: 1.5rem; } /* Removed overflow hidden so sticky works */
         
-        .section-header { padding: 1rem 1.25rem; background: var(--bg-alt); border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 0.75rem; cursor: pointer; user-select: none; transition: background 0.2s; }
+        .section-header { 
+            padding: 1rem 1.25rem; background: var(--bg-alt-translucent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 0.75rem; cursor: pointer; user-select: none; transition: background 0.2s, border-radius 0.2s; 
+            position: -webkit-sticky; position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+        }
+        .section-header.collapsed { border-bottom: none; border-radius: var(--radius-xl); }
+        
         .section-header-title { display: flex; align-items: center; gap: 0.5rem; width: 100%; }
         .section-totals { display: flex; width: 100%; gap: 0.5rem; background: var(--bg-card); padding: 0.5rem 0.75rem; border-radius: var(--radius-lg); border: 1px solid var(--border); justify-content: space-around; box-shadow: var(--shadow-sm); }
         .tot-block { display: flex; flex-direction: column; align-items: center; justify-content: center; }
@@ -189,7 +196,6 @@
             .tot-block:first-child::after { content: '|'; color: var(--border); margin-left: 0.5rem; font-weight: 400; }
         }
         
-        .section-header:hover { background: var(--header-hover); }
         .icon-collapse { width: 1.25rem; height: 1.25rem; color: var(--text-muted); transition: transform 0.2s ease; flex-shrink: 0;}
         .section-header.collapsed .icon-collapse { transform: rotate(-90deg); }
         .section-title { font-size: 1.05rem; font-weight: 600; color: var(--text-strong); letter-spacing: -0.01em; }
@@ -293,7 +299,7 @@
         @media (min-width: 768px) { .progress-bar-container { height: 4px; } }
         .progress-bar-fill { height: 100%; border-radius: 99px; transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
 
-        .btn-add-row { width: 100%; text-align: left; padding: 1.25rem 1.5rem; background: var(--bg-card); border: none; box-shadow: inset 0 1px 0 var(--border-light); color: var(--primary); font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+        .btn-add-row { width: 100%; text-align: left; padding: 1.25rem 1.5rem; background: var(--bg-card); border: none; box-shadow: inset 0 1px 0 var(--border-light); color: var(--primary); font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: background 0.2s; border-radius: 0 0 var(--radius-xl) var(--radius-xl); }
         .btn-add-row:hover { background: var(--bg-alt); }
 
         /* ACCOUNTS TAB STYLES */
@@ -302,9 +308,9 @@
         .nw-value { font-size: 2.25rem; font-weight: 700; color: var(--text-strong); font-variant-numeric: tabular-nums; line-height: 1; letter-spacing: -0.03em; }
         .account-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 1.25rem; margin-bottom: 1rem; box-shadow: var(--shadow-sm); display: flex; justify-content: space-between; align-items: center; transition: box-shadow 0.2s; }
         .account-card:hover { box-shadow: var(--shadow-md); }
-        .acct-info { display: flex; flex-direction: column; gap: 0.25rem; }
+        .acct-info { display: flex; flex-direction: column; gap: 0.25rem; flex: 1; }
         .acct-name { font-weight: 600; color: var(--text-strong); font-size: 1.05rem; }
-        .acct-bal { font-size: 1.25rem; font-weight: 700; color: var(--text-strong); font-variant-numeric: tabular-nums; }
+        .acct-bal { font-size: 1.25rem; font-weight: 700; color: var(--text-strong); font-variant-numeric: tabular-nums; text-align: right; min-width: 80px; }
         
         .update-banner { background: var(--primary-bg); border: 1px solid var(--primary-border); border-radius: var(--radius-lg); padding: 1rem 1.25rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; }
         .update-banner p { color: var(--primary-text); font-weight: 500; font-size: 0.9rem; margin: 0; }
@@ -651,6 +657,24 @@
         </div>
         <div class="modal-body" style="padding: 0 1rem 1rem 1rem; overflow-y: auto; background: var(--bg-page);">
             <div id="search-results-list" class="tx-list" style="margin-top: 1rem;">
+                <div class="tx-empty" style="border:none; background: transparent;">Search by description, amount, or category...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabs Reorder Modal -->
+<div id="tabs-reorder-modal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 26rem;">
+        <div class="modal-header">
+            <h3 class="modal-title">Reorder Navigation</h3>
+            <button onclick="closeTabsReorderModal()" class="btn-close">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+        <div class="modal-body">
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">Arrange the bottom navigation tabs to fit your workflow.</p>
+            <div id="tabs-reorder-list" style="display: flex; flex-direction: column; gap: 0.5rem;">
                 <!-- Populated by JS -->
             </div>
         </div>
@@ -1176,13 +1200,11 @@
                         if(item.transactions) {
                             item.transactions.forEach(tx => {
                                 if (!term) {
-                                    // If no search term, push all to find the most recent
-                                    results.push({ tx: tx, categoryName: item.name, monthKey: monthKey });
+                                    results.push({ tx: tx, categoryName: item.name, monthKey: monthKey, isIncome: sec === 'income' });
                                 } else {
-                                    // Active search
                                     const searchString = `${tx.desc} ${tx.amount} ${item.name} ${monthKey}`.toLowerCase();
                                     if (searchString.includes(term)) {
-                                        results.push({ tx: tx, categoryName: item.name, monthKey: monthKey });
+                                        results.push({ tx: tx, categoryName: item.name, monthKey: monthKey, isIncome: sec === 'income' });
                                     }
                                 }
                             });
@@ -1218,11 +1240,14 @@
         let html = !term ? `<div style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.75rem; letter-spacing: 0.05em;">Recently Added</div>` : '';
         
         results.forEach(res => {
+            const displayAmt = res.isIncome ? `+${formatCurrency(Math.abs(res.tx.amount))}` : `-${formatCurrency(Math.abs(res.tx.amount))}`;
+            const colorStyle = res.isIncome ? `color: var(--success);` : `color: var(--text-strong);`;
+
             html += `
                 <div class="tx-item" style="cursor: pointer; display: block; border-left: 4px solid var(--primary); margin-bottom: 0.75rem;" onclick="jumpToMonth('${res.monthKey}')">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.25rem;">
                         <span class="tx-desc-stack" style="font-size: 0.95rem;">${res.tx.desc} <span style="color: var(--text-light); font-size: 0.75rem; font-weight: 400;">(${res.categoryName})</span></span>
-                        <span class="tx-amount-large" style="font-size: 1.1rem;">${formatCurrency(res.tx.amount)}</span>
+                        <span class="tx-amount-large" style="font-size: 1.1rem; ${colorStyle}">${displayAmt}</span>
                     </div>
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <span class="tx-date-stack">${formatDate(res.tx.date)}</span>
@@ -1347,6 +1372,9 @@
         
         if (!document.getElementById('view-analytics').classList.contains('hidden')) {
             renderAnalytics(); 
+        }
+        if (!document.getElementById('view-accounts').classList.contains('hidden')) {
+            renderAccounts(); 
         }
     }
 
@@ -1754,15 +1782,39 @@
         const data = getOrCreateMonthData(currentMonthStr);
         const container = document.getElementById('accounts-container');
         
+        // Generate last 6 months for sparklines
+        const historyMonths = [];
+        let tempMonth = currentMonthStr;
+        for(let i=0; i<6; i++) {
+            historyMonths.unshift(tempMonth);
+            tempMonth = getPreviousMonthStr(tempMonth);
+        }
+
+        let sparklineDataStore = [];
         let totalNetWorth = 0;
         let html = '';
 
         data.accounts.forEach((acct, idx) => {
             totalNetWorth += acct.balance;
+            
+            // Get historical balances
+            const sparkData = historyMonths.map(m => {
+                if (budgetData[m] && budgetData[m].accounts) {
+                    const pastAcct = budgetData[m].accounts.find(a => a.name === acct.name);
+                    return pastAcct ? pastAcct.balance : 0;
+                }
+                return 0;
+            });
+            
+            sparklineDataStore.push({ id: `spark-${idx}`, data: sparkData });
+
             html += `
                 <div class="account-card">
                     <div class="acct-info">
                         <span class="acct-name">${acct.name}</span>
+                    </div>
+                    <div style="width: 70px; height: 30px; margin: 0 1rem; position: relative; flex-shrink: 0;">
+                        <canvas id="spark-${idx}"></canvas>
                     </div>
                     <div class="acct-bal">${formatCurrency(acct.balance)}</div>
                 </div>
@@ -1771,6 +1823,44 @@
 
         container.innerHTML = html;
         animateValue('total-net-worth', totalNetWorth, 500, formatCurrency);
+
+        // Render Sparklines
+        if (!window.sparkChartInstances) window.sparkChartInstances = {};
+        Object.values(window.sparkChartInstances).forEach(chart => chart.destroy());
+        window.sparkChartInstances = {};
+
+        requestAnimationFrame(() => {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            const sparkColor = isDark ? '#60a5fa' : '#2563eb'; 
+            
+            sparklineDataStore.forEach(item => {
+                const ctx = document.getElementById(item.id);
+                if(!ctx) return;
+                
+                window.sparkChartInstances[item.id] = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: historyMonths,
+                        datasets: [{
+                            data: item.data,
+                            borderColor: sparkColor,
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            tension: 0.4,
+                            fill: false
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false }, tooltip: { enabled: false } },
+                        scales: { x: { display: false }, y: { display: false, min: Math.min(...item.data) * 0.95, max: Math.max(...item.data) * 1.05 } },
+                        layout: { padding: 2 },
+                        animation: { duration: 0 }
+                    }
+                });
+            });
+        });
 
         const today = new Date();
         const currentCalMonthStr = `${monthNames[today.getMonth()]} ${today.getFullYear()}`;
@@ -2115,6 +2205,7 @@
                 if (vals.actual === 0) amtClass = 'amount zero';
                 else if (isUnplannedExpense) amtClass = 'amount unplanned';
                 
+                const openIconHtml = `<svg class="action-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>`;
                 const calcBadge = `<span class="calc-badge" title="${vals.calcDesc}"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg> Auto</span>`;
 
                 let yearlyBadge = '';
@@ -2293,7 +2384,6 @@
 
     function renderYearly() {
         const yearSelect = document.getElementById('year-selector');
-        // Safely extract the year from the selector, otherwise fallback to the global view's year.
         const year = yearSelect && yearSelect.value ? yearSelect.value : currentMonthStr.split(' ')[1];
         const container = document.getElementById('yearly-container');
         const yearMonths = monthNames.map(m => `${m} ${year}`);
@@ -2641,10 +2731,14 @@
 
         let html = ''; let total = 0;
         const sortedTx = [...item.transactions].sort((a, b) => new Date(a.date) - new Date(b.date));
+        const isIncome = activeModalCategory === 'income';
         
         sortedTx.forEach((tx, sortedIdx) => {
             const originalIdx = item.transactions.indexOf(tx); 
             total += tx.amount;
+            
+            const displayAmt = isIncome ? `+${formatCurrency(Math.abs(tx.amount))}` : `-${formatCurrency(Math.abs(tx.amount))}`;
+            const colorStyle = isIncome ? `color: var(--success);` : `color: var(--text-strong);`;
             
             const txActions = `
                 <button type="button" onclick="editTransaction(${originalIdx})" class="btn-tx-action edit" title="Edit Transaction"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg></button>
@@ -2656,7 +2750,7 @@
                 <div class="tx-scroll-wrapper" ${editingTxIndex === originalIdx ? 'style="border-color: var(--primary);"' : ''}>
                     <div class="tx-item" ${editingTxIndex === originalIdx ? 'style="background: var(--primary-bg);"' : ''}>
                         <div class="tx-info">
-                            <span class="tx-amount-large">${formatCurrency(tx.amount)}</span>
+                            <span class="tx-amount-large" style="${colorStyle}">${displayAmt}</span>
                             <span class="tx-desc-stack">${tx.desc}</span>
                             <span class="tx-date-stack">${formatDate(tx.date)}</span>
                         </div>
