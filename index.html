@@ -505,7 +505,7 @@
         
         <div style="display: flex; align-items: center; gap: 0.5rem;">
             <!-- Search Button -->
-            <button onclick="openSearchModal()" class="theme-btn" style="border: none; background: transparent; box-shadow: none; padding: 0.5rem; color: var(--text-strong);" title="Search Transactions">
+            <button onclick="openSearchModal()" type="button" style="border: none; background: transparent; box-shadow: none; padding: 0.5rem; color: var(--text-strong); cursor: pointer; position: relative; z-index: 10; display: flex; align-items: center; justify-content: center;" title="Search Transactions">
                 <svg width="1.5rem" height="1.5rem" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
             </button>
             
@@ -1241,7 +1241,7 @@
         
         results.forEach(res => {
             const displayAmt = res.isIncome ? `+${formatCurrency(Math.abs(res.tx.amount))}` : `-${formatCurrency(Math.abs(res.tx.amount))}`;
-            const colorStyle = res.isIncome ? `color: var(--success);` : `color: var(--text-strong);`;
+            const colorStyle = res.isIncome ? `color: var(--success);` : `color: var(--danger);`;
 
             html += `
                 <div class="tx-item" style="cursor: pointer; display: block; border-left: 4px solid var(--primary); margin-bottom: 0.75rem;" onclick="jumpToMonth('${res.monthKey}')">
@@ -1409,6 +1409,7 @@
     let editingRuleIndex = null; let editingTxIndex = null; 
     let collapsedSections = { income: false, necessary: false, discretionary: false, investments: false };
     let calculationRules = [];
+    let localLastUpdated = 0;
 
     const STORAGE_KEY = 'budgetAppV16'; 
     const RULES_KEY = 'budgetRulesV4';
@@ -1428,16 +1429,34 @@
 
     function loadLocalData() {
         const saved = localStorage.getItem(STORAGE_KEY);
+        let hasLegacyRules = false;
+
         if (saved) {
-            budgetData = JSON.parse(saved);
+            try {
+                const parsed = JSON.parse(saved);
+                if (parsed && parsed.lastUpdated) {
+                    budgetData = parsed.budgetData || {};
+                    calculationRules = parsed.calculationRules || [];
+                    localLastUpdated = parsed.lastUpdated;
+                } else {
+                    budgetData = parsed;
+                    localLastUpdated = Date.now();
+                    hasLegacyRules = true;
+                }
+            } catch(e) {}
         } else {
             const d = new Date();
             currentMonthStr = `${monthNames[d.getMonth()]} ${d.getFullYear()}`;
             budgetData = { [currentMonthStr]: JSON.parse(JSON.stringify(defaultDataTemplate)) };
+            localLastUpdated = Date.now();
+            hasLegacyRules = true;
         }
-        const savedRules = localStorage.getItem(RULES_KEY);
-        if (savedRules) calculationRules = JSON.parse(savedRules);
-        else calculationRules = JSON.parse(JSON.stringify(defaultCalculationRules));
+
+        if (hasLegacyRules) {
+            const savedRules = localStorage.getItem(RULES_KEY);
+            if (savedRules) calculationRules = JSON.parse(savedRules);
+            else calculationRules = JSON.parse(JSON.stringify(defaultCalculationRules));
+        }
     }
 
     function pushUndoState() {
@@ -1477,10 +1496,14 @@
                 updateSyncDot('syncing');
                 const docRef = doc_fn(db, 'budget_data', 'master_save');
                 
-                const saveTask = setDoc_fn(docRef, { budgetData: budgetData, calculationRules: calculationRules });
+                const payload = { budgetData: budgetData, calculationRules: calculationRules, lastUpdated: Date.now() };
+                const saveTask = setDoc_fn(docRef, payload);
                 const timeoutTask = new Promise((_, reject) => setTimeout(() => reject(new Error("TIMEOUT")), 10000));
                 
                 await Promise.race([saveTask, timeoutTask]);
+                
+                localLastUpdated = payload.lastUpdated;
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
                 
                 updateSyncDot('synced');
                 customAlert("✅ SUCCESS! Your data has been forcefully pushed to the cloud.");
@@ -2738,7 +2761,7 @@
             total += tx.amount;
             
             const displayAmt = isIncome ? `+${formatCurrency(Math.abs(tx.amount))}` : `-${formatCurrency(Math.abs(tx.amount))}`;
-            const colorStyle = isIncome ? `color: var(--success);` : `color: var(--text-strong);`;
+            const colorStyle = isIncome ? `color: var(--success);` : `color: var(--danger);`;
             
             const txActions = `
                 <button type="button" onclick="editTransaction(${originalIdx})" class="btn-tx-action edit" title="Edit Transaction"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg></button>
@@ -3191,8 +3214,26 @@
         fsModule.onSnapshot(docRef, (docSnap) => {
             if (docSnap.exists()) {
                 const data = docSnap.data();
+                const cloudLastUpdated = data.lastUpdated || 0;
+                
+                // Conflict Resolution: If Local is newer, push local changes to cloud
+                if (localLastUpdated > cloudLastUpdated && localLastUpdated > 0) {
+                    console.log("Local data is newer. Pushing to cloud...");
+                    window.saveData(false, true); 
+                    return;
+                }
+
                 budgetData = data.budgetData || {};
                 calculationRules = data.calculationRules || [];
+                localLastUpdated = cloudLastUpdated;
+                
+                // Mirror to local storage immediately
+                localStorage.setItem(STORAGE_KEY, JSON.stringify({
+                    budgetData: budgetData,
+                    calculationRules: calculationRules,
+                    lastUpdated: localLastUpdated
+                }));
+
                 updateSyncDot('synced');
                 
                 if (!budgetData[currentMonthStr]) {
@@ -3215,25 +3256,41 @@
         });
     }
 
-    window.saveData = async function(skipCloud = false) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(budgetData));
-        localStorage.setItem(RULES_KEY, JSON.stringify(calculationRules));
+    window.saveData = async function(skipCloud = false, isBackgroundSync = false) {
+        const timestamp = Date.now();
+        localLastUpdated = timestamp;
+
+        const payload = {
+            budgetData: budgetData,
+            calculationRules: calculationRules,
+            lastUpdated: timestamp
+        };
+
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
 
         if (!skipCloud && db && setDoc_fn && doc_fn) {
-            updateSyncDot('syncing');
+            if (!isBackgroundSync) updateSyncDot('syncing');
             const docRef = doc_fn(db, 'budget_data', 'master_save');
             try {
-                const saveTask = setDoc_fn(docRef, { budgetData: budgetData, calculationRules: calculationRules });
+                const saveTask = setDoc_fn(docRef, payload);
                 const timeoutTask = new Promise((_, reject) => setTimeout(() => reject(new Error("TIMEOUT")), 8000));
                 
                 await Promise.race([saveTask, timeoutTask]);
-                updateSyncDot('synced');
+                if (!isBackgroundSync) updateSyncDot('synced');
             } catch(e) {
                 console.error("Cloud Save Failed", e);
-                updateSyncDot('offline');
+                if (!isBackgroundSync) updateSyncDot('offline');
             }
         }
     };
+
+    // Auto-save on tab close or backgrounding
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') window.saveData(false, true);
+    });
+    window.addEventListener('beforeunload', () => {
+        window.saveData(false, true);
+    });
 
     initCloud();
 
