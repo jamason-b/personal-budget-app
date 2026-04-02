@@ -1970,6 +1970,37 @@
         }
         
         budgetData[currentMonthStr].accounts = newAccounts;
+
+        // FORWARD SYNC: Propagate the new account list structure to all future months
+        const [currM, currY] = currentMonthStr.split(' ');
+        const currDate = new Date(`${currM} 1, ${currY}`);
+
+        Object.keys(budgetData).forEach(m => {
+            const [checkM, checkY] = m.split(' ');
+            const checkDate = new Date(`${checkM} 1, ${checkY}`);
+            
+            // If it is a future month that already exists
+            if (checkDate > currDate) {
+                if (!budgetData[m].accounts) budgetData[m].accounts = [];
+                
+                const futureAccounts = [];
+                
+                // Map the new layout to the future month
+                newAccounts.forEach(newAcct => {
+                    const existingFutureAcct = budgetData[m].accounts.find(a => a.name === newAcct.name);
+                    if (existingFutureAcct) {
+                        // If it existed in the future, keep its future balance
+                        futureAccounts.push(existingFutureAcct);
+                    } else {
+                        // If it's a brand new account, add it to the future month with the current balance
+                        futureAccounts.push({ name: newAcct.name, balance: newAcct.balance });
+                    }
+                });
+                
+                budgetData[m].accounts = futureAccounts;
+            }
+        });
+
         saveData();
         closeAccountsModal();
         renderAccounts();
