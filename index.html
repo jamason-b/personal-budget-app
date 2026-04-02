@@ -171,7 +171,7 @@
         .summary-card.highlight .summary-value { color: var(--primary-text); }
 
         /* Monthly View Smart Section Headers */
-        .section-card { background: var(--bg-card); border-radius: var(--radius-xl); border: 1px solid var(--border); box-shadow: var(--shadow-sm); margin-bottom: 1.5rem; } /* Removed overflow hidden so sticky works */
+        .section-card { background: var(--bg-card); border-radius: var(--radius-xl); border: 1px solid var(--border); box-shadow: var(--shadow-sm); margin-bottom: 1.5rem; } 
         
         .section-header { 
             padding: 1rem 1.25rem; background: var(--bg-alt-translucent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 0.75rem; cursor: pointer; user-select: none; transition: background 0.2s, border-radius 0.2s; 
@@ -505,8 +505,8 @@
         
         <div style="display: flex; align-items: center; gap: 0.5rem;">
             <!-- Search Button -->
-            <button onclick="openSearchModal()" type="button" style="border: none; background: transparent; box-shadow: none; padding: 0.5rem; color: var(--text-strong); cursor: pointer; position: relative; z-index: 10; display: flex; align-items: center; justify-content: center;" title="Search Transactions">
-                <svg width="1.5rem" height="1.5rem" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            <button onclick="openSearchModal()" type="button" style="background: var(--bg-alt); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 0.5rem; color: var(--text-strong); cursor: pointer; position: relative; z-index: 50; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-sm); transition: background 0.2s;" title="Search Transactions">
+                <svg width="1.25rem" height="1.25rem" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
             </button>
             
             <!-- Dynamic Desktop Tabs -->
@@ -1611,18 +1611,42 @@
         if (!budgetData[monthStr]) {
             const keys = Object.keys(budgetData);
             if (keys.length > 0) {
-                const templateKey = keys[keys.length - 1]; 
+                // Strictly evaluate chronological past months for template creation
+                const [targetM, targetY] = monthStr.split(' ');
+                const targetDate = new Date(parseInt(targetY), monthNames.indexOf(targetM), 1);
+                
+                const sortedKeys = [...keys].sort((a, b) => {
+                    const [mA, yA] = a.split(' ');
+                    const [mB, yB] = b.split(' ');
+                    return new Date(parseInt(yA), monthNames.indexOf(mA), 1) - new Date(parseInt(yB), monthNames.indexOf(mB), 1);
+                });
+                
+                // Find latest month that is before or exactly targetDate
+                let templateKey = sortedKeys[sortedKeys.length - 1]; // default to newest
+                for (let i = sortedKeys.length - 1; i >= 0; i--) {
+                    const [m, y] = sortedKeys[i].split(' ');
+                    const d = new Date(parseInt(y), monthNames.indexOf(m), 1);
+                    if (d <= targetDate) {
+                        templateKey = sortedKeys[i];
+                        break;
+                    }
+                }
+                
                 const templateData = budgetData[templateKey];
                 let newMonth = JSON.parse(JSON.stringify(templateData));
                 
+                // Erase transactions for the new month
                 ['income', 'necessary', 'discretionary', 'investments'].forEach(sec => {
                     if(newMonth[sec]) newMonth[sec].forEach(item => { item.transactions = []; });
                 });
                 
+                // Inherit exact accounts balances from strictly the preceding chronological month (if exists)
                 const prevMonthStr = getPreviousMonthStr(monthStr);
                 if (budgetData[prevMonthStr] && budgetData[prevMonthStr].accounts) {
                     newMonth.accounts = JSON.parse(JSON.stringify(budgetData[prevMonthStr].accounts));
-                } else if (!newMonth.accounts) {
+                } else if (newMonth.accounts) {
+                    newMonth.accounts.forEach(a => a.balance = 0); // Keep existing structure, reset to 0
+                } else {
                     newMonth.accounts = JSON.parse(JSON.stringify(defaultAccounts));
                 }
                 
@@ -1633,6 +1657,7 @@
             if(!skipSave) saveData();
         }
         
+        // Safety net
         if (!budgetData[monthStr].accounts) {
             budgetData[monthStr].accounts = JSON.parse(JSON.stringify(defaultAccounts));
             if(!skipSave) saveData();
@@ -1973,19 +1998,19 @@
 
         // FORWARD SYNC: Propagate the new account list structure to all future months
         const [currM, currY] = currentMonthStr.split(' ');
-        const currDate = new Date(`${currM} 1, ${currY}`);
+        const currDate = new Date(parseInt(currY), monthNames.indexOf(currM), 1);
 
         Object.keys(budgetData).forEach(m => {
             const [checkM, checkY] = m.split(' ');
-            const checkDate = new Date(`${checkM} 1, ${checkY}`);
+            const checkDate = new Date(parseInt(checkY), monthNames.indexOf(checkM), 1);
             
-            // If it is a future month that already exists
+            // Only update logically future dates
             if (checkDate > currDate) {
                 if (!budgetData[m].accounts) budgetData[m].accounts = [];
                 
                 const futureAccounts = [];
                 
-                // Map the new layout to the future month
+                // Map the newly updated layout to the future month
                 newAccounts.forEach(newAcct => {
                     const existingFutureAcct = budgetData[m].accounts.find(a => a.name === newAcct.name);
                     if (existingFutureAcct) {
@@ -2421,11 +2446,11 @@
             haptic('medium');
             const targetName = item.name;
             const [currM, currY] = currentMonthStr.split(' ');
-            const currDate = new Date(`${currM} 1, ${currY}`);
+            const currDate = new Date(parseInt(currY), monthNames.indexOf(currM), 1);
 
             Object.keys(budgetData).forEach(m => {
                 const [checkM, checkY] = m.split(' ');
-                const checkDate = new Date(`${checkM} 1, ${checkY}`);
+                const checkDate = new Date(parseInt(checkY), monthNames.indexOf(checkM), 1);
                 if (checkDate >= currDate) {
                     const matchIdx = budgetData[m][secId].findIndex(x => x.name === targetName);
                     if (matchIdx !== -1) budgetData[m][secId].splice(matchIdx, 1);
@@ -2922,11 +2947,11 @@
             if (isYearly) { yearlyAmount = inputValue; budget = inputValue / 12; }
 
             const [currM, currY] = currentMonthStr.split(' ');
-            const currDate = new Date(`${currM} 1, ${currY}`);
+            const currDate = new Date(parseInt(currY), monthNames.indexOf(currM), 1);
 
             Object.keys(budgetData).forEach(m => {
                 const [checkM, checkY] = m.split(' ');
-                const checkDate = new Date(`${checkM} 1, ${checkY}`);
+                const checkDate = new Date(parseInt(checkY), monthNames.indexOf(checkM), 1);
                 if (checkDate >= currDate) {
                     const exists = budgetData[m][activeRowSection].find(x => x.name === name);
                     if (!exists) {
@@ -3013,11 +3038,11 @@
             haptic('medium');
             const oldName = budgetData[currentMonthStr][activeEditSection][activeEditIndex].name;
             const [currM, currY] = currentMonthStr.split(' ');
-            const currDate = new Date(`${currM} 1, ${currY}`);
+            const currDate = new Date(parseInt(currY), monthNames.indexOf(currM), 1);
 
             Object.keys(budgetData).forEach(m => {
                 const [checkM, checkY] = m.split(' ');
-                const checkDate = new Date(`${checkM} 1, ${checkY}`);
+                const checkDate = new Date(parseInt(checkY), monthNames.indexOf(checkM), 1);
                 if (checkDate >= currDate) {
                     const itemToEdit = budgetData[m][activeEditSection].find(x => x.name === oldName);
                     if (itemToEdit) {
