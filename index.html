@@ -651,7 +651,7 @@
         <div class="modal-header" style="padding: 1rem 1.25rem; display: flex; gap: 0.75rem; align-items: center;">
             <div style="position: relative; flex: 1;">
                 <svg style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); width: 1.25rem; height: 1.25rem; color: var(--text-muted);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                <input type="text" id="global-search-input" class="input-text" style="padding-left: 2.5rem; width: 100%; background: var(--bg-page); border-color: transparent;" placeholder="Search transactions..." oninput="performGlobalSearch()">
+                <input type="text" id="global-search-input" class="input-text" style="padding-left: 2.5rem; width: 100%; background: var(--bg-page); border-color: transparent;" placeholder="Search transactions..." oninput="debouncedSearch()">
             </div>
             <button onclick="closeSearchModal()" style="background: none; border: none; font-weight: 600; color: var(--primary); font-size: 0.95rem; cursor: pointer; padding: 0.5rem;">Cancel</button>
         </div>
@@ -1077,8 +1077,15 @@
 
     const fullMonthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const SECTION_IDS = ['income', 'necessary', 'discretionary', 'investments'];
 
-    let yearlyViewMode = 'summary'; 
+    // Reusable date parser: "Mar 2026" -> Date object (1st of month)
+    const parseMonthStr = (monthStr) => {
+        const [mName, yStr] = monthStr.split(' ');
+        return new Date(parseInt(yStr), monthNames.indexOf(mName), 1);
+    };
+
+    let yearlyViewMode = 'summary';
     let undoStack = [];
     const MAX_UNDO = 15;
     
@@ -1093,6 +1100,16 @@
         accounts: { label: 'Accounts', icon: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>' },
         yearly: { label: 'Yearly', icon: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>' },
         analytics: { label: 'Analytics', icon: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path>' }
+    };
+
+    // Reusable SVG icon strings (eliminates ~40 duplicated inline SVGs)
+    const ICONS = {
+        close: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>',
+        edit: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>',
+        trash: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>',
+        chevDown: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>',
+        chevUp: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>',
+        chevRight: '<svg class="action-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>'
     };
 
     let appTabsOrder = JSON.parse(localStorage.getItem('budgetTabOrder')) || ['monthly', 'accounts', 'yearly', 'analytics'];
@@ -1138,23 +1155,20 @@
 
     function renderTabsReorderList() {
         const list = document.getElementById('tabs-reorder-list');
-        list.innerHTML = '';
-        
+        let html = '';
+
         appTabsOrder.forEach((tabId, idx) => {
-            list.innerHTML += `
+            html += `
                 <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); padding: 0.75rem 1rem; border: 1px solid var(--border); border-radius: var(--radius-md); box-shadow: var(--shadow-sm);">
                     <span style="font-weight: 500; color: var(--text-strong);"><svg fill="none" stroke="currentColor" style="width:1rem; height:1rem; vertical-align:middle; margin-right:0.5rem;" viewBox="0 0 24 24">${TAB_DEFS[tabId].icon}</svg>${TAB_DEFS[tabId].label}</span>
                     <div style="display: flex; gap: 0.25rem;">
-                        <button type="button" onclick="moveNavigationTab(${idx}, -1)" class="btn-tx-action" style="opacity: 1; pointer-events: auto; padding: 0.35rem; background: var(--bg-alt); border: 1px solid var(--border);" ${idx === 0 ? 'disabled style="opacity:0.3;"' : ''}>
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>
-                        </button>
-                        <button type="button" onclick="moveNavigationTab(${idx}, 1)" class="btn-tx-action" style="opacity: 1; pointer-events: auto; padding: 0.35rem; background: var(--bg-alt); border: 1px solid var(--border);" ${idx === appTabsOrder.length - 1 ? 'disabled style="opacity:0.3;"' : ''}>
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                        </button>
+                        <button type="button" onclick="moveNavigationTab(${idx}, -1)" class="btn-tx-action" style="opacity: 1; pointer-events: auto; padding: 0.35rem; background: var(--bg-alt); border: 1px solid var(--border);" ${idx === 0 ? 'disabled style="opacity:0.3;"' : ''}>${ICONS.chevUp}</button>
+                        <button type="button" onclick="moveNavigationTab(${idx}, 1)" class="btn-tx-action" style="opacity: 1; pointer-events: auto; padding: 0.35rem; background: var(--bg-alt); border: 1px solid var(--border);" ${idx === appTabsOrder.length - 1 ? 'disabled style="opacity:0.3;"' : ''}>${ICONS.chevDown}</button>
                     </div>
                 </div>
             `;
         });
+        list.innerHTML = html;
     }
 
     function moveNavigationTab(idx, dir) {
@@ -1171,6 +1185,20 @@
         }
     }
 
+
+    // --- UTILITY: RE-RENDER ACTIVE VIEWS ---
+    // Renders the monthly view + whichever secondary view is active (avoids scattered conditional checks)
+    function refreshViews() {
+        renderMonthly();
+        if (currentActiveView === 'yearly') renderYearly();
+        if (currentActiveView === 'analytics') renderAnalytics();
+    }
+
+    // --- UTILITY: DEBOUNCE ---
+    const debounce = (fn, delay) => {
+        let timer;
+        return (...args) => { clearTimeout(timer); timer = setTimeout(() => fn(...args), delay); };
+    };
 
     // --- GLOBAL SEARCH LOGIC ---
     function openSearchModal() {
@@ -1194,7 +1222,7 @@
         
         Object.keys(budgetData).forEach(monthKey => {
             const mData = budgetData[monthKey];
-            ['income', 'necessary', 'discretionary', 'investments'].forEach(sec => {
+            SECTION_IDS.forEach(sec => {
                 if(mData[sec]) {
                     mData[sec].forEach(item => {
                         if(item.transactions) {
@@ -1259,7 +1287,10 @@
         
         list.innerHTML = html;
     }
-    
+
+    const debouncedSearch = debounce(performGlobalSearch, 150);
+    window.debouncedSearch = debouncedSearch;
+
     function jumpToMonth(monthKey) {
         haptic('medium');
         closeSearchModal();
@@ -1370,12 +1401,8 @@
         const themeBtn = document.getElementById('theme-toggle');
         if(themeBtn) themeBtn.innerText = newTheme === 'dark' ? '☀️' : '🌙';
         
-        if (!document.getElementById('view-analytics').classList.contains('hidden')) {
-            renderAnalytics(); 
-        }
-        if (!document.getElementById('view-accounts').classList.contains('hidden')) {
-            renderAccounts(); 
-        }
+        if (currentActiveView === 'analytics') renderAnalytics();
+        if (currentActiveView === 'accounts') renderAccounts();
     }
 
     const defaultCalculationRules = [
@@ -1534,14 +1561,11 @@
         let csvContent = "data:text/csv;charset=utf-8,";
         csvContent += "Date,Month,Year,Section,Category,Description,Amount\r\n";
 
-        const sortedMonths = Object.keys(budgetData).sort((a, b) => {
-            const [mA, yA] = a.split(' '); const [mB, yB] = b.split(' ');
-            return new Date(`${mA} 1, ${yA}`) - new Date(`${mB} 1, ${yB}`);
-        });
+        const sortedMonths = Object.keys(budgetData).sort((a, b) => parseMonthStr(a) - parseMonthStr(b));
 
         sortedMonths.forEach(monthStr => {
             const [mName, yStr] = monthStr.split(' ');
-            ['income', 'necessary', 'discretionary', 'investments'].forEach(sec => {
+            SECTION_IDS.forEach(sec => {
                 if(budgetData[monthStr][sec]) {
                     budgetData[monthStr][sec].forEach(item => {
                         if (item.transactions && item.transactions.length > 0) {
@@ -1600,7 +1624,8 @@
         }
     }
 
-    const formatCurrency = (num) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(num);
+    const currencyFormatter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
+    const formatCurrency = (num) => currencyFormatter.format(num);
     const formatDate = (dateStr) => {
         if(!dateStr) return '';
         const [y, m, d] = dateStr.split('-');
@@ -1612,21 +1637,14 @@
             const keys = Object.keys(budgetData);
             if (keys.length > 0) {
                 // Strictly evaluate chronological past months for template creation
-                const [targetM, targetY] = monthStr.split(' ');
-                const targetDate = new Date(parseInt(targetY), monthNames.indexOf(targetM), 1);
-                
-                const sortedKeys = [...keys].sort((a, b) => {
-                    const [mA, yA] = a.split(' ');
-                    const [mB, yB] = b.split(' ');
-                    return new Date(parseInt(yA), monthNames.indexOf(mA), 1) - new Date(parseInt(yB), monthNames.indexOf(mB), 1);
-                });
+                const targetDate = parseMonthStr(monthStr);
+
+                const sortedKeys = [...keys].sort((a, b) => parseMonthStr(a) - parseMonthStr(b));
                 
                 // Find latest month that is before or exactly targetDate
                 let templateKey = sortedKeys[sortedKeys.length - 1]; // default to newest
                 for (let i = sortedKeys.length - 1; i >= 0; i--) {
-                    const [m, y] = sortedKeys[i].split(' ');
-                    const d = new Date(parseInt(y), monthNames.indexOf(m), 1);
-                    if (d <= targetDate) {
+                    if (parseMonthStr(sortedKeys[i]) <= targetDate) {
                         templateKey = sortedKeys[i];
                         break;
                     }
@@ -1636,7 +1654,7 @@
                 let newMonth = JSON.parse(JSON.stringify(templateData));
                 
                 // Erase transactions for the new month
-                ['income', 'necessary', 'discretionary', 'investments'].forEach(sec => {
+                SECTION_IDS.forEach(sec => {
                     if(newMonth[sec]) newMonth[sec].forEach(item => { item.transactions = []; });
                 });
                 
@@ -1936,10 +1954,10 @@
         document.getElementById('acct-modal-month').innerText = currentMonthStr;
         
         const listContainer = document.getElementById('accounts-input-list');
-        listContainer.innerHTML = '';
+        let acctHtml = '';
 
         data.accounts.forEach((acct, idx) => {
-            listContainer.innerHTML += `
+            acctHtml += `
                 <div class="form-group" id="acct-row-${idx}">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
                         <input type="text" id="acct-name-${idx}" class="input-text" value="${acct.name}" style="padding: 0.25rem 0.5rem; font-size: 0.85rem; font-weight: 600; border: none; background: transparent; width: 80%;" placeholder="Account Name">
@@ -1952,6 +1970,7 @@
                 </div>
             `;
         });
+        listContainer.innerHTML = acctHtml;
 
         document.getElementById('accounts-modal').classList.add('active');
     }
@@ -1997,15 +2016,11 @@
         budgetData[currentMonthStr].accounts = newAccounts;
 
         // FORWARD SYNC: Propagate the new account list structure to all future months
-        const [currM, currY] = currentMonthStr.split(' ');
-        const currDate = new Date(parseInt(currY), monthNames.indexOf(currM), 1);
+        const currDate = parseMonthStr(currentMonthStr);
 
         Object.keys(budgetData).forEach(m => {
-            const [checkM, checkY] = m.split(' ');
-            const checkDate = new Date(parseInt(checkY), monthNames.indexOf(checkM), 1);
-            
             // Only update logically future dates
-            if (checkDate > currDate) {
+            if (parseMonthStr(m) > currDate) {
                 if (!budgetData[m].accounts) budgetData[m].accounts = [];
                 
                 const futureAccounts = [];
@@ -2039,9 +2054,7 @@
         haptic('light');
         collapsedSections[secId] = !collapsedSections[secId];
         renderMonthly();
-        if (!document.getElementById('view-yearly').classList.contains('hidden')) {
-            renderYearly();
-        }
+        if (currentActiveView === 'yearly') renderYearly();
     }
 
     function openReorderModal() { document.getElementById('reorder-modal').classList.add('active'); renderReorderList(); }
@@ -2050,24 +2063,21 @@
     function renderReorderList() {
         const secId = document.getElementById('reorder-section-select').value;
         const list = document.getElementById('reorder-list');
-        list.innerHTML = '';
         const arr = budgetData[currentMonthStr][secId];
-        
+        let html = '';
+
         arr.forEach((item, idx) => {
-            list.innerHTML += `
+            html += `
                 <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); padding: 0.75rem 1rem; border: 1px solid var(--border); border-radius: var(--radius-md); box-shadow: var(--shadow-sm);">
                     <span style="font-weight: 500; color: var(--text-strong);">${item.name}</span>
                     <div style="display: flex; gap: 0.25rem;">
-                        <button type="button" onclick="moveCategory('${secId}', ${idx}, -1)" class="btn-tx-action" style="opacity: 1; pointer-events: auto; padding: 0.35rem; background: var(--bg-alt); border: 1px solid var(--border);" ${idx === 0 ? 'disabled style="opacity:0.3;"' : ''}>
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>
-                        </button>
-                        <button type="button" onclick="moveCategory('${secId}', ${idx}, 1)" class="btn-tx-action" style="opacity: 1; pointer-events: auto; padding: 0.35rem; background: var(--bg-alt); border: 1px solid var(--border);" ${idx === arr.length - 1 ? 'disabled style="opacity:0.3;"' : ''}>
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                        </button>
+                        <button type="button" onclick="moveCategory('${secId}', ${idx}, -1)" class="btn-tx-action" style="opacity: 1; pointer-events: auto; padding: 0.35rem; background: var(--bg-alt); border: 1px solid var(--border);" ${idx === 0 ? 'disabled style="opacity:0.3;"' : ''}>${ICONS.chevUp}</button>
+                        <button type="button" onclick="moveCategory('${secId}', ${idx}, 1)" class="btn-tx-action" style="opacity: 1; pointer-events: auto; padding: 0.35rem; background: var(--bg-alt); border: 1px solid var(--border);" ${idx === arr.length - 1 ? 'disabled style="opacity:0.3;"' : ''}>${ICONS.chevDown}</button>
                     </div>
                 </div>
             `;
         });
+        list.innerHTML = html;
     }
 
     function moveCategory(secId, idx, dir) {
@@ -2098,12 +2108,10 @@
             saveData();
             renderReorderList();
             renderMonthly();
-            if (!document.getElementById('view-yearly').classList.contains('hidden')) {
-                renderYearly();
-            }
+            if (currentActiveView === 'yearly') renderYearly();
         }
     }
-    
+
     function forceSyncOrder() {
         pushUndoState();
         haptic('medium');
@@ -2124,7 +2132,7 @@
         });
         saveData();
         renderMonthly();
-        if (!document.getElementById('view-yearly').classList.contains('hidden')) renderYearly();
+        if (currentActiveView === 'yearly') renderYearly();
         customAlert("Success! The order of " + secId.toUpperCase() + " for all past and future months now perfectly matches this month's layout.");
     }
 
@@ -2170,9 +2178,7 @@
 
             saveData();
             closeQuickAddModal();
-            renderMonthly();
-            if(!document.getElementById('view-yearly').classList.contains('hidden')) renderYearly();
-            if(!document.getElementById('view-analytics').classList.contains('hidden')) renderAnalytics();
+            refreshViews();
         }
     }
 
@@ -2284,7 +2290,7 @@
                 if (vals.actual === 0) amtClass = 'amount zero';
                 else if (isUnplannedExpense) amtClass = 'amount unplanned';
                 
-                const openIconHtml = `<svg class="action-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>`;
+                const openIconHtml = ICONS.chevRight;
                 const calcBadge = `<span class="calc-badge" title="${vals.calcDesc}"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg> Auto</span>`;
 
                 let yearlyBadge = '';
@@ -2320,12 +2326,8 @@
                 const targetHtml = vals.isCalculated ? `<div style="font-size: 0.75rem; color: var(--primary); margin-top: 0.25rem; font-weight: 600;">Target: ${formatCurrency(vals.suggestedActual)}</div>` : '';
 
                 const actionButtons = `
-                    <button class="btn-row-action" onclick="openEditRowModal('${sec.id}', ${idx})" title="Edit Category">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-                    </button>
-                    <button class="btn-row-action delete" onclick="deleteRow('${sec.id}', ${idx})" title="Delete Category">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                    </button>
+                    <button class="btn-row-action" onclick="openEditRowModal('${sec.id}', ${idx})" title="Edit Category">${ICONS.edit}</button>
+                    <button class="btn-row-action delete" onclick="deleteRow('${sec.id}', ${idx})" title="Delete Category">${ICONS.trash}</button>
                 `;
 
                 // SMART ROW LAYOUT WITH NATIVE SWIPE CONTAINER
@@ -2445,13 +2447,10 @@
             pushUndoState();
             haptic('medium');
             const targetName = item.name;
-            const [currM, currY] = currentMonthStr.split(' ');
-            const currDate = new Date(parseInt(currY), monthNames.indexOf(currM), 1);
+            const currDate = parseMonthStr(currentMonthStr);
 
             Object.keys(budgetData).forEach(m => {
-                const [checkM, checkY] = m.split(' ');
-                const checkDate = new Date(parseInt(checkY), monthNames.indexOf(checkM), 1);
-                if (checkDate >= currDate) {
+                if (parseMonthStr(m) >= currDate) {
                     const matchIdx = budgetData[m][secId].findIndex(x => x.name === targetName);
                     if (matchIdx !== -1) budgetData[m][secId].splice(matchIdx, 1);
                 }
@@ -2820,8 +2819,8 @@
             const colorStyle = isIncome ? `color: var(--success);` : `color: var(--danger);`;
             
             const txActions = `
-                <button type="button" onclick="editTransaction(${originalIdx})" class="btn-tx-action edit" title="Edit Transaction"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg></button>
-                <button type="button" onclick="deleteTransaction(${originalIdx})" class="btn-tx-action delete" title="Delete Transaction"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+                <button type="button" onclick="editTransaction(${originalIdx})" class="btn-tx-action edit" title="Edit Transaction">${ICONS.edit}</button>
+                <button type="button" onclick="deleteTransaction(${originalIdx})" class="btn-tx-action delete" title="Delete Transaction">${ICONS.trash}</button>
             `;
 
             // SWIPEABLE TRANSACTION ITEM
@@ -2892,8 +2891,7 @@
             }
             saveData();
             renderTransactionsList();
-            renderMonthly();
-            if(document.getElementById('view-analytics') && !document.getElementById('view-analytics').classList.contains('hidden')) renderAnalytics();
+            refreshViews();
             document.getElementById('tx-desc').value = '';
             document.getElementById('tx-amount').value = '';
             document.getElementById('tx-amount').focus(); 
@@ -2904,8 +2902,7 @@
         pushUndoState();
         haptic('medium');
         budgetData[currentMonthStr][activeModalCategory][activeModalIndex].transactions.splice(txIndex, 1);
-        saveData(); renderTransactionsList(); renderMonthly();
-        if(document.getElementById('view-analytics') && !document.getElementById('view-analytics').classList.contains('hidden')) renderAnalytics();
+        saveData(); renderTransactionsList(); refreshViews();
     }
 
     function openRowModal(secId) {
@@ -2946,13 +2943,10 @@
             let budget = inputValue; let yearlyAmount = null;
             if (isYearly) { yearlyAmount = inputValue; budget = inputValue / 12; }
 
-            const [currM, currY] = currentMonthStr.split(' ');
-            const currDate = new Date(parseInt(currY), monthNames.indexOf(currM), 1);
+            const currDate = parseMonthStr(currentMonthStr);
 
             Object.keys(budgetData).forEach(m => {
-                const [checkM, checkY] = m.split(' ');
-                const checkDate = new Date(parseInt(checkY), monthNames.indexOf(checkM), 1);
-                if (checkDate >= currDate) {
+                if (parseMonthStr(m) >= currDate) {
                     const exists = budgetData[m][activeRowSection].find(x => x.name === name);
                     if (!exists) {
                         budgetData[m][activeRowSection].push({ 
@@ -3037,13 +3031,10 @@
             pushUndoState();
             haptic('medium');
             const oldName = budgetData[currentMonthStr][activeEditSection][activeEditIndex].name;
-            const [currM, currY] = currentMonthStr.split(' ');
-            const currDate = new Date(parseInt(currY), monthNames.indexOf(currM), 1);
+            const currDate = parseMonthStr(currentMonthStr);
 
             Object.keys(budgetData).forEach(m => {
-                const [checkM, checkY] = m.split(' ');
-                const checkDate = new Date(parseInt(checkY), monthNames.indexOf(checkM), 1);
-                if (checkDate >= currDate) {
+                if (parseMonthStr(m) >= currDate) {
                     const itemToEdit = budgetData[m][activeEditSection].find(x => x.name === oldName);
                     if (itemToEdit) {
                         itemToEdit.name = newName;
@@ -3070,14 +3061,15 @@
         document.getElementById('rule-form-title').innerText = "+ Create Custom Rule";
         document.getElementById('btn-submit-rule').innerText = "Add";
 
-        const list = document.getElementById('rules-list'); list.innerHTML = '';
+        const list = document.getElementById('rules-list');
+        let rulesHtml = '';
         calculationRules.forEach((rule, idx) => {
-            const currentPct = (rule.pct * 100).toFixed(1); 
-            list.innerHTML += `
+            const currentPct = (rule.pct * 100).toFixed(1);
+            rulesHtml += `
                 <div style="background: var(--bg-alt); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border); position: relative;">
                     <div style="position: absolute; right: 0.75rem; top: 0.75rem; display: flex; gap: 0.35rem;">
-                        <button type="button" onclick="editCalculationRule(${idx})" class="btn-row-action" title="Edit Rule" style="opacity: 1; pointer-events: auto; padding: 0.35rem; background: var(--bg-card); border: 1px solid var(--border); box-shadow: var(--shadow-sm);"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg></button>
-                        <button type="button" onclick="deleteCalculationRule(${idx})" class="btn-row-action delete" title="Delete Rule" style="opacity: 1; pointer-events: auto; padding: 0.35rem; background: var(--bg-card); border: 1px solid var(--border); box-shadow: var(--shadow-sm);"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+                        <button type="button" onclick="editCalculationRule(${idx})" class="btn-row-action" title="Edit Rule" style="opacity: 1; pointer-events: auto; padding: 0.35rem; background: var(--bg-card); border: 1px solid var(--border); box-shadow: var(--shadow-sm);">${ICONS.edit}</button>
+                        <button type="button" onclick="deleteCalculationRule(${idx})" class="btn-row-action delete" title="Delete Rule" style="opacity: 1; pointer-events: auto; padding: 0.35rem; background: var(--bg-card); border: 1px solid var(--border); box-shadow: var(--shadow-sm);">${ICONS.trash}</button>
                     </div>
                     <div style="font-weight: 600; color: var(--text-strong); margin-bottom: 0.25rem; padding-right: 5rem;">${rule.name}</div>
                     <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.75rem;">Source: ${rule.sources === 'ALL' ? 'Total Income' : rule.sources.join(' + ')}</div>
@@ -3088,6 +3080,7 @@
                 </div>
             `;
         });
+        list.innerHTML = rulesHtml;
 
         const targetSelect = document.getElementById('new-rule-target');
         targetSelect.innerHTML = '<option value="" disabled selected>Select an existing row...</option>';
@@ -3098,18 +3091,19 @@
         });
 
         const sourceContainer = document.getElementById('new-rule-source-container');
-        sourceContainer.innerHTML = `
+        let sourceHtml = `
             <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; cursor: pointer;">
                 <input type="checkbox" id="rule-source-all" value="ALL" onchange="toggleAllSources(this)" checked style="width: 1.25rem; height: 1.25rem; accent-color: var(--primary);">
                 <span style="font-weight: 600; color: var(--text-strong);">Total Income (All)</span>
             </label><div style="height: 1px; background: var(--border); margin: 0.5rem 0;"></div>`;
         budgetData[currentMonthStr].income.forEach(item => {
-            sourceContainer.innerHTML += `
+            sourceHtml += `
                 <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; cursor: pointer;">
                     <input type="checkbox" class="rule-source-cb" value="${item.name}" disabled style="width: 1.25rem; height: 1.25rem; accent-color: var(--primary);">
                     <span style="color: var(--text-main);">${item.name}</span>
                 </label>`;
         });
+        sourceContainer.innerHTML = sourceHtml;
         document.getElementById('rules-modal').classList.add('active');
     }
 
