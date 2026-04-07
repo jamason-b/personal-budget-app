@@ -5,16 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Household Budget Dashboard</title>
     
-    <!-- True Native App Meta Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Budget">
 
-    <!-- Desktop Browser Tab Icon -->
     <link rel="icon" href="app-icon.jpg">
     <link rel="apple-touch-icon" href="app-icon.jpg">
     
-    <!-- Chart.js for Analytics & Sparklines -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
@@ -504,20 +501,16 @@
         </div>
         
         <div style="display: flex; align-items: center; gap: 0.5rem;">
-            <!-- Search Button -->
             <button onclick="openSearchModal()" type="button" style="background: var(--bg-alt); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 0.5rem; color: var(--text-strong); cursor: pointer; position: relative; z-index: 50; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-sm); transition: background 0.2s;" title="Search Transactions">
                 <svg width="1.25rem" height="1.25rem" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
             </button>
             
-            <!-- Dynamic Desktop Tabs -->
             <div id="top-nav-container" class="view-toggle"></div>
             
-            <!-- Theme Toggle (Desktop Only now, moved to settings on mobile) -->
             <button id="theme-toggle" class="theme-btn desktop-only" onclick="toggleTheme()" title="Toggle Dark Mode">🌙</button>
         </div>
     </header>
 
-    <!-- GLOBAL MONTH/YEAR CONTROLS -->
     <div id="global-month-controls" class="controls" style="margin-bottom: 1.5rem; display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
         <div style="display: flex; gap: 0.5rem; align-items: center; flex: 1; min-width: 200px;">
             <select id="month-dropdown" class="month-selector" style="flex: 1;" onchange="handleTimeTravel()"></select>
@@ -531,7 +524,6 @@
         </div>
     </div>
 
-    <!-- MONTHLY PLANNER -->
     <div id="view-monthly">
         <div class="summary-grid">
             <div class="summary-card">
@@ -566,7 +558,6 @@
         <div id="tables-container"></div>
     </div>
 
-    <!-- ACCOUNTS VIEW -->
     <div id="view-accounts" class="hidden">
         <div id="accounts-reminder" class="update-banner" style="display: none;">
             <p>🗓️ It's a new month! Please verify your actual account balances.</p>
@@ -585,11 +576,9 @@
         </div>
 
         <div id="accounts-container">
-            <!-- Populated by JS -->
-        </div>
+            </div>
     </div>
 
-    <!-- YEARLY SUMMARY -->
     <div id="view-yearly" class="hidden">
         <div class="controls" style="justify-content: space-between; margin-bottom: 1.5rem;">
             <div class="view-toggle" style="display: flex; box-shadow: none; margin: 0;">
@@ -599,11 +588,9 @@
             <select id="year-selector" class="month-selector" style="width: auto;" onchange="renderYearly()"></select>
         </div>
         <div id="yearly-container">
-            <!-- Populated by JS for mobile cards or desktop table -->
-        </div>
+            </div>
     </div>
 
-    <!-- ANALYTICS VIEW -->
     <div id="view-analytics" class="hidden">
         <div class="controls" style="justify-content: flex-end; margin-bottom: 1.5rem;">
             <select id="analytics-month" class="month-selector" style="width: auto; margin-right: 0.5rem;" onchange="renderAnalytics()"></select>
@@ -638,14 +625,12 @@
     </div>
 </div>
 
-<!-- Dynamic Mobile Bottom Navigation -->
 <nav id="bottom-nav-container" class="bottom-nav"></nav>
 
 <button class="fab" id="main-fab" onclick="openQuickAddModal()" title="Quick Add Transaction">
     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg>
 </button>
 
-<!-- Global Search Modal -->
 <div id="search-modal" class="modal-overlay">
     <div class="modal-content" style="height: 85vh; max-height: 85vh; display: flex; flex-direction: column;">
         <div class="modal-header" style="padding: 1rem 1.25rem; display: flex; gap: 0.75rem; align-items: center;">
@@ -663,7 +648,6 @@
     </div>
 </div>
 
-<!-- Tabs Reorder Modal -->
 <div id="tabs-reorder-modal" class="modal-overlay">
     <div class="modal-content" style="max-width: 26rem;">
         <div class="modal-header">
@@ -675,13 +659,11 @@
         <div class="modal-body">
             <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">Arrange the bottom navigation tabs to fit your workflow.</p>
             <div id="tabs-reorder-list" style="display: flex; flex-direction: column; gap: 0.5rem;">
-                <!-- Populated by JS -->
-            </div>
+                </div>
         </div>
     </div>
 </div>
 
-<!-- Accounts Update Modal -->
 <div id="accounts-modal" class="modal-overlay">
     <div class="modal-content" style="max-width: 28rem;">
         <div class="modal-header">
@@ -694,8 +676,7 @@
             <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">Update these balances to reflect your actual bank/brokerage accounts for <strong style="color: var(--text-strong);" id="acct-modal-month"></strong>.</p>
             <form class="add-form" id="accounts-form" onsubmit="handleUpdateAccounts(event)">
                 <div id="accounts-input-list" style="display: flex; flex-direction: column; gap: 1rem;">
-                    <!-- Injected by JS -->
-                </div>
+                    </div>
                 <button type="button" onclick="addAccountRow()" class="btn-add" style="background: var(--bg-alt); color: var(--text-strong); border: 1px dashed var(--border); box-shadow: none; margin-top: 1rem; font-size: 0.85rem;">+ Add New Account Tracker</button>
                 <button type="submit" class="btn-add" style="margin-top: 1.5rem;">Save Balances</button>
             </form>
@@ -703,7 +684,6 @@
     </div>
 </div>
 
-<!-- Custom Alert Modal -->
 <div id="alert-modal" class="modal-overlay" style="z-index: 100;">
     <div class="modal-content" style="max-width: 24rem; text-align: center; border-radius: var(--radius-xl);">
         <div class="modal-body" style="padding: 2.5rem 1.5rem;">
@@ -713,7 +693,6 @@
     </div>
 </div>
 
-<!-- Custom Confirm Modal -->
 <div id="confirm-modal" class="modal-overlay" style="z-index: 100;">
     <div class="modal-content" style="max-width: 24rem; text-align: center; border-radius: var(--radius-xl);">
         <div class="modal-body" style="padding: 2.5rem 1.5rem;">
@@ -726,7 +705,6 @@
     </div>
 </div>
 
-<!-- Quick Add Modal -->
 <div id="quick-add-modal" class="modal-overlay">
     <div class="modal-content" style="max-width: 26rem;">
         <div class="modal-header">
@@ -743,7 +721,6 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="qa-amount">Amount</label>
-                    <!-- inputmode="decimal" gives the native iOS numpad! -->
                     <input type="number" inputmode="decimal" id="qa-amount" class="input-number" placeholder="$0.00" step="0.01" required>
                 </div>
                 <div class="form-group">
@@ -760,7 +737,6 @@
     </div>
 </div>
 
-<!-- Settings Modal -->
 <div id="settings-modal" class="modal-overlay">
     <div class="modal-content" style="max-width: 26rem;">
         <div class="modal-header">
@@ -773,7 +749,6 @@
             <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1.5rem;">Your app is securely synced to your private Firebase database.</p>
             
             <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-                <!-- Light/Dark Mode toggle moved here for mobile -->
                 <button onclick="toggleTheme();" class="btn-add mobile-only" style="margin: 0; background: var(--bg-card); color: var(--text-strong); border: 1px solid var(--border);">🌓 Toggle Dark Mode</button>
                 
                 <div class="mobile-only" style="height: 1px; background: var(--border); margin: 0.25rem 0;"></div>
@@ -797,7 +772,6 @@
     </div>
 </div>
 
-<!-- Reorder Modal -->
 <div id="reorder-modal" class="modal-overlay">
     <div class="modal-content" style="max-width: 28rem;">
         <div class="modal-header">
@@ -824,7 +798,6 @@
     </div>
 </div>
 
-<!-- Transaction Modal -->
 <div id="transaction-modal" class="modal-overlay">
     <div class="modal-content">
         <div class="modal-header">
@@ -870,7 +843,6 @@
     </div>
 </div>
 
-<!-- Add Row Modal -->
 <div id="row-modal" class="modal-overlay">
     <div class="modal-content" style="max-width: 26rem;">
         <div class="modal-header">
@@ -934,7 +906,6 @@
     </div>
 </div>
 
-<!-- Edit Row Modal -->
 <div id="edit-row-modal" class="modal-overlay">
     <div class="modal-content" style="max-width: 26rem;">
         <div class="modal-header">
@@ -1002,7 +973,6 @@
     </div>
 </div>
 
-<!-- Calculation Rules Modal -->
 <div id="rules-modal" class="modal-overlay">
     <div class="modal-content" style="max-width: 28rem;">
         <div class="modal-header">
@@ -1430,7 +1400,11 @@
     };
 
     let budgetData = {};
-    let currentMonthStr = "Mar 2026";
+    
+    // Automatically set the app's default load state to the real-world calendar month
+    const _todayDate = new Date();
+    let currentMonthStr = `${monthNames[_todayDate.getMonth()]} ${_todayDate.getFullYear()}`;
+    
     let activeModalCategory = null; let activeModalIndex = null;   
     let activeRowSection = null; let activeEditSection = null; let activeEditIndex = null;
     let editingRuleIndex = null; let editingTxIndex = null; 
@@ -1473,8 +1447,8 @@
             } catch(e) {}
         } else {
             const d = new Date();
-            currentMonthStr = `${monthNames[d.getMonth()]} ${d.getFullYear()}`;
-            budgetData = { [currentMonthStr]: JSON.parse(JSON.stringify(defaultDataTemplate)) };
+            const fallbackMonth = `${monthNames[d.getMonth()]} ${d.getFullYear()}`;
+            budgetData = { [fallbackMonth]: JSON.parse(JSON.stringify(defaultDataTemplate)) };
             localLastUpdated = Date.now();
             hasLegacyRules = true;
         }
@@ -2063,11 +2037,11 @@
     function renderReorderList() {
         const secId = document.getElementById('reorder-section-select').value;
         const list = document.getElementById('reorder-list');
+        list.innerHTML = '';
         const arr = budgetData[currentMonthStr][secId];
-        let html = '';
-
+        
         arr.forEach((item, idx) => {
-            html += `
+            list.innerHTML += `
                 <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); padding: 0.75rem 1rem; border: 1px solid var(--border); border-radius: var(--radius-md); box-shadow: var(--shadow-sm);">
                     <span style="font-weight: 500; color: var(--text-strong);">${item.name}</span>
                     <div style="display: flex; gap: 0.25rem;">
@@ -2077,7 +2051,6 @@
                 </div>
             `;
         });
-        list.innerHTML = html;
     }
 
     function moveCategory(secId, idx, dir) {
@@ -3285,13 +3258,6 @@
                 }));
 
                 updateSyncDot('synced');
-                
-                if (!budgetData[currentMonthStr]) {
-                    const availableMonths = Object.keys(budgetData);
-                    if (availableMonths.length > 0) {
-                        currentMonthStr = availableMonths[availableMonths.length - 1]; 
-                    }
-                }
                 
                 getOrCreateMonthData(currentMonthStr, true);
                 renderApp();
