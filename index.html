@@ -3196,14 +3196,66 @@
     }
 
     let db, auth, setDoc_fn, doc_fn;
+    let _authModule, _fsModule; // stored for use after login
+
+    // ---- LOGIN SCREEN ----
+    function showLoginScreen() {
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        const bg = isDark ? '#0f172a' : '#f8fafc';
+        const card = isDark ? '#1e293b' : '#ffffff';
+        const text = isDark ? '#f1f5f9' : '#0f172a';
+        const border = isDark ? '#334155' : '#e2e8f0';
+
+        document.body.innerHTML = `
+        <div id="login-wrap" style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:${bg};padding:1.5rem;">
+            <div style="width:100%;max-width:360px;background:${card};border-radius:1.5rem;padding:2.5rem;box-shadow:0 4px 24px rgba(0,0,0,0.12);">
+                <h1 style="font-size:1.4rem;font-weight:700;margin-bottom:0.25rem;color:${text};">Household Budget</h1>
+                <p style="color:#64748b;margin-bottom:2rem;font-size:0.875rem;">Sign in to access your budget</p>
+                <div id="login-error" style="display:none;color:#ef4444;font-size:0.875rem;margin-bottom:1rem;"></div>
+                <div style="margin-bottom:1rem;">
+                    <label style="display:block;font-size:0.875rem;font-weight:500;color:${text};margin-bottom:0.5rem;">Email</label>
+                    <input id="login-email" type="email" autocomplete="email" style="width:100%;padding:0.625rem 0.875rem;border:1px solid ${border};border-radius:0.75rem;font-size:1rem;outline:none;box-sizing:border-box;background:${card};color:${text};" />
+                </div>
+                <div style="margin-bottom:1.5rem;">
+                    <label style="display:block;font-size:0.875rem;font-weight:500;color:${text};margin-bottom:0.5rem;">Password</label>
+                    <input id="login-password" type="password" autocomplete="current-password" style="width:100%;padding:0.625rem 0.875rem;border:1px solid ${border};border-radius:0.75rem;font-size:1rem;outline:none;box-sizing:border-box;background:${card};color:${text};" />
+                </div>
+                <button id="login-btn" style="width:100%;padding:0.75rem;background:#2563eb;color:white;border:none;border-radius:0.75rem;font-size:0.9375rem;font-weight:600;cursor:pointer;">Sign In</button>
+            </div>
+        </div>`;
+
+        document.getElementById('login-btn').addEventListener('click', async () => {
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value;
+            const errEl = document.getElementById('login-error');
+            const btn = document.getElementById('login-btn');
+            btn.textContent = 'Signing in...';
+            btn.disabled = true;
+            errEl.style.display = 'none';
+            try {
+                await _authModule.signInWithEmailAndPassword(auth, email, password);
+                // onAuthStateChanged will handle the rest
+            } catch (err) {
+                errEl.textContent = 'Incorrect email or password. Please try again.';
+                errEl.style.display = 'block';
+                btn.textContent = 'Sign In';
+                btn.disabled = false;
+            }
+        });
+
+        // Allow pressing Enter in password field
+        document.getElementById('login-password').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') document.getElementById('login-btn').click();
+        });
+    }
 
     async function initCloud() {
         try {
             updateSyncDot('syncing');
             
             const appModule = await import('https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js');
-            const authModule = await import('https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js');
-            const fsModule = await import('https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js');
+            _authModule = await import('https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js');
+            _fsModule = await import('https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js');
 
             const firebaseConfig = {
               apiKey: "AIzaSyB9s5odA5RIBPXmBumdSl59D89DBv9cZIQ",
@@ -3211,18 +3263,30 @@
               projectId: "personal-budget-app-aeb06",
               storageBucket: "personal-budget-app-aeb06.firebasestorage.app",
               messagingSenderId: "116796553317",
-              appId: "1:116796553317:web:36fa900081551949226e8c"
+              appId: "1:116796553117:web:36fa900081551949226e8c"
             };
 
             const app = appModule.initializeApp(firebaseConfig);
-            auth = authModule.getAuth(app);
-            db = fsModule.getFirestore(app);
-            setDoc_fn = fsModule.setDoc;
-            doc_fn = fsModule.doc;
+            auth = _authModule.getAuth(app);
+            db = _fsModule.getFirestore(app);
+            setDoc_fn = _fsModule.setDoc;
+            doc_fn = _fsModule.doc;
 
-            await authModule.signInAnonymously(auth);
+            // Listen for auth state — show login or load app accordingly
+            _authModule.onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    // User is signed in — rebuild the page if we replaced it with login
+                    if (document.getElementById('login-wrap')) {
+                        location.reload(); // cleanest way to restore full app after login
+                    } else {
+                        setupCloudSync(_fsModule);
+                    }
+                } else {
+                    // No user — show login screen
+                    showLoginScreen();
+                }
+            });
 
-            setupCloudSync(fsModule);
         } catch (e) {
             console.warn("Cloud failed. Using local browser memory.", e);
             updateSyncDot('offline');
