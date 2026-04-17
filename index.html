@@ -156,9 +156,7 @@
         .summary-card { background: var(--bg-card); padding: 0.85rem; border-radius: var(--radius-xl); border: 1px solid var(--border); box-shadow: var(--shadow-sm); display: flex; flex-direction: column; justify-content: space-between; transition: transform 0.2s ease, box-shadow 0.2s ease; }
         @media (min-width: 768px) { .summary-card { padding: 1.25rem; border-radius: var(--radius-xl); } }
         
-        .summary-card.highlight { background: var(--primary-bg); border-color: var(--primary-border); position: relative; overflow: hidden; }
-        .summary-card.highlight::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--primary); }
-        
+        .summary-card.highlight { background: var(--primary-bg); border-color: var(--primary-border); }
         .summary-label-wrapper { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.35rem; gap: 0.25rem; }
         .summary-label { font-size: 0.65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); line-height: 1.2; word-wrap: break-word;}
         @media (min-width: 768px) { .summary-label { font-size: 0.75rem; } }
@@ -170,7 +168,7 @@
         .summary-card.highlight .summary-value { color: var(--primary-text); }
 
         /* Monthly View Smart Section Headers */
-        .section-card { background: var(--bg-card); border-radius: var(--radius-xl); border: 1px solid var(--border); box-shadow: var(--shadow-sm); margin-bottom: 1.5rem; overflow: hidden; } 
+        .section-card { background: var(--bg-card); border-radius: var(--radius-xl); border: 1px solid var(--border); box-shadow: var(--shadow-sm); margin-bottom: 1.5rem; } 
         
         .section-header { 
             padding: 1rem 1.25rem; background: var(--bg-alt-translucent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 0.75rem; cursor: pointer; user-select: none; transition: background 0.2s, border-radius 0.2s; 
@@ -200,7 +198,7 @@
         .section-title { font-size: 1.05rem; font-weight: 600; color: var(--text-strong); letter-spacing: -0.01em; }
         @media (min-width: 768px) { .section-title { font-size: 1.125rem; } }
 
-        /* --- THE MAGIC MOBILE APP UI CONVERSION --- */
+        /* NATIVE SWIPE-TO-EDIT SCROLL WRAPPER (Mobile Only) */
         .row-scroll-wrapper {
             display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; -ms-overflow-style: none; -webkit-overflow-scrolling: touch;
             background: var(--bg-card); border-bottom: 1px solid var(--border-light); transition: background-color 0.15s ease;
@@ -209,19 +207,26 @@
         .row-scroll-wrapper:hover { background-color: var(--bg-alt); }
         .row-scroll-wrapper:last-child { border-bottom: none; }
 
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+
         .grid-header { display: none; background-color: var(--bg-card); border-bottom: 1px solid var(--border); font-size: 0.75rem; text-transform: uppercase; font-weight: 600; color: var(--text-muted); letter-spacing: 0.05em; }
         
-        .grid-row { flex: 0 0 100%; scroll-snap-align: start; display: grid; grid-template-columns: 1fr; gap: 0.35rem 0.5rem; padding: 0.85rem 1.25rem; align-items: center; }
+        .grid-row {
+            flex: 0 0 100%; scroll-snap-align: start; display: grid; grid-template-columns: 1fr; gap: 0.35rem 0.5rem; padding: 0.85rem 1.25rem; align-items: center;
+        }
 
         .swipe-actions { flex: 0 0 auto; display: flex; align-items: center; scroll-snap-align: end; padding: 0 1.25rem; gap: 0.5rem; background: var(--bg-alt); border-left: 1px solid var(--border); box-shadow: inset 4px 0 8px rgba(0,0,0,0.02); }
         .swipe-actions .btn-row-action { background: var(--bg-card); border: 1px solid var(--border); padding: 0.75rem; box-shadow: var(--shadow-sm); border-radius: var(--radius-lg); }
 
+        /* Mobile Layout assignments inside grid-row */
         .g-col-name { display: flex; flex-direction: column; gap: 0.25rem; grid-column: 1 / -1; }
         .g-col-budget { display: none; }
         .g-col-actual { display: flex; flex-direction: column; align-items: stretch; gap: 0.15rem; margin-top: 0.1rem; grid-column: 1 / -1; }
         .g-col-diff { display: flex; justify-content: flex-end; align-items: center; font-size: 0.8rem; margin-top: 0.25rem; grid-column: 1 / -1; }
         .g-col-actions { display: none; }
 
+        /* DESKTOP LAYOUT (Kills swipe, turns into normal grid) */
         @media (min-width: 768px) {
             .grid-header { display: grid; grid-template-columns: 1.5fr 130px 2fr 130px 80px; gap: 0; padding: 0; align-items: stretch; }
             .grid-header > div { padding: 0.85rem 1rem; display: flex; align-items: center; }
@@ -239,12 +244,14 @@
             .swipe-actions { display: none; }
             
             .g-col-budget, .g-col-actual, .g-col-diff { border-left: 1px solid var(--border); }
+
             .g-col-name { flex-direction: row; align-items: center; grid-column: auto; display: flex; }
             .g-col-budget { display: flex; flex-direction: column; justify-content: center; align-items: center; color: var(--text-muted); font-size: 0.9rem; font-variant-numeric: tabular-nums; text-align: center; }
             .g-col-actual { margin-top: 0; justify-content: center; align-items: center; grid-column: auto; display: flex; flex-direction: column; }
             .g-col-diff { margin-top: 0; justify-content: center; align-items: center; font-size: 0.9rem; grid-column: auto; display: flex; }
             .g-col-actions { display: flex; grid-column: auto; margin-top: 0; justify-content: flex-end; opacity: 0; pointer-events: none; transition: opacity 0.2s; align-items: center; }
             .grid-row:hover .g-col-actions { opacity: 1; pointer-events: auto; }
+            
             .g-col-actions .btn-row-action { background: transparent; border: none; padding: 0.35rem; }
         }
 
@@ -267,6 +274,7 @@
         .val-diff.primary { color: var(--primary); font-weight: 600; } 
         .val-diff.warning { color: var(--warning); font-weight: 600; }
 
+        /* Actual & Progress */
         .actual-content { display: flex; justify-content: space-between; align-items: center; width: 100%; }
         @media (min-width: 768px) { .actual-content { justify-content: flex-end; } }
         
@@ -288,8 +296,7 @@
         @media (min-width: 768px) { .progress-bar-container { height: 4px; } }
         .progress-bar-fill { height: 100%; border-radius: 99px; transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
 
-        .btn-add-row { width: 100%; text-align: center; padding: 1.25rem 1.5rem; background: var(--bg-card); border: 2px dashed var(--border); margin-top: 0.5rem; color: var(--primary); font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: background 0.2s; border-radius: var(--radius-xl); }
-        @media (min-width: 768px) { .btn-add-row { text-align: left; border: none; box-shadow: inset 0 1px 0 var(--border-light); border-radius: 0 0 var(--radius-xl) var(--radius-xl); margin-top: 0; } }
+        .btn-add-row { width: 100%; text-align: left; padding: 1.25rem 1.5rem; background: var(--bg-card); border: none; box-shadow: inset 0 1px 0 var(--border-light); color: var(--primary); font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: background 0.2s; border-radius: 0 0 var(--radius-xl) var(--radius-xl); }
         .btn-add-row:hover { background: var(--bg-alt); }
 
         /* ACCOUNTS TAB STYLES */
@@ -480,7 +487,7 @@
         .nav-item.active { color: var(--primary); }
 
         .hidden { display: none !important; }
-
+        
         /* Demo Mode Styles */
         @keyframes pulse-border {
             0% { border-color: #a855f7; box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.4); }
@@ -500,7 +507,7 @@
         <div style="display: flex; align-items: center;">
             <h1 class="header-title" id="main-header-title">
                 Budget
-                <div id="sync-status" class="sync-dot syncing" title="Loading..."></div>
+                <div id="sync-status" class="sync-dot syncing" title="Syncing..."></div>
             </h1>
         </div>
         
@@ -523,7 +530,9 @@
         <div id="monthly-actions-container" style="display: flex; gap: 0.5rem; align-items: center; justify-content: flex-end;">
             <button onclick="openRulesModal()" class="theme-btn" style="font-size: 0.85rem;">⚙️ Rules</button>
             <button onclick="openReorderModal()" class="theme-btn" style="font-size: 0.85rem;">⇅ Reorder</button>
+            
             <button id="btn-demo-toggle" onclick="toggleDemoMode()" class="theme-btn" style="font-size: 0.85rem;">🎭 Demo</button>
+
             <button onclick="openSettingsModal()" class="theme-btn" style="font-size: 0.85rem;">💾 Data</button>
             <button id="btn-undo" onclick="handleUndo()" class="theme-btn" style="display: none; background: var(--warning); color: #fff; border: none;" title="Undo Last Action">↩ Undo</button>
         </div>
@@ -1019,33 +1028,7 @@
 </div>
 
 <script>
-    // --- GLOBAL VARIABLES & ENGINE SETUP ---
-    let db = null;
-    let auth = null;
-    let setDoc_fn = null;
-    let doc_fn = null;
-    let _authModule = null;
-    let _fsModule = null;
-    let localLastUpdated = 0;
-    const defaultAccounts = [];
-
-    function updateSyncDot(status) {
-        const dot = document.getElementById('sync-status');
-        if (!dot) return;
-        
-        dot.className = 'sync-dot'; 
-        if (status === 'syncing') {
-            dot.classList.add('syncing');
-            dot.title = "Syncing with Cloud...";
-        } else if (status === 'synced') {
-            dot.classList.add('synced');
-            dot.title = "Synced to Cloud";
-        } else if (status === 'offline') {
-            dot.classList.add('offline');
-            dot.title = "Offline Mode";
-        }
-    }
-
+    // --- INVISIBLE UI: HAPTIC FEEDBACK ---
     const haptic = (type = 'light') => {
         if (!navigator.vibrate) return;
         try {
@@ -1055,6 +1038,7 @@
         } catch(e) {}
     };
 
+    // Global Scope Attachments
     window.toggleTheme = toggleTheme; window.switchView = switchView; window.setYearlyMode = setYearlyMode;
     window.handleTimeTravel = handleTimeTravel; window.openRulesModal = openRulesModal; window.openReorderModal = openReorderModal;
     window.handleUndo = handleUndo; window.openSettingsModal = openSettingsModal; window.exportData = exportData;
@@ -1071,7 +1055,7 @@
     window.closeSettingsModal = closeSettingsModal; window.forceCloudSave = forceCloudSave; window.forceSyncOrder = forceSyncOrder;
     window.toggleAddSub = toggleAddSub; window.toggleEditSub = toggleEditSub; window.exportToCSV = exportToCSV;
     window.closeCustomAlert = closeCustomAlert;
-    window.openAccountsModal = function() { customAlert("Accounts feature configuration coming soon!"); };
+    window.openAccountsModal = openAccountsModal; window.closeAccountsModal = closeAccountsModal; window.handleUpdateAccounts = handleUpdateAccounts; window.addAccountRow = addAccountRow;
     window.openTabsReorderModal = openTabsReorderModal; window.closeTabsReorderModal = closeTabsReorderModal; window.moveNavigationTab = moveNavigationTab;
     window.openSearchModal = openSearchModal; window.closeSearchModal = closeSearchModal; window.performGlobalSearch = performGlobalSearch; window.jumpToMonth = jumpToMonth;
     window.toggleDemoMode = toggleDemoMode;
@@ -1080,6 +1064,7 @@
     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     const SECTION_IDS = ['income', 'necessary', 'discretionary', 'investments'];
 
+    // Reusable date parser: "Mar 2026" -> Date object (1st of month)
     const parseMonthStr = (monthStr) => {
         const [mName, yStr] = monthStr.split(' ');
         return new Date(parseInt(yStr), monthNames.indexOf(mName), 1);
@@ -1088,7 +1073,9 @@
     let yearlyViewMode = 'summary';
     let undoStack = [];
     const MAX_UNDO = 15;
+    let isDemoMode = false;
     
+    // Chart instances
     let pieChartInstance = null;
     let barChartInstance = null;
     let nwChartInstance = null;
@@ -1101,6 +1088,7 @@
         analytics: { label: 'Analytics', icon: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path>' }
     };
 
+    // Reusable SVG icon strings
     const ICONS = {
         close: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>',
         edit: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>',
@@ -1123,6 +1111,7 @@
         appTabsOrder.forEach(tabId => {
             const def = TAB_DEFS[tabId];
             
+            // Top Nav
             const topBtn = document.createElement('button');
             topBtn.id = `tab-${tabId}`;
             topBtn.className = `btn-toggle ${currentActiveView === tabId ? 'active' : ''}`;
@@ -1130,6 +1119,7 @@
             topBtn.innerText = def.label;
             topContainer.appendChild(topBtn);
             
+            // Bottom Nav
             const botBtn = document.createElement('button');
             botBtn.id = `nav-${tabId}`;
             botBtn.className = `nav-item ${currentActiveView === tabId ? 'active' : ''}`;
@@ -1178,88 +1168,6 @@
             localStorage.setItem('budgetTabOrder', JSON.stringify(appTabsOrder));
             renderTabsReorderList();
             renderNavigation();
-        }
-    }
-
-    // --- DEMO MODE LOGIC ---
-    function generateDemoData() {
-        const today = new Date();
-        const dStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2, '0')}-${String(today.getDate()).padStart(2,'0')}`;
-        
-        return {
-            accounts: [
-                { name: 'Checking Account', balance: 4250.00 },
-                { name: 'Savings Account', balance: 12500.00 },
-                { name: 'Joint Brokerage', balance: 45000.00 },
-                { name: 'Roth IRA', balance: 28000.00 }
-            ],
-            income: [
-                { name: "Tech Job Salary", budget: 5500.00, transactions: [{date: dStr, desc: "Direct Deposit", amount: 5500.00, timestamp: Date.now()}] },
-                { name: "Freelance Work", budget: 400.00, transactions: [{date: dStr, desc: "Website Design", amount: 650.00, timestamp: Date.now()}] }
-            ],
-            necessary: [
-                { name: "Rent & Water", budget: 1850.00, transactions: [{date: dStr, desc: "Property Mgmt", amount: 1850.00, timestamp: Date.now()}] },
-                { name: "Groceries", budget: 450.00, transactions: [{date: dStr, desc: "Trader Joe's", amount: 112.45, timestamp: Date.now()}, {date: dStr, desc: "Costco", amount: 204.10, timestamp: Date.now()}] },
-                { name: "Auto Insurance", budget: 110.00, transactions: [{date: dStr, desc: "Geico", amount: 110.00, timestamp: Date.now()}] },
-                { name: "Gasoline", budget: 150.00, transactions: [{date: dStr, desc: "Shell", amount: 45.00, timestamp: Date.now()}] },
-                { name: "Internet", budget: 70.00, transactions: [] }
-            ],
-            discretionary: [
-                { name: "Dining Out", budget: 200.00, transactions: [{date: dStr, desc: "Chipotle", amount: 24.50, timestamp: Date.now()}, {date: dStr, desc: "Local Sushi", amount: 65.00, timestamp: Date.now()}] },
-                { name: "Vacation Fund", budget: 100.00, yearlyAmount: 1200.00, transactions: [], isRollover: true },
-                { name: "Spotify Premium", budget: 0.00, transactions: [{date: dStr, desc: "Spotify", amount: 10.99, timestamp: Date.now()}], isSub: true, subType: "monthly", subCost: 10.99, subDate: dStr },
-                { name: "Personal Spending", budget: 150.00, transactions: [{date: dStr, desc: "Amazon", amount: 89.99, timestamp: Date.now()}] },
-                { name: "Amazon Prime", budget: 0.00, transactions: [], isSub: true, subType: "annual", subCost: 139.00, subDate: "2026-10-15" }
-            ],
-            investments: [
-                { name: "Vanguard S&P 500", budget: 0.00, transactions: [{date: dStr, desc: "Auto Transfer", amount: 825.00, timestamp: Date.now()}] },
-                { name: "Emergency Fund", budget: 0.00, transactions: [{date: dStr, desc: "High Yield Savings", amount: 275.00, timestamp: Date.now()}] }
-            ]
-        };
-    }
-
-    const demoRulesTemplate = [
-        { category: 'investments', name: 'Vanguard S&P 500', pct: 0.15, sources: 'ALL', desc: '15% of Total Income' },
-        { category: 'investments', name: 'Emergency Fund', pct: 0.05, sources: 'ALL', desc: '5% of Total Income' }
-    ];
-
-    function toggleDemoMode() {
-        const btn = document.getElementById('btn-demo-toggle');
-        const wrapper = document.getElementById('card-remaining-wrapper');
-
-        if (!isDemoMode) {
-            isDemoMode = true;
-            budgetData = { [currentMonthStr]: generateDemoData() };
-            calculationRules = JSON.parse(JSON.stringify(demoRulesTemplate));
-            
-            btn.style.background = "#a855f7";
-            btn.style.color = "#fff";
-            btn.innerText = "🛑 Exit Demo";
-            
-            updateSyncDot('offline'); 
-            document.getElementById('sync-status').title = "🟣 Demo Mode (Saving Disabled)";
-            
-            wrapper.classList.add("demo-mode-active");
-
-            refreshViews(); 
-            
-            customAlert("Welcome to Demo Mode!\n\nYour real data is safely hidden, and saving to the cloud is completely disabled. Feel free to present or test the app safely.");
-        } else {
-            isDemoMode = false;
-            btn.style.background = "var(--bg-card)";
-            btn.style.color = "var(--text-strong)";
-            btn.innerText = "🎭 Demo";
-            
-            wrapper.classList.remove("demo-mode-active");
-            
-            loadLocalData();
-            renderApp();
-            
-            // Re-initiate cloud tracking
-            if (db) {
-                updateSyncDot('syncing');
-                setupCloudSync(_fsModule);
-            }
         }
     }
 
@@ -1325,7 +1233,7 @@
                 const timeB = b.tx.timestamp || new Date(b.tx.date).getTime();
                 return timeB - timeA;
             });
-            results = results.slice(0, 15);
+            results = results.slice(0, 15); 
             
             if (results.length === 0) {
                 list.innerHTML = `<div class="tx-empty" style="border:none; background: transparent;">No transactions recorded yet.</div>`;
@@ -1377,7 +1285,6 @@
         document.getElementById('year-dropdown').value = yStr;
         handleTimeTravel();
     }
-
 
     // --- SMART DATE HELPER ---
     function getSmartDateDefault(targetMonthStr) {
@@ -1477,9 +1384,139 @@
         if(themeBtn) themeBtn.innerText = newTheme === 'dark' ? '☀️' : '🌙';
         
         if (currentActiveView === 'analytics') renderAnalytics();
+        if (currentActiveView === 'accounts') renderAccounts();
     }
 
-    // --- OPTIMISTIC DATA LOADER ---
+    const defaultCalculationRules = [
+        { category: 'investments', name: 'Joint Brokerage', pct: 0.20, sources: 'ALL', desc: '20% of Total Income' },
+        { category: 'necessary', name: 'Tithing Donations', pct: 0.10, sources: 'ALL', desc: '10% of Total Income' },
+        { category: 'investments', name: 'Joint Crypto', pct: 0.01, sources: 'ALL', desc: '1% of Total Income' },
+        { category: 'investments', name: 'Jamason Roth IRA', pct: 0.06, sources: ['TA', 'STAT', 'Property Management'], desc: '6% of TA, STAT & Prop Mgmt' },
+        { category: 'investments', name: 'Brooklynne Roth IRA', pct: 0.06, sources: ['Peak Ent'], desc: '6% of Peak ENT' }
+    ];
+
+    const defaultAccounts = [
+        { name: 'Checking Account', balance: 0 },
+        { name: 'Savings Account', balance: 0 },
+        { name: 'Joint Brokerage', balance: 0 },
+        { name: 'Jamason Roth IRA', balance: 0 },
+        { name: 'Brooklynne Roth IRA', balance: 0 }
+    ];
+
+    const defaultDataTemplate = {
+        accounts: JSON.parse(JSON.stringify(defaultAccounts)),
+        income: [{ name: "Peak Ent", budget: 2000.00, transactions: [] }, { name: "TA", budget: 45.00, transactions: [] }, { name: "STAT", budget: 800.00, transactions: [] }, { name: "Property Management", budget: 0.00, transactions: [] }, { name: "Taxes (Refund)", budget: 3211.00, transactions: [] }, { name: "Other Income", budget: 0.00, transactions: [] }],
+        necessary: [{ name: "Mortgage / Rent", budget: 1150.00, transactions: [] }, { name: "Second Mortgage", budget: 0.00, transactions: [] }, { name: "Electricity", budget: 0.00, transactions: [] }, { name: "Gas / Oil", budget: 0.00, transactions: [] }, { name: "Water / Sewer", budget: 0.00, transactions: [] }, { name: "Trash / Internet / Cable", budget: 0.00, transactions: [] }, { name: "Cell / Land Line Phone", budget: 0.00, transactions: [] }, { name: "Auto Fuel", budget: 200.00, transactions: [] }, { name: "Auto Maintenance", budget: 25.00, transactions: [] }, { name: "Auto Insurance", budget: 0.00, transactions: [] }, { name: "Auto Registration / License", budget: 0.00, transactions: [] }, { name: "Groceries / Food", budget: 260.00, transactions: [] }, { name: "Home Supplies", budget: 25.00, transactions: [] }, { name: "Childcare / Dependents", budget: 0.00, transactions: [] }, { name: "Student Loans", budget: 0.00, transactions: [] }, { name: "Healthcare / Medical", budget: 126.42, transactions: [] }, { name: "Dental Care / Insurance", budget: 29.42, transactions: [] }, { name: "Vision Care / Insurance", budget: 9.90, transactions: [] }, { name: "Life Insurance", budget: 0.00, transactions: [] }, { name: "Medicine / Prescriptions", budget: 0.00, transactions: [] }, { name: "Veterinarian / Pets", budget: 0.00, transactions: [] }, { name: "Jamason School Things", budget: 0.00, transactions: [] }, { name: "Tithing Donations", budget: 0.00, transactions: [] }, { name: "Home / Rental Insurance", budget: 0.00, transactions: [] }, { name: "Property & School Taxes", budget: 0.00, transactions: [] }, { name: "Minimum Debt Payments", budget: 0.00, transactions: [] }],
+        discretionary: [{ name: "Dining Out", budget: 100.00, transactions: [] }, { name: "Concerts / Plays / Sports", budget: 0.00, transactions: [] }, { name: "Outdoor Recreation", budget: 0.00, transactions: [] }, { name: "Other Entertainment", budget: 0.00, transactions: [] }, { name: "Gym Membership", budget: 26.84, transactions: [] }, { name: "Personal Care / Salon", budget: 0.00, transactions: [] }, { name: "Clothing", budget: 0.00, transactions: [] }, { name: "Furniture / Decor", budget: 0.00, transactions: [] }, { name: "Jamason Buying Things", budget: 50.00, transactions: [] }, { name: "Brooklynne Buying Things", budget: 50.00, transactions: [] }, { name: "Subscriptions (Apple/Spotify/etc)", budget: 12.66, transactions: [] }, { name: "Gifts / Donations", budget: 0.00, transactions: [] }, { name: "Travel / Vacation", budget: 0.00, transactions: [] }, { name: "Other Monthly Spending", budget: 0.00, transactions: [] }, { name: "Other Yearly Expense - VASA", budget: 8.95, yearlyAmount: 107.42, transactions: [] }, { name: "Other Yearly Expense - Sam's Club", budget: 4.48, yearlyAmount: 53.73, transactions: [] }, { name: "Other Yearly Expense - Bevel", budget: 4.17, yearlyAmount: 49.99, transactions: [] }, { name: "Other Yearly Expense - Generic", budget: 10.00, yearlyAmount: 120.00, transactions: [] }],
+        investments: [{ name: "Investment - Real Estate", budget: 0.00, transactions: [] }, { name: "Business Income Expenses", budget: 0.00, transactions: [] }, { name: "Joint Brokerage", budget: 0.00, transactions: [] }, { name: "Jamason Roth IRA", budget: 0.00, transactions: [] }, { name: "Brooklynne Roth IRA", budget: 0.00, transactions: [] }, { name: "Joint Crypto", budget: 0.00, transactions: [] }, { name: "Brooklynne HSA", budget: 30.00, transactions: [] }, { name: "401K Deposits", budget: 0.00, transactions: [] }, { name: "Extra Debt Payoff Payments", budget: 0.00, transactions: [] }]
+    };
+
+    let budgetData = {};
+    
+    // Automatically set the app's default load state to the real-world calendar month
+    const _todayDate = new Date();
+    let currentMonthStr = `${monthNames[_todayDate.getMonth()]} ${_todayDate.getFullYear()}`;
+    
+    let activeModalCategory = null; let activeModalIndex = null;   
+    let activeRowSection = null; let activeEditSection = null; let activeEditIndex = null;
+    let editingRuleIndex = null; let editingTxIndex = null; 
+    let collapsedSections = { income: false, necessary: false, discretionary: false, investments: false };
+    let calculationRules = [];
+    let localLastUpdated = 0;
+
+    const STORAGE_KEY = 'budgetAppV16'; 
+    const RULES_KEY = 'budgetRulesV4';
+
+    function getPreviousMonthStr(monthStr) {
+        const [mName, yStr] = monthStr.split(' ');
+        let mIdx = monthNames.indexOf(mName);
+        let year = parseInt(yStr);
+        if (mIdx === 0) {
+            mIdx = 11;
+            year -= 1;
+        } else {
+            mIdx -= 1;
+        }
+        return `${monthNames[mIdx]} ${year}`;
+    }
+
+    // --- DEMO MODE GENERATOR ---
+    function generateDemoData() {
+        const today = new Date();
+        const dStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2, '0')}-${String(today.getDate()).padStart(2,'0')}`;
+        
+        return {
+            accounts: JSON.parse(JSON.stringify(defaultAccounts)),
+            income: [
+                { name: "Tech Job Salary", budget: 5500.00, transactions: [{date: dStr, desc: "Direct Deposit", amount: 5500.00, timestamp: Date.now()}] },
+                { name: "Freelance Work", budget: 400.00, transactions: [{date: dStr, desc: "Website Design", amount: 650.00, timestamp: Date.now()}] }
+            ],
+            necessary: [
+                { name: "Rent & Water", budget: 1850.00, transactions: [{date: dStr, desc: "Property Mgmt", amount: 1850.00, timestamp: Date.now()}] },
+                { name: "Groceries", budget: 450.00, transactions: [{date: dStr, desc: "Trader Joe's", amount: 112.45, timestamp: Date.now()}, {date: dStr, desc: "Costco", amount: 204.10, timestamp: Date.now()}] },
+                { name: "Auto Insurance", budget: 110.00, transactions: [{date: dStr, desc: "Geico", amount: 110.00, timestamp: Date.now()}] },
+                { name: "Gasoline", budget: 150.00, transactions: [{date: dStr, desc: "Shell", amount: 45.00, timestamp: Date.now()}] },
+                { name: "Internet", budget: 70.00, transactions: [] }
+            ],
+            discretionary: [
+                { name: "Dining Out", budget: 200.00, transactions: [{date: dStr, desc: "Chipotle", amount: 24.50, timestamp: Date.now()}, {date: dStr, desc: "Local Sushi", amount: 65.00, timestamp: Date.now()}] },
+                { name: "Vacation Fund", budget: 100.00, yearlyAmount: 1200.00, transactions: [], isRollover: true },
+                { name: "Spotify Premium", budget: 0.00, transactions: [{date: dStr, desc: "Spotify", amount: 10.99, timestamp: Date.now()}], isSub: true, subType: "monthly", subCost: 10.99, subDate: dStr },
+                { name: "Personal Spending", budget: 150.00, transactions: [{date: dStr, desc: "Amazon", amount: 89.99, timestamp: Date.now()}] },
+                { name: "Amazon Prime", budget: 0.00, transactions: [], isSub: true, subType: "annual", subCost: 139.00, subDate: "2026-10-15" }
+            ],
+            investments: [
+                { name: "Vanguard S&P 500", budget: 0.00, transactions: [{date: dStr, desc: "Auto Transfer", amount: 825.00, timestamp: Date.now()}] },
+                { name: "Emergency Fund", budget: 0.00, transactions: [{date: dStr, desc: "High Yield Savings", amount: 275.00, timestamp: Date.now()}] }
+            ]
+        };
+    }
+
+    const demoRulesTemplate = [
+        { category: 'investments', name: 'Vanguard S&P 500', pct: 0.15, sources: 'ALL', desc: '15% of Total Income' },
+        { category: 'investments', name: 'Emergency Fund', pct: 0.05, sources: 'ALL', desc: '5% of Total Income' }
+    ];
+
+    function toggleDemoMode() {
+        const btn = document.getElementById('btn-demo-toggle');
+        const wrapper = document.getElementById('card-remaining-wrapper');
+
+        if (!isDemoMode) {
+            isDemoMode = true;
+            budgetData = { [currentMonthStr]: generateDemoData() };
+            calculationRules = JSON.parse(JSON.stringify(demoRulesTemplate));
+            
+            btn.style.background = "#a855f7";
+            btn.style.color = "#fff";
+            btn.innerText = "🛑 Exit Demo";
+            
+            updateSyncDot('offline'); 
+            document.getElementById('sync-status').title = "🟣 Demo Mode (Saving Disabled)";
+            
+            wrapper.classList.add("demo-mode-active");
+
+            refreshViews(); 
+            
+            customAlert("Welcome to Demo Mode!\n\nYour real data is safely hidden, and saving to the cloud is completely disabled. Feel free to present or test the app safely.");
+        } else {
+            isDemoMode = false;
+            btn.style.background = "var(--bg-card)";
+            btn.style.color = "var(--text-strong)";
+            btn.innerText = "🎭 Demo";
+            
+            wrapper.classList.remove("demo-mode-active");
+            
+            loadLocalData();
+            renderApp();
+            
+            if (db) {
+                updateSyncDot('syncing');
+                setupCloudSync(_fsModule);
+            }
+        }
+    }
+
+
     function loadLocalData() {
         const saved = localStorage.getItem(STORAGE_KEY);
         let hasLegacyRules = false;
@@ -1627,6 +1664,10 @@
                     budgetData = importedData.budgetData;
                     calculationRules = importedData.calculationRules;
                     
+                    Object.keys(budgetData).forEach(m => {
+                        if (!budgetData[m].accounts) budgetData[m].accounts = JSON.parse(JSON.stringify(defaultAccounts));
+                    });
+
                     saveData();
                     renderApp();
                     closeSettingsModal();
@@ -1676,10 +1717,24 @@
                     if(newMonth[sec]) newMonth[sec].forEach(item => { item.transactions = []; });
                 });
                 
+                const prevMonthStr = getPreviousMonthStr(monthStr);
+                if (budgetData[prevMonthStr] && budgetData[prevMonthStr].accounts) {
+                    newMonth.accounts = JSON.parse(JSON.stringify(budgetData[prevMonthStr].accounts));
+                } else if (newMonth.accounts) {
+                    newMonth.accounts.forEach(a => a.balance = 0); 
+                } else {
+                    newMonth.accounts = JSON.parse(JSON.stringify(defaultAccounts));
+                }
+                
                 budgetData[monthStr] = newMonth;
             } else {
                 budgetData[monthStr] = JSON.parse(JSON.stringify(defaultDataTemplate));
             }
+            if(!skipSave) saveData();
+        }
+        
+        if (!budgetData[monthStr].accounts) {
+            budgetData[monthStr].accounts = JSON.parse(JSON.stringify(defaultAccounts));
             if(!skipSave) saveData();
         }
         
@@ -1808,6 +1863,7 @@
         }
 
         if (view === 'monthly') renderMonthly(); 
+        else if (view === 'accounts') renderAccounts();
         else if (view === 'yearly') renderYearly();
         else if (view === 'analytics') renderAnalytics();
     }
@@ -1822,6 +1878,7 @@
 
     function handleTimeTravel() {
         const isAnalytics = currentActiveView === 'analytics';
+        const isAccounts = currentActiveView === 'accounts';
         
         if (isAnalytics) {
             currentMonthStr = `${document.getElementById('analytics-month').value} ${document.getElementById('analytics-year').value}`;
@@ -1831,7 +1888,9 @@
         
         getOrCreateMonthData(currentMonthStr);
         
-        if (isAnalytics) {
+        if (isAccounts) {
+            renderAccounts();
+        } else if (isAnalytics) {
             renderAnalytics();
         } else if (currentActiveView === 'yearly') {
             renderYearly();
@@ -1840,162 +1899,211 @@
         }
     }
 
+    // --- ACCOUNTS LOGIC ---
+
+    function renderAccounts() {
+        const data = getOrCreateMonthData(currentMonthStr);
+        const container = document.getElementById('accounts-container');
+        
+        const historyMonths = [];
+        let tempMonth = currentMonthStr;
+        for(let i=0; i<6; i++) {
+            historyMonths.unshift(tempMonth);
+            tempMonth = getPreviousMonthStr(tempMonth);
+        }
+
+        let sparklineDataStore = [];
+        let totalNetWorth = 0;
+        let html = '';
+
+        data.accounts.forEach((acct, idx) => {
+            totalNetWorth += acct.balance;
+            
+            const sparkData = historyMonths.map(m => {
+                if (budgetData[m] && budgetData[m].accounts) {
+                    const pastAcct = budgetData[m].accounts.find(a => a.name === acct.name);
+                    return pastAcct ? pastAcct.balance : 0;
+                }
+                return 0;
+            });
+            
+            sparklineDataStore.push({ id: `spark-${idx}`, data: sparkData });
+
+            html += `
+                <div class="account-card">
+                    <div class="acct-info">
+                        <span class="acct-name">${acct.name}</span>
+                    </div>
+                    <div style="width: 70px; height: 30px; margin: 0 1rem; position: relative; flex-shrink: 0;">
+                        <canvas id="spark-${idx}"></canvas>
+                    </div>
+                    <div class="acct-bal">${formatCurrency(acct.balance)}</div>
+                </div>
+            `;
+        });
+
+        container.innerHTML = html;
+        animateValue('total-net-worth', totalNetWorth, 500, formatCurrency);
+
+        if (!window.sparkChartInstances) window.sparkChartInstances = {};
+        Object.values(window.sparkChartInstances).forEach(chart => chart.destroy());
+        window.sparkChartInstances = {};
+
+        requestAnimationFrame(() => {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            const sparkColor = isDark ? '#60a5fa' : '#2563eb'; 
+            
+            sparklineDataStore.forEach(item => {
+                const ctx = document.getElementById(item.id);
+                if(!ctx) return;
+                
+                window.sparkChartInstances[item.id] = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: historyMonths,
+                        datasets: [{
+                            data: item.data,
+                            borderColor: sparkColor,
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            tension: 0.4,
+                            fill: false
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false }, tooltip: { enabled: false } },
+                        scales: { x: { display: false }, y: { display: false, min: Math.min(...item.data) * 0.95, max: Math.max(...item.data) * 1.05 } },
+                        layout: { padding: 2 },
+                        animation: { duration: 0 }
+                    }
+                });
+            });
+        });
+
+        const today = new Date();
+        const currentCalMonthStr = `${monthNames[today.getMonth()]} ${today.getFullYear()}`;
+        
+        let showReminder = false;
+        if (currentMonthStr === currentCalMonthStr) {
+            const prevMonthStr = getPreviousMonthStr(currentMonthStr);
+            if (budgetData[prevMonthStr] && budgetData[prevMonthStr].accounts) {
+                const isIdentical = data.accounts.every(currAcct => {
+                    const prevAcct = budgetData[prevMonthStr].accounts.find(a => a.name === currAcct.name);
+                    return prevAcct && prevAcct.balance === currAcct.balance;
+                });
+                
+                if (isIdentical && data.accounts.length > 0) {
+                    showReminder = true;
+                }
+            }
+        }
+        document.getElementById('accounts-reminder').style.display = showReminder ? 'flex' : 'none';
+    }
+
+    function openAccountsModal() {
+        haptic('light');
+        const data = getOrCreateMonthData(currentMonthStr);
+        document.getElementById('acct-modal-month').innerText = currentMonthStr;
+        
+        const listContainer = document.getElementById('accounts-input-list');
+        let acctHtml = '';
+
+        data.accounts.forEach((acct, idx) => {
+            acctHtml += `
+                <div class="form-group" id="acct-row-${idx}">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+                        <input type="text" id="acct-name-${idx}" class="input-text" value="${acct.name}" style="padding: 0.25rem 0.5rem; font-size: 0.85rem; font-weight: 600; border: none; background: transparent; width: 80%;" placeholder="Account Name">
+                        <button type="button" onclick="document.getElementById('acct-row-${idx}').remove()" style="background: none; border: none; color: var(--danger); font-size: 0.7rem; cursor: pointer; padding: 0.2rem;">Remove</button>
+                    </div>
+                    <div style="position: relative;">
+                        <span style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-weight: 500;">$</span>
+                        <input type="number" inputmode="decimal" id="acct-val-${idx}" class="input-number" style="padding-left: 1.75rem;" step="0.01" value="${acct.balance}">
+                    </div>
+                </div>
+            `;
+        });
+        listContainer.innerHTML = acctHtml;
+
+        document.getElementById('accounts-modal').classList.add('active');
+    }
+
+    function addAccountRow() {
+        const listContainer = document.getElementById('accounts-input-list');
+        const idx = Date.now(); 
+        const html = `
+            <div class="form-group" id="acct-row-${idx}">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+                    <input type="text" id="acct-name-${idx}" class="input-text" value="" style="padding: 0.25rem 0.5rem; font-size: 0.85rem; font-weight: 600; border: none; background: transparent; width: 80%; border-bottom: 1px dashed var(--border);" placeholder="New Account Name" required>
+                    <button type="button" onclick="document.getElementById('acct-row-${idx}').remove()" style="background: none; border: none; color: var(--danger); font-size: 0.7rem; cursor: pointer; padding: 0.2rem;">Remove</button>
+                </div>
+                <div style="position: relative;">
+                    <span style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-weight: 500;">$</span>
+                    <input type="number" inputmode="decimal" id="acct-val-${idx}" class="input-number" style="padding-left: 1.75rem;" step="0.01" value="0.00" required>
+                </div>
+            </div>
+        `;
+        listContainer.insertAdjacentHTML('beforeend', html);
+    }
+
+    function handleUpdateAccounts(e) {
+        e.preventDefault();
+        pushUndoState();
+        haptic('medium');
+        
+        const newAccounts = [];
+        const rows = document.getElementById('accounts-input-list').children;
+        
+        for(let row of rows) {
+            const nameInput = row.querySelector('input[type="text"]');
+            const valInput = row.querySelector('input[type="number"]');
+            
+            if(nameInput && valInput && nameInput.value.trim() !== '') {
+                newAccounts.push({
+                    name: nameInput.value.trim(),
+                    balance: parseFloat(valInput.value) || 0
+                });
+            }
+        }
+        
+        budgetData[currentMonthStr].accounts = newAccounts;
+
+        const currDate = parseMonthStr(currentMonthStr);
+
+        Object.keys(budgetData).forEach(m => {
+            if (parseMonthStr(m) > currDate) {
+                if (!budgetData[m].accounts) budgetData[m].accounts = [];
+                
+                const futureAccounts = [];
+                
+                newAccounts.forEach(newAcct => {
+                    const existingFutureAcct = budgetData[m].accounts.find(a => a.name === newAcct.name);
+                    if (existingFutureAcct) {
+                        futureAccounts.push(existingFutureAcct);
+                    } else {
+                        futureAccounts.push({ name: newAcct.name, balance: newAcct.balance });
+                    }
+                });
+                
+                budgetData[m].accounts = futureAccounts;
+            }
+        });
+
+        saveData();
+        closeAccountsModal();
+        renderAccounts();
+    }
+
+    function closeAccountsModal() { document.getElementById('accounts-modal').classList.remove('active'); }
+
+    // --- END ACCOUNTS LOGIC ---
+
     function toggleSection(secId) {
         haptic('light');
         collapsedSections[secId] = !collapsedSections[secId];
         renderMonthly();
         if (currentActiveView === 'yearly') renderYearly();
-    }
-
-    function openReorderModal() { document.getElementById('reorder-modal').classList.add('active'); renderReorderList(); }
-    function closeReorderModal() { document.getElementById('reorder-modal').classList.remove('active'); }
-
-    function renderReorderList() {
-        const secId = document.getElementById('reorder-section-select').value;
-        const list = document.getElementById('reorder-list');
-        list.innerHTML = '';
-        const arr = budgetData[currentMonthStr][secId];
-        
-        arr.forEach((item, idx) => {
-            list.innerHTML += `
-                <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); padding: 0.75rem 1rem; border: 1px solid var(--border); border-radius: var(--radius-md); box-shadow: var(--shadow-sm);">
-                    <span style="font-weight: 500; color: var(--text-strong);">${item.name}</span>
-                    <div style="display: flex; gap: 0.25rem;">
-                        <button type="button" onclick="moveCategory('${secId}', ${idx}, -1)" class="btn-tx-action" style="opacity: 1; pointer-events: auto; padding: 0.35rem; background: var(--bg-alt); border: 1px solid var(--border);" ${idx === 0 ? 'disabled style="opacity:0.3;"' : ''}>${ICONS.chevUp}</button>
-                        <button type="button" onclick="moveCategory('${secId}', ${idx}, 1)" class="btn-tx-action" style="opacity: 1; pointer-events: auto; padding: 0.35rem; background: var(--bg-alt); border: 1px solid var(--border);" ${idx === arr.length - 1 ? 'disabled style="opacity:0.3;"' : ''}>${ICONS.chevDown}</button>
-                    </div>
-                </div>
-            `;
-        });
-    }
-
-    function moveCategory(secId, idx, dir) {
-        pushUndoState();
-        haptic('light');
-        const currentArr = budgetData[currentMonthStr][secId];
-        const newIdx = idx + dir;
-        
-        if (newIdx >= 0 && newIdx < currentArr.length) {
-            const temp = currentArr[idx];
-            currentArr[idx] = currentArr[newIdx];
-            currentArr[newIdx] = temp;
-            
-            const masterOrder = currentArr.map(item => item.name);
-            
-            Object.keys(budgetData).forEach(m => {
-                if (m !== currentMonthStr) {
-                    budgetData[m][secId].sort((a, b) => {
-                        let idxA = masterOrder.indexOf(a.name);
-                        let idxB = masterOrder.indexOf(b.name);
-                        if (idxA === -1) idxA = 9999;
-                        if (idxB === -1) idxB = 9999;
-                        return idxA - idxB;
-                    });
-                }
-            });
-            
-            saveData();
-            renderReorderList();
-            renderMonthly();
-            if (currentActiveView === 'yearly') renderYearly();
-        }
-    }
-
-    function forceSyncOrder() {
-        pushUndoState();
-        haptic('medium');
-        const secId = document.getElementById('reorder-section-select').value;
-        const currentArr = budgetData[currentMonthStr][secId];
-        const masterOrder = currentArr.map(item => item.name);
-        
-        Object.keys(budgetData).forEach(m => {
-            if (m !== currentMonthStr) {
-                budgetData[m][secId].sort((a, b) => {
-                    let idxA = masterOrder.indexOf(a.name);
-                    let idxB = masterOrder.indexOf(b.name);
-                    if (idxA === -1) idxA = 9999;
-                    if (idxB === -1) idxB = 9999;
-                    return idxA - idxB;
-                });
-            }
-        });
-        saveData();
-        renderMonthly();
-        if (currentActiveView === 'yearly') renderYearly();
-        customAlert("Success! The order of " + secId.toUpperCase() + " for all past and future months now perfectly matches this month's layout.");
-    }
-
-    function openQuickAddModal() {
-        haptic('medium');
-        document.getElementById('quick-add-modal').classList.add('active');
-        document.querySelector('#quick-add-modal .add-form').reset();
-        
-        const select = document.getElementById('qa-category');
-        select.innerHTML = '<option value="" disabled selected>Select Category...</option>';
-        const sections = [{ id: 'income', label: 'Income' }, { id: 'necessary', label: 'Necessary Expenses' }, { id: 'discretionary', label: 'Discretionary Expenses' }, { id: 'investments', label: 'Investments / Savings' }];
-
-        sections.forEach(sec => {
-            const optgroup = document.createElement('optgroup');
-            optgroup.label = sec.label.toUpperCase();
-            budgetData[currentMonthStr][sec.id].forEach((item, idx) => { optgroup.innerHTML += `<option value="${sec.id}|${idx}">${item.name}</option>`; });
-            select.appendChild(optgroup);
-        });
-
-        document.getElementById('qa-date').value = getSmartDateDefault(currentMonthStr);
-
-        setTimeout(() => document.getElementById('qa-amount').focus(), 100);
-    }
-    
-    function closeQuickAddModal() { document.getElementById('quick-add-modal').classList.remove('active'); }
-
-    function handleQuickAdd(e) {
-        e.preventDefault();
-        const catVal = document.getElementById('qa-category').value;
-        const amount = parseFloat(document.getElementById('qa-amount').value);
-        const desc = document.getElementById('qa-desc').value;
-        const dateStr = document.getElementById('qa-date').value;
-
-        if (catVal && !isNaN(amount) && desc && dateStr) {
-            pushUndoState();
-            haptic('medium');
-            const [secId, idx] = catVal.split('|');
-            const [y, m, d] = dateStr.split('-');
-            const targetMonthStr = monthNames[parseInt(m) - 1] + ' ' + y;
-            
-            getOrCreateMonthData(targetMonthStr);
-            budgetData[targetMonthStr][secId][idx].transactions.push({ date: dateStr, desc: desc, amount: amount, timestamp: Date.now() });
-
-            saveData();
-            closeQuickAddModal();
-            refreshViews();
-        }
-    }
-
-    function toggleAddYearly() {
-        const isYearly = document.getElementById('new-row-is-yearly').checked;
-        document.getElementById('new-row-budget-label').innerText = isYearly ? "Total Yearly Cost" : "Monthly Budget";
-    }
-
-    function toggleAddSub() {
-        const isSub = document.getElementById('new-row-is-sub').checked;
-        document.getElementById('new-sub-details').style.display = isSub ? 'flex' : 'none';
-        if (isSub) {
-            const budgetInput = document.getElementById('new-row-budget');
-            if (budgetInput.value === '') budgetInput.value = '0.00';
-        }
-    }
-
-    function toggleEditYearly() {
-        const isYearly = document.getElementById('edit-row-is-yearly').checked;
-        document.getElementById('edit-row-budget-label').innerText = isYearly ? "Total Yearly Cost" : "Monthly Budget";
-        let currentVal = parseFloat(document.getElementById('edit-row-budget').value) || 0;
-        if(isYearly && currentVal > 0) document.getElementById('edit-row-budget').value = (currentVal * 12).toFixed(2);
-        else if (!isYearly && currentVal > 0) document.getElementById('edit-row-budget').value = (currentVal / 12).toFixed(2);
-    }
-
-    function toggleEditSub() {
-        const isSub = document.getElementById('edit-row-is-sub').checked;
-        document.getElementById('edit-sub-details').style.display = isSub ? 'flex' : 'none';
     }
 
     function renderMonthly() {
@@ -2227,25 +2335,7 @@
         });
     }
 
-    async function deleteRow(secId, idx) {
-        const item = budgetData[currentMonthStr][secId][idx];
-        if(await customConfirm(`Are you sure you want to delete "${item.name}" from this month onwards?\n\n(It will still be saved in past months if it existed previously)`, "Delete", true)) {
-            pushUndoState();
-            haptic('medium');
-            const targetName = item.name;
-            const currDate = parseMonthStr(currentMonthStr);
-
-            Object.keys(budgetData).forEach(m => {
-                if (parseMonthStr(m) >= currDate) {
-                    const matchIdx = budgetData[m][secId].findIndex(x => x.name === targetName);
-                    if (matchIdx !== -1) budgetData[m][secId].splice(matchIdx, 1);
-                }
-            });
-            saveData();
-            renderMonthly();
-        }
-    }
-
+    // --- RENDER YEARLY VIEW ---
     function renderYearly() {
         const yearSelect = document.getElementById('year-selector');
         const year = yearSelect && yearSelect.value ? yearSelect.value : currentMonthStr.split(' ')[1];
@@ -2549,417 +2639,65 @@
         });
     }
 
-    function openModal(categoryType, itemIndex) {
-        haptic('light');
-        activeModalCategory = categoryType; activeModalIndex = itemIndex;
-        const item = budgetData[currentMonthStr][categoryType][itemIndex];
-        const vals = getItemValues(categoryType, item, budgetData[currentMonthStr], currentMonthStr);
-
-        document.getElementById('modal-title').innerText = `${item.name}`;
-        const banner = document.getElementById('modal-target-banner');
-        if (vals.isCalculated) {
-            banner.innerHTML = `💡 Goal based on actual income: <strong>${formatCurrency(vals.suggestedActual)}</strong>`;
-            banner.style.display = 'block';
-        } else { banner.style.display = 'none'; }
-
-        document.getElementById('transaction-modal').classList.add('active');
-        document.querySelector('#transaction-modal .add-form').reset();
-        
-        document.getElementById('tx-date').value = getSmartDateDefault(currentMonthStr); 
-
-        editingTxIndex = null;
-        document.getElementById('btn-add-tx').innerText = "Add Transaction";
-        document.getElementById('btn-cancel-tx').style.display = "none";
-        setTimeout(() => document.getElementById('tx-amount').focus(), 100);
-        renderTransactionsList();
-    }
-
-    function closeModal() { document.getElementById('transaction-modal').classList.remove('active'); activeModalCategory = null; activeModalIndex = null; editingTxIndex = null; }
-
-    function renderTransactionsList() {
-        if (!activeModalCategory) return;
-        const item = budgetData[currentMonthStr][activeModalCategory][activeModalIndex];
-        const listContainer = document.getElementById('modal-tx-list');
-        const totalSpan = document.getElementById('modal-total');
-        
-        if (item.transactions.length === 0) {
-            listContainer.innerHTML = `<div class="tx-empty" style="border:none; background: transparent;">No transactions added yet.</div>`;
-            totalSpan.innerText = '$0.00'; return;
-        }
-
-        let html = ''; let total = 0;
-        const sortedTx = [...item.transactions].sort((a, b) => new Date(a.date) - new Date(b.date));
-        const isIncome = activeModalCategory === 'income';
-        
-        sortedTx.forEach((tx, sortedIdx) => {
-            const originalIdx = item.transactions.indexOf(tx); 
-            total += tx.amount;
-            
-            const displayAmt = isIncome ? `+${formatCurrency(Math.abs(tx.amount))}` : `-${formatCurrency(Math.abs(tx.amount))}`;
-            const colorStyle = isIncome ? `color: var(--success);` : `color: var(--danger);`;
-            
-            const txActions = `
-                <button type="button" onclick="editTransaction(${originalIdx})" class="btn-tx-action edit" title="Edit Transaction">${ICONS.edit}</button>
-                <button type="button" onclick="deleteTransaction(${originalIdx})" class="btn-tx-action delete" title="Delete Transaction">${ICONS.trash}</button>
-            `;
-
-            html += `
-                <div class="tx-scroll-wrapper" ${editingTxIndex === originalIdx ? 'style="border-color: var(--primary);"' : ''}>
-                    <div class="tx-item" ${editingTxIndex === originalIdx ? 'style="background: var(--primary-bg);"' : ''}>
-                        <div class="tx-info">
-                            <span class="tx-amount-large" style="${colorStyle}">${displayAmt}</span>
-                            <span class="tx-desc-stack">${tx.desc}</span>
-                            <span class="tx-date-stack">${formatDate(tx.date)}</span>
-                        </div>
-                        <div class="tx-actions">
-                            ${txActions}
-                        </div>
-                    </div>
-                    <div class="tx-swipe-actions">
-                        ${txActions}
-                    </div>
-                </div>`;
-        });
-        listContainer.innerHTML = html;
-        totalSpan.innerText = formatCurrency(total);
-        listContainer.scrollTop = listContainer.scrollHeight;
-    }
-
-    function editTransaction(txIndex) {
-        haptic('light');
-        editingTxIndex = txIndex;
-        const tx = budgetData[currentMonthStr][activeModalCategory][activeModalIndex].transactions[txIndex];
-        document.getElementById('tx-date').value = tx.date;
-        document.getElementById('tx-desc').value = tx.desc;
-        document.getElementById('tx-amount').value = tx.amount;
-        document.getElementById('btn-add-tx').innerText = "Save Changes";
-        document.getElementById('btn-cancel-tx').style.display = "block";
-        renderTransactionsList(); 
-        document.getElementById('tx-amount').focus();
-    }
-
-    function cancelEditTransaction() {
-        haptic('light');
-        editingTxIndex = null;
-        document.querySelector('#transaction-modal .add-form').reset();
-        
-        document.getElementById('tx-date').value = getSmartDateDefault(currentMonthStr); 
-        
-        document.getElementById('btn-add-tx').innerText = "Add Transaction";
-        document.getElementById('btn-cancel-tx').style.display = "none";
-        renderTransactionsList(); 
-    }
-
-    function handleAddTransaction(e) {
-        e.preventDefault();
-        const date = document.getElementById('tx-date').value;
-        const desc = document.getElementById('tx-desc').value;
-        const amount = parseFloat(document.getElementById('tx-amount').value);
-        
-        if (desc && !isNaN(amount) && date) {
-            pushUndoState();
-            haptic('medium');
-            if (editingTxIndex !== null) {
-                const oldTx = budgetData[currentMonthStr][activeModalCategory][activeModalIndex].transactions[editingTxIndex];
-                budgetData[currentMonthStr][activeModalCategory][activeModalIndex].transactions[editingTxIndex] = { date: date, desc: desc, amount: amount, timestamp: oldTx.timestamp || Date.now() };
-                editingTxIndex = null;
-                document.getElementById('btn-add-tx').innerText = "Add Transaction";
-                document.getElementById('btn-cancel-tx').style.display = "none";
-            } else {
-                budgetData[currentMonthStr][activeModalCategory][activeModalIndex].transactions.push({ date: date, desc: desc, amount: amount, timestamp: Date.now() });
-            }
-            saveData();
-            renderTransactionsList();
-            refreshViews();
-            document.getElementById('tx-desc').value = '';
-            document.getElementById('tx-amount').value = '';
-            document.getElementById('tx-amount').focus(); 
-        }
-    }
-
-    function deleteTransaction(txIndex) {
-        pushUndoState();
-        haptic('medium');
-        budgetData[currentMonthStr][activeModalCategory][activeModalIndex].transactions.splice(txIndex, 1);
-        saveData(); renderTransactionsList(); refreshViews();
-    }
-
-    function openRowModal(secId) {
-        haptic('light');
-        activeRowSection = secId;
-        const titles = { 'income': 'Income', 'necessary': 'Necessary Expenses', 'discretionary': 'Discretionary Expenses', 'investments': 'Investments' };
-        document.getElementById('row-modal-title').innerText = `Add New ${titles[secId]}`;
-        document.getElementById('row-modal').classList.add('active');
-        document.getElementById('add-row-form').reset();
-        
-        document.getElementById('new-row-is-rollover').checked = false;
-        document.getElementById('new-row-is-yearly').checked = false;
-        document.getElementById('new-row-is-sub').checked = false;
-        toggleAddYearly();
-        toggleAddSub();
-        
-        setTimeout(() => document.getElementById('new-row-name').focus(), 100);
-    }
-
-    function closeRowModal() { document.getElementById('row-modal').classList.remove('active'); activeRowSection = null; }
-
-    function handleAddRow(e) {
-        e.preventDefault();
-        const name = document.getElementById('new-row-name').value;
-        const inputValue = parseFloat(document.getElementById('new-row-budget').value) || 0;
-        
-        const isRollover = document.getElementById('new-row-is-rollover').checked;
-        const isYearly = document.getElementById('new-row-is-yearly').checked;
-        
-        const isSub = document.getElementById('new-row-is-sub').checked;
-        const subType = document.getElementById('new-sub-type').value;
-        const subCost = parseFloat(document.getElementById('new-sub-cost').value) || 0;
-        const subDate = document.getElementById('new-sub-date').value;
-
-        if (name && activeRowSection) {
-            pushUndoState();
-            haptic('medium');
-            let budget = inputValue; let yearlyAmount = null;
-            if (isYearly) { yearlyAmount = inputValue; budget = inputValue / 12; }
-
-            const currDate = parseMonthStr(currentMonthStr);
-
-            Object.keys(budgetData).forEach(m => {
-                if (parseMonthStr(m) >= currDate) {
-                    const exists = budgetData[m][activeRowSection].find(x => x.name === name);
-                    if (!exists) {
-                        budgetData[m][activeRowSection].push({ 
-                            name: name, budget: budget, yearlyAmount: yearlyAmount, transactions: [],
-                            isSub: isSub, subType: subType, subCost: subCost, subDate: subDate,
-                            isRollover: isRollover
-                        });
-                    }
-                }
-            });
-            saveData(); closeRowModal(); renderMonthly();
-        }
-    }
-
-    function openEditRowModal(secId, idx) {
-        haptic('light');
-        activeEditSection = secId; activeEditIndex = idx;
-        const item = budgetData[currentMonthStr][secId][idx];
-        const vals = getItemValues(secId, item, budgetData[currentMonthStr], currentMonthStr);
-        
-        document.getElementById('edit-row-name').value = item.name;
-        
-        const budgetInput = document.getElementById('edit-row-budget');
-        const calcWarning = document.getElementById('edit-row-calc-warning');
-        
-        const isRolloverCb = document.getElementById('edit-row-is-rollover');
-        const isYearlyCb = document.getElementById('edit-row-is-yearly');
-        const isSubCb = document.getElementById('edit-row-is-sub');
-        
-        isRolloverCb.checked = item.isRollover || false;
-        
-        isSubCb.checked = item.isSub || false;
-        document.getElementById('edit-sub-type').value = item.subType || 'monthly';
-        document.getElementById('edit-sub-cost').value = item.subCost || '';
-        document.getElementById('edit-sub-date').value = item.subDate || '';
-        toggleEditSub();
-        
-        if (vals.isCalculated) {
-            budgetInput.value = vals.baseBudget.toFixed(2); budgetInput.disabled = true;
-            budgetInput.style.backgroundColor = 'var(--bg-alt)'; budgetInput.style.color = 'var(--text-muted)';
-            calcWarning.style.display = 'block'; 
-            
-            isRolloverCb.disabled = true;
-            isYearlyCb.disabled = true; 
-            isSubCb.disabled = true;
-            document.getElementById('edit-options-wrapper').style.display = 'none';
-        } else {
-            budgetInput.disabled = false; budgetInput.style.backgroundColor = ''; budgetInput.style.color = '';
-            calcWarning.style.display = 'none'; 
-            
-            isRolloverCb.disabled = false;
-            isYearlyCb.disabled = false;
-            isSubCb.disabled = false;
-            document.getElementById('edit-options-wrapper').style.display = 'flex';
-            
-            if (item.yearlyAmount) {
-                isYearlyCb.checked = true; budgetInput.value = item.yearlyAmount.toFixed(2); document.getElementById('edit-row-budget-label').innerText = "Total Yearly Cost";
-            } else {
-                isYearlyCb.checked = false; budgetInput.value = (item.budget || 0).toFixed(2); document.getElementById('edit-row-budget-label').innerText = "Monthly Budget";
-            }
-        }
-        document.getElementById('edit-row-modal').classList.add('active');
-        setTimeout(() => document.getElementById('edit-row-budget').focus(), 100);
-    }
-
-    function closeEditRowModal() { document.getElementById('edit-row-modal').classList.remove('active'); activeEditSection = null; activeEditIndex = null; }
-
-    function handleEditRow(e) {
-        e.preventDefault();
-        const newName = document.getElementById('edit-row-name').value;
-        const inputValue = parseFloat(document.getElementById('edit-row-budget').value) || 0;
-        
-        const isRollover = document.getElementById('edit-row-is-rollover').checked;
-        const isYearly = document.getElementById('edit-row-is-yearly').checked;
-        
-        const isSub = document.getElementById('edit-row-is-sub').checked;
-        const subType = document.getElementById('edit-sub-type').value;
-        const subCost = parseFloat(document.getElementById('edit-sub-cost').value) || 0;
-        const subDate = document.getElementById('edit-sub-date').value;
-
-        if (newName && activeEditSection !== null && activeEditIndex !== null) {
-            pushUndoState();
-            haptic('medium');
-            const oldName = budgetData[currentMonthStr][activeEditSection][activeEditIndex].name;
-            const currDate = parseMonthStr(currentMonthStr);
-
-            Object.keys(budgetData).forEach(m => {
-                if (parseMonthStr(m) >= currDate) {
-                    const itemToEdit = budgetData[m][activeEditSection].find(x => x.name === oldName);
-                    if (itemToEdit) {
-                        itemToEdit.name = newName;
-                        itemToEdit.isRollover = isRollover;
-                        itemToEdit.isSub = isSub;
-                        itemToEdit.subType = subType;
-                        itemToEdit.subCost = subCost;
-                        itemToEdit.subDate = subDate;
-                        
-                        if (!getItemValues(activeEditSection, itemToEdit, budgetData[m], m).isCalculated) {
-                            if (isYearly) { itemToEdit.yearlyAmount = inputValue; itemToEdit.budget = inputValue / 12; } 
-                            else { itemToEdit.yearlyAmount = null; itemToEdit.budget = inputValue; }
-                        }
-                    }
-                }
-            });
-            saveData(); closeEditRowModal(); renderMonthly();
-        }
-    }
-
-    function openRulesModal() {
-        haptic('light');
-        editingRuleIndex = null; 
-        document.getElementById('rule-form-title').innerText = "+ Create Custom Rule";
-        document.getElementById('btn-submit-rule').innerText = "Add";
-
-        const list = document.getElementById('rules-list');
-        let rulesHtml = '';
-        calculationRules.forEach((rule, idx) => {
-            const currentPct = (rule.pct * 100).toFixed(1);
-            rulesHtml += `
-                <div style="background: var(--bg-alt); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border); position: relative;">
-                    <div style="position: absolute; right: 0.75rem; top: 0.75rem; display: flex; gap: 0.35rem;">
-                        <button type="button" onclick="editCalculationRule(${idx})" class="btn-row-action" title="Edit Rule" style="opacity: 1; pointer-events: auto; padding: 0.35rem; background: var(--bg-card); border: 1px solid var(--border); box-shadow: var(--shadow-sm);">${ICONS.edit}</button>
-                        <button type="button" onclick="deleteCalculationRule(${idx})" class="btn-row-action delete" title="Delete Rule" style="opacity: 1; pointer-events: auto; padding: 0.35rem; background: var(--bg-card); border: 1px solid var(--border); box-shadow: var(--shadow-sm);">${ICONS.trash}</button>
-                    </div>
-                    <div style="font-weight: 600; color: var(--text-strong); margin-bottom: 0.25rem; padding-right: 5rem;">${rule.name}</div>
-                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.75rem;">Source: ${rule.sources === 'ALL' ? 'Total Income' : rule.sources.join(' + ')}</div>
-                    <div style="display: flex; align-items: center; gap: 0.5rem;">
-                        <input type="number" inputmode="decimal" id="rule-input-${idx}" class="input-number" style="text-align: left; width: 6rem; padding: 0.5rem;" step="0.1" value="${currentPct}" required>
-                        <span style="font-weight: 500; color: var(--text-muted);">%</span>
-                    </div>
-                </div>
-            `;
-        });
-        list.innerHTML = rulesHtml;
-
-        const targetSelect = document.getElementById('new-rule-target');
-        targetSelect.innerHTML = '<option value="" disabled selected>Select an existing row...</option>';
-        ['necessary', 'discretionary', 'investments'].forEach(sec => {
-            const optgroup = document.createElement('optgroup'); optgroup.label = sec.toUpperCase();
-            budgetData[currentMonthStr][sec].forEach(item => { optgroup.innerHTML += `<option value="${sec}|${item.name}">${item.name}</option>`; });
-            targetSelect.appendChild(optgroup);
-        });
-
-        const sourceContainer = document.getElementById('new-rule-source-container');
-        let sourceHtml = `
-            <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; cursor: pointer;">
-                <input type="checkbox" id="rule-source-all" value="ALL" onchange="toggleAllSources(this)" checked style="width: 1.25rem; height: 1.25rem; accent-color: var(--primary);">
-                <span style="font-weight: 600; color: var(--text-strong);">Total Income (All)</span>
-            </label><div style="height: 1px; background: var(--border); margin: 0.5rem 0;"></div>`;
-        budgetData[currentMonthStr].income.forEach(item => {
-            sourceHtml += `
-                <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; cursor: pointer;">
-                    <input type="checkbox" class="rule-source-cb" value="${item.name}" disabled style="width: 1.25rem; height: 1.25rem; accent-color: var(--primary);">
-                    <span style="color: var(--text-main);">${item.name}</span>
-                </label>`;
-        });
-        sourceContainer.innerHTML = sourceHtml;
-        document.getElementById('rules-modal').classList.add('active');
-    }
-
-    function toggleAllSources(checkbox) {
-        document.querySelectorAll('.rule-source-cb').forEach(cb => {
-            if (checkbox.checked) { cb.checked = false; cb.disabled = true; } else { cb.disabled = false; }
-        });
-    }
-
-    function closeRulesModal() { document.getElementById('rules-modal').classList.remove('active'); }
-
-    function handleSaveRules(e) {
-        e.preventDefault();
-        pushUndoState();
-        haptic('medium');
-        calculationRules.forEach((rule, idx) => {
-            const inputVal = parseFloat(document.getElementById(`rule-input-${idx}`).value);
-            if (!isNaN(inputVal)) { rule.pct = inputVal / 100; rule.desc = `${inputVal}% of ${rule.sources === 'ALL' ? 'Total Income' : rule.sources.join(' + ')}`; }
-        });
-        saveData(); closeRulesModal(); renderMonthly(); 
-    }
-
-    function editCalculationRule(idx) {
-        haptic('light');
-        editingRuleIndex = idx;
-        const rule = calculationRules[idx];
-        document.getElementById('rule-form-title').innerText = "✎ Edit Custom Rule";
-        document.getElementById('btn-submit-rule').innerText = "Update";
-        document.getElementById('new-rule-target').value = `${rule.category}|${rule.name}`;
-        
-        const isAll = rule.sources === 'ALL';
-        const sourceAllCb = document.getElementById('rule-source-all');
-        sourceAllCb.checked = isAll; toggleAllSources(sourceAllCb); 
-        
-        if (!isAll) { document.querySelectorAll('.rule-source-cb').forEach(cb => { cb.checked = rule.sources.includes(cb.value); }); }
-        document.getElementById('new-rule-pct').value = (rule.pct * 100).toFixed(1);
-        document.getElementById('rule-form-title').scrollIntoView({ behavior: 'smooth' });
-    }
-
-    function handleSaveCustomRule() {
-        const targetVal = document.getElementById('new-rule-target').value;
-        const pctVal = parseFloat(document.getElementById('new-rule-pct').value);
-        const isAll = document.getElementById('rule-source-all').checked;
-        let sources = [];
-        if (isAll) { sources = 'ALL'; } else { document.querySelectorAll('.rule-source-cb:checked').forEach(cb => sources.push(cb.value)); }
-
-        if(targetVal && !isNaN(pctVal) && (sources === 'ALL' || sources.length > 0)) {
-            pushUndoState();
-            haptic('medium');
-            const [category, name] = targetVal.split('|');
-            const newRule = { category: category, name: name, pct: pctVal / 100, sources: sources, desc: `${pctVal}% of ${sources === 'ALL' ? 'Total Income' : sources.join(' + ')}` };
-            if (editingRuleIndex !== null) calculationRules[editingRuleIndex] = newRule; else calculationRules.push(newRule);
-            saveData(); document.getElementById('new-rule-pct').value = ''; editingRuleIndex = null; openRulesModal(); renderMonthly();
-        } else { customAlert('Please select a target row, at least one income source, and enter a valid percentage.'); }
-    }
-
-    async function deleteCalculationRule(idx) {
-        if(await customConfirm('Are you sure you want to delete this calculation rule?', "Delete", true)) {
-            pushUndoState(); calculationRules.splice(idx, 1); saveData(); openRulesModal(); renderMonthly();
-        }
-    }
-
     // --- BOOTSTRAP & CLOUD INIT ---
+
+    // ---- LOGIN SCREEN ----
+    function showLoginScreen() {
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        const bg = isDark ? '#0f172a' : '#f8fafc';
+        const card = isDark ? '#1e293b' : '#ffffff';
+        const text = isDark ? '#f1f5f9' : '#0f172a';
+        const border = isDark ? '#334155' : '#e2e8f0';
+
+        document.body.innerHTML = `
+        <div id="login-wrap" style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:${bg};padding:1.5rem;">
+            <div style="width:100%;max-width:360px;background:${card};border-radius:1.5rem;padding:2.5rem;box-shadow:0 4px 24px rgba(0,0,0,0.12);">
+                <h1 style="font-size:1.4rem;font-weight:700;margin-bottom:0.25rem;color:${text};">Household Budget</h1>
+                <p style="color:#64748b;margin-bottom:2rem;font-size:0.875rem;">Sign in to access your budget</p>
+                <div id="login-error" style="display:none;color:#ef4444;font-size:0.875rem;margin-bottom:1rem;"></div>
+                <div style="margin-bottom:1rem;">
+                    <label style="display:block;font-size:0.875rem;font-weight:500;color:${text};margin-bottom:0.5rem;">Email</label>
+                    <input id="login-email" type="email" autocomplete="email" style="width:100%;padding:0.625rem 0.875rem;border:1px solid ${border};border-radius:0.75rem;font-size:1rem;outline:none;box-sizing:border-box;background:${card};color:${text};" />
+                </div>
+                <div style="margin-bottom:1.5rem;">
+                    <label style="display:block;font-size:0.875rem;font-weight:500;color:${text};margin-bottom:0.5rem;">Password</label>
+                    <input id="login-password" type="password" autocomplete="current-password" style="width:100%;padding:0.625rem 0.875rem;border:1px solid ${border};border-radius:0.75rem;font-size:1rem;outline:none;box-sizing:border-box;background:${card};color:${text};" />
+                </div>
+                <button id="login-btn" style="width:100%;padding:0.75rem;background:#2563eb;color:white;border:none;border-radius:0.75rem;font-size:0.9375rem;font-weight:600;cursor:pointer;">Sign In</button>
+            </div>
+        </div>`;
+
+        document.getElementById('login-btn').addEventListener('click', async () => {
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value;
+            const errEl = document.getElementById('login-error');
+            const btn = document.getElementById('login-btn');
+            btn.textContent = 'Signing in...';
+            btn.disabled = true;
+            errEl.style.display = 'none';
+            try {
+                await _authModule.signInWithEmailAndPassword(auth, email, password);
+                // onAuthStateChanged will handle the rest
+            } catch (err) {
+                errEl.textContent = 'Incorrect email or password. Please try again.';
+                errEl.style.display = 'block';
+                btn.textContent = 'Sign In';
+                btn.disabled = false;
+            }
+        });
+
+        document.getElementById('login-password').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') document.getElementById('login-btn').click();
+        });
+    }
+
     async function initCloud() {
         try {
-            // 1. OPTIMISTIC LOADING: Instantly render from local storage!
-            // This guarantees the app works even if the network hangs completely.
-            loadLocalData();
-            renderNavigation();
-            
-            // Check if URL suggests demo mode
-            if (window.location.search.includes('demo=true')) toggleDemoMode();
-            
-            renderApp();
-            
-            // 2. NOW try connecting to the cloud.
             updateSyncDot('syncing');
+            
+            // 1. OPTIMISTIC LOAD: This guarantees the app instantly draws from local memory 
+            // BEFORE Firebase is even contacted. No more hanging on "Loading..."!
+            loadLocalData();
             
             const appModule = await import('https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js');
             _authModule = await import('https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js');
@@ -2980,58 +2718,25 @@
             setDoc_fn = _fsModule.setDoc;
             doc_fn = _fsModule.doc;
 
-            // Log in silently
-            await _authModule.signInAnonymously(auth);
-
             _authModule.onAuthStateChanged(auth, (user) => {
                 if (user) {
-                    setupCloudSync(_fsModule);
+                    if (document.getElementById('login-wrap')) {
+                        location.reload(); 
+                    } else {
+                        // Safely render the app now that we know we are authorized
+                        renderApp();
+                        setupCloudSync(_fsModule);
+                    }
                 } else {
-                    updateSyncDot('offline');
+                    showLoginScreen();
                 }
             });
 
         } catch (e) {
             console.warn("Cloud failed. Using local browser memory.", e);
             updateSyncDot('offline');
+            renderApp(); // Fallback render
         }
-    }
-
-    function renderApp() {
-        const yearSelect = document.getElementById('year-selector');
-        const analyticsYear = document.getElementById('analytics-year');
-        if (yearSelect && yearSelect.options.length === 0) {
-            for(let y = 2024; y <= 2036; y++) {
-                yearSelect.innerHTML += `<option value="${y}">${y}</option>`;
-                if (analyticsYear) analyticsYear.innerHTML += `<option value="${y}">${y}</option>`;
-            }
-            yearSelect.value = "2026";
-            if (analyticsYear) analyticsYear.value = "2026";
-        }
-        
-        const monthDrop = document.getElementById('month-dropdown');
-        const yearDrop = document.getElementById('year-dropdown');
-        const analyticsMonth = document.getElementById('analytics-month');
-        
-        if (monthDrop && monthDrop.options.length === 0) {
-            fullMonthNames.forEach((m, idx) => {
-                monthDrop.innerHTML += `<option value="${monthNames[idx]}">${m}</option>`;
-                if (analyticsMonth) analyticsMonth.innerHTML += `<option value="${monthNames[idx]}">${m}</option>`;
-            });
-            for(let y = 2024; y <= 2036; y++) {
-                if (yearDrop) yearDrop.innerHTML += `<option value="${y}">${y}</option>`;
-            }
-        }
-        
-        if(currentMonthStr) {
-            const [mName, yStr] = currentMonthStr.split(' ');
-            if (monthDrop) monthDrop.value = mName;
-            if (yearDrop) yearDrop.value = yStr;
-            if (analyticsMonth) analyticsMonth.value = mName;
-            if (analyticsYear) analyticsYear.value = yStr;
-        }
-        
-        switchView(currentActiveView);
     }
 
     function setupCloudSync(fsModule) {
@@ -3071,6 +2776,9 @@
         }, (err) => {
             console.error("Sync error", err);
             updateSyncDot('offline');
+            // If the database rejects us, STILL render the app!
+            loadLocalData();
+            renderApp();
         });
     }
 
