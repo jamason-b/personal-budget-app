@@ -3376,7 +3376,10 @@
         window.saveData(false, true);
     });
 
-    initCloud();
+    // DEMO MODE: skip Firebase auth entirely, run on local data only
+    loadLocalData();
+    renderApp();
+    updateSyncDot('offline');
 
 </script>
 </body>
