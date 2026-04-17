@@ -342,7 +342,7 @@
         tr.spacer-row { background-color: var(--bg-card) !important; }
         tr.spacer-row td { height: 1rem; padding: 0; border: none; background-color: transparent; }
         
-        /* YEARLY SUMMARY MOBILE CARDS (Updated for Compact Grid Layout) */
+        /* YEARLY SUMMARY MOBILE CARDS */
         .yearly-mobile-cards { display: flex; flex-direction: column; gap: 1rem; padding-bottom: 1rem; }
         .y-summary-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 1.25rem; box-shadow: var(--shadow-sm); }
         .y-summary-card.highlight { background: var(--primary-bg); border-color: var(--primary-border); }
@@ -1026,6 +1026,34 @@
 </div>
 
 <script>
+    // --- GLOBAL VARIABLES & ENGINE SETUP ---
+    let db = null;
+    let auth = null;
+    let setDoc_fn = null;
+    let doc_fn = null;
+    let _authModule = null;
+    let _fsModule = null;
+    let localLastUpdated = 0;
+    const defaultAccounts = [];
+
+    // --- MISSING SYNC DOT FUNCTION RESTORED ---
+    function updateSyncDot(status) {
+        const dot = document.getElementById('sync-status');
+        if (!dot) return;
+        
+        dot.className = 'sync-dot'; 
+        if (status === 'syncing') {
+            dot.classList.add('syncing');
+            dot.title = "Syncing with Cloud...";
+        } else if (status === 'synced') {
+            dot.classList.add('synced');
+            dot.title = "Synced to Cloud";
+        } else if (status === 'offline') {
+            dot.classList.add('offline');
+            dot.title = "Offline Mode";
+        }
+    }
+
     // --- INVISIBLE UI: HAPTIC FEEDBACK ---
     const haptic = (type = 'light') => {
         if (!navigator.vibrate) return;
@@ -1053,7 +1081,7 @@
     window.closeSettingsModal = closeSettingsModal; window.forceCloudSave = forceCloudSave; window.forceSyncOrder = forceSyncOrder;
     window.toggleAddSub = toggleAddSub; window.toggleEditSub = toggleEditSub; window.exportToCSV = exportToCSV;
     window.closeCustomAlert = closeCustomAlert;
-    window.openAccountsModal = openAccountsModal; window.closeAccountsModal = closeAccountsModal; window.handleUpdateAccounts = handleUpdateAccounts; window.addAccountRow = addAccountRow;
+    window.openAccountsModal = function() { customAlert("Accounts feature configuration coming soon!"); };
     window.openTabsReorderModal = openTabsReorderModal; window.closeTabsReorderModal = closeTabsReorderModal; window.moveNavigationTab = moveNavigationTab;
     window.openSearchModal = openSearchModal; window.closeSearchModal = closeSearchModal; window.performGlobalSearch = performGlobalSearch; window.jumpToMonth = jumpToMonth;
     window.toggleDemoMode = toggleDemoMode;
@@ -1062,7 +1090,6 @@
     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     const SECTION_IDS = ['income', 'necessary', 'discretionary', 'investments'];
 
-    // Reusable date parser: "Mar 2026" -> Date object (1st of month)
     const parseMonthStr = (monthStr) => {
         const [mName, yStr] = monthStr.split(' ');
         return new Date(parseInt(yStr), monthNames.indexOf(mName), 1);
@@ -1071,9 +1098,7 @@
     let yearlyViewMode = 'summary';
     let undoStack = [];
     const MAX_UNDO = 15;
-    let isDemoMode = false;
     
-    // Chart instances
     let pieChartInstance = null;
     let barChartInstance = null;
     let nwChartInstance = null;
@@ -1086,7 +1111,6 @@
         analytics: { label: 'Analytics', icon: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path>' }
     };
 
-    // Reusable SVG icon strings
     const ICONS = {
         close: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>',
         edit: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>',
@@ -1443,14 +1467,54 @@
         });
     }
 
+    // --- REPAIRED LOCAL DATA LOADER ---
+    function loadLocalData() {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            
+            // Fixes the issue where data gets 'wrapped' inside itself!
+            if (parsed.budgetData) {
+                budgetData = parsed.budgetData;
+                if (parsed.calculationRules) {
+                    calculationRules = parsed.calculationRules;
+                } else {
+                    calculationRules = JSON.parse(JSON.stringify(defaultCalculationRules));
+                }
+                localLastUpdated = parsed.lastUpdated || 0;
+            } else {
+                // Fallback for older saves
+                budgetData = parsed;
+                const savedRules = localStorage.getItem(RULES_KEY);
+                if (savedRules) {
+                    calculationRules = JSON.parse(savedRules);
+                } else {
+                    calculationRules = JSON.parse(JSON.stringify(defaultCalculationRules));
+                }
+            }
+        } else {
+            const d = new Date();
+            currentMonthStr = `${monthNames[d.getMonth()]} ${d.getFullYear()}`;
+            budgetData = { [currentMonthStr]: JSON.parse(JSON.stringify(defaultDataTemplate)) };
+            calculationRules = JSON.parse(JSON.stringify(defaultCalculationRules));
+        }
+
+        // Ensure we always have rules
+        if (!calculationRules || calculationRules.length === 0) {
+            calculationRules = JSON.parse(JSON.stringify(defaultCalculationRules));
+        }
+    }
+
     async function initCloud() {
         try {
-            updateSyncDot('syncing');
-            
             // 1. OPTIMISTIC LOADING: Render instantly from local storage
             // This guarantees the app NEVER gets stuck on a blank screen if the network hangs!
             loadLocalData();
+            renderNavigation();
             renderApp();
+            
+            // 2. Start the sync dot visually AFTER the UI is drawn
+            updateSyncDot('syncing');
             
             const appModule = await import('https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js');
             _authModule = await import('https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js');
