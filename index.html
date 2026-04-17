@@ -156,7 +156,9 @@
         .summary-card { background: var(--bg-card); padding: 0.85rem; border-radius: var(--radius-xl); border: 1px solid var(--border); box-shadow: var(--shadow-sm); display: flex; flex-direction: column; justify-content: space-between; transition: transform 0.2s ease, box-shadow 0.2s ease; }
         @media (min-width: 768px) { .summary-card { padding: 1.25rem; border-radius: var(--radius-xl); } }
         
-        .summary-card.highlight { background: var(--primary-bg); border-color: var(--primary-border); }
+        .summary-card.highlight { background: var(--primary-bg); border-color: var(--primary-border); position: relative; overflow: hidden; }
+        .summary-card.highlight::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--primary); }
+        
         .summary-label-wrapper { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.35rem; gap: 0.25rem; }
         .summary-label { font-size: 0.65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); line-height: 1.2; word-wrap: break-word;}
         @media (min-width: 768px) { .summary-label { font-size: 0.75rem; } }
@@ -168,7 +170,7 @@
         .summary-card.highlight .summary-value { color: var(--primary-text); }
 
         /* Monthly View Smart Section Headers */
-        .section-card { background: var(--bg-card); border-radius: var(--radius-xl); border: 1px solid var(--border); box-shadow: var(--shadow-sm); margin-bottom: 1.5rem; } 
+        .section-card { background: var(--bg-card); border-radius: var(--radius-xl); border: 1px solid var(--border); box-shadow: var(--shadow-sm); margin-bottom: 1.5rem; overflow: hidden; } 
         
         .section-header { 
             padding: 1rem 1.25rem; background: var(--bg-alt-translucent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 0.75rem; cursor: pointer; user-select: none; transition: background 0.2s, border-radius 0.2s; 
@@ -198,7 +200,7 @@
         .section-title { font-size: 1.05rem; font-weight: 600; color: var(--text-strong); letter-spacing: -0.01em; }
         @media (min-width: 768px) { .section-title { font-size: 1.125rem; } }
 
-        /* NATIVE SWIPE-TO-EDIT SCROLL WRAPPER (Mobile Only) */
+        /* --- THE MAGIC MOBILE APP UI CONVERSION --- */
         .row-scroll-wrapper {
             display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; -ms-overflow-style: none; -webkit-overflow-scrolling: touch;
             background: var(--bg-card); border-bottom: 1px solid var(--border-light); transition: background-color 0.15s ease;
@@ -207,26 +209,19 @@
         .row-scroll-wrapper:hover { background-color: var(--bg-alt); }
         .row-scroll-wrapper:last-child { border-bottom: none; }
 
-        .text-right { text-align: right; }
-        .text-center { text-align: center; }
-
         .grid-header { display: none; background-color: var(--bg-card); border-bottom: 1px solid var(--border); font-size: 0.75rem; text-transform: uppercase; font-weight: 600; color: var(--text-muted); letter-spacing: 0.05em; }
         
-        .grid-row {
-            flex: 0 0 100%; scroll-snap-align: start; display: grid; grid-template-columns: 1fr; gap: 0.35rem 0.5rem; padding: 0.85rem 1.25rem; align-items: center;
-        }
+        .grid-row { flex: 0 0 100%; scroll-snap-align: start; display: grid; grid-template-columns: 1fr; gap: 0.35rem 0.5rem; padding: 0.85rem 1.25rem; align-items: center; }
 
         .swipe-actions { flex: 0 0 auto; display: flex; align-items: center; scroll-snap-align: end; padding: 0 1.25rem; gap: 0.5rem; background: var(--bg-alt); border-left: 1px solid var(--border); box-shadow: inset 4px 0 8px rgba(0,0,0,0.02); }
         .swipe-actions .btn-row-action { background: var(--bg-card); border: 1px solid var(--border); padding: 0.75rem; box-shadow: var(--shadow-sm); border-radius: var(--radius-lg); }
 
-        /* Mobile Layout assignments inside grid-row */
         .g-col-name { display: flex; flex-direction: column; gap: 0.25rem; grid-column: 1 / -1; }
         .g-col-budget { display: none; }
         .g-col-actual { display: flex; flex-direction: column; align-items: stretch; gap: 0.15rem; margin-top: 0.1rem; grid-column: 1 / -1; }
         .g-col-diff { display: flex; justify-content: flex-end; align-items: center; font-size: 0.8rem; margin-top: 0.25rem; grid-column: 1 / -1; }
         .g-col-actions { display: none; }
 
-        /* DESKTOP LAYOUT (Kills swipe, turns into normal grid) */
         @media (min-width: 768px) {
             .grid-header { display: grid; grid-template-columns: 1.5fr 130px 2fr 130px 80px; gap: 0; padding: 0; align-items: stretch; }
             .grid-header > div { padding: 0.85rem 1rem; display: flex; align-items: center; }
@@ -244,14 +239,12 @@
             .swipe-actions { display: none; }
             
             .g-col-budget, .g-col-actual, .g-col-diff { border-left: 1px solid var(--border); }
-
             .g-col-name { flex-direction: row; align-items: center; grid-column: auto; display: flex; }
             .g-col-budget { display: flex; flex-direction: column; justify-content: center; align-items: center; color: var(--text-muted); font-size: 0.9rem; font-variant-numeric: tabular-nums; text-align: center; }
             .g-col-actual { margin-top: 0; justify-content: center; align-items: center; grid-column: auto; display: flex; flex-direction: column; }
             .g-col-diff { margin-top: 0; justify-content: center; align-items: center; font-size: 0.9rem; grid-column: auto; display: flex; }
             .g-col-actions { display: flex; grid-column: auto; margin-top: 0; justify-content: flex-end; opacity: 0; pointer-events: none; transition: opacity 0.2s; align-items: center; }
             .grid-row:hover .g-col-actions { opacity: 1; pointer-events: auto; }
-            
             .g-col-actions .btn-row-action { background: transparent; border: none; padding: 0.35rem; }
         }
 
@@ -274,7 +267,6 @@
         .val-diff.primary { color: var(--primary); font-weight: 600; } 
         .val-diff.warning { color: var(--warning); font-weight: 600; }
 
-        /* Actual & Progress */
         .actual-content { display: flex; justify-content: space-between; align-items: center; width: 100%; }
         @media (min-width: 768px) { .actual-content { justify-content: flex-end; } }
         
@@ -296,7 +288,8 @@
         @media (min-width: 768px) { .progress-bar-container { height: 4px; } }
         .progress-bar-fill { height: 100%; border-radius: 99px; transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
 
-        .btn-add-row { width: 100%; text-align: left; padding: 1.25rem 1.5rem; background: var(--bg-card); border: none; box-shadow: inset 0 1px 0 var(--border-light); color: var(--primary); font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: background 0.2s; border-radius: 0 0 var(--radius-xl) var(--radius-xl); }
+        .btn-add-row { width: 100%; text-align: center; padding: 1.25rem 1.5rem; background: var(--bg-card); border: 2px dashed var(--border); margin-top: 0.5rem; color: var(--primary); font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: background 0.2s; border-radius: var(--radius-xl); }
+        @media (min-width: 768px) { .btn-add-row { text-align: left; border: none; box-shadow: inset 0 1px 0 var(--border-light); border-radius: 0 0 var(--radius-xl) var(--radius-xl); margin-top: 0; } }
         .btn-add-row:hover { background: var(--bg-alt); }
 
         /* ACCOUNTS TAB STYLES */
@@ -507,7 +500,7 @@
         <div style="display: flex; align-items: center;">
             <h1 class="header-title" id="main-header-title">
                 Budget
-                <div id="sync-status" class="sync-dot syncing" title="Syncing..."></div>
+                <div id="sync-status" class="sync-dot syncing" title="Loading..."></div>
             </h1>
         </div>
         
@@ -1036,7 +1029,6 @@
     let localLastUpdated = 0;
     const defaultAccounts = [];
 
-    // --- MISSING SYNC DOT FUNCTION RESTORED ---
     function updateSyncDot(status) {
         const dot = document.getElementById('sync-status');
         if (!dot) return;
@@ -1054,7 +1046,6 @@
         }
     }
 
-    // --- INVISIBLE UI: HAPTIC FEEDBACK ---
     const haptic = (type = 'light') => {
         if (!navigator.vibrate) return;
         try {
@@ -1064,7 +1055,6 @@
         } catch(e) {}
     };
 
-    // Global Scope Attachments
     window.toggleTheme = toggleTheme; window.switchView = switchView; window.setYearlyMode = setYearlyMode;
     window.handleTimeTravel = handleTimeTravel; window.openRulesModal = openRulesModal; window.openReorderModal = openReorderModal;
     window.handleUndo = handleUndo; window.openSettingsModal = openSettingsModal; window.exportData = exportData;
@@ -1191,34 +1181,39 @@
         }
     }
 
-    // --- DEMO MODE GENERATOR ---
+    // --- DEMO MODE LOGIC ---
     function generateDemoData() {
         const today = new Date();
         const dStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2, '0')}-${String(today.getDate()).padStart(2,'0')}`;
         
         return {
-            accounts: JSON.parse(JSON.stringify(defaultAccounts)),
+            accounts: [
+                { name: 'Checking Account', balance: 4250.00 },
+                { name: 'Savings Account', balance: 12500.00 },
+                { name: 'Joint Brokerage', balance: 45000.00 },
+                { name: 'Roth IRA', balance: 28000.00 }
+            ],
             income: [
-                { name: "Tech Job Salary", budget: 5500.00, transactions: [{date: dStr, desc: "Direct Deposit", amount: 5500.00}] },
-                { name: "Freelance Work", budget: 400.00, transactions: [{date: dStr, desc: "Website Design", amount: 650.00}] }
+                { name: "Tech Job Salary", budget: 5500.00, transactions: [{date: dStr, desc: "Direct Deposit", amount: 5500.00, timestamp: Date.now()}] },
+                { name: "Freelance Work", budget: 400.00, transactions: [{date: dStr, desc: "Website Design", amount: 650.00, timestamp: Date.now()}] }
             ],
             necessary: [
-                { name: "Rent & Water", budget: 1850.00, transactions: [{date: dStr, desc: "Property Mgmt", amount: 1850.00}] },
-                { name: "Groceries", budget: 450.00, transactions: [{date: dStr, desc: "Trader Joe's", amount: 112.45}, {date: dStr, desc: "Costco", amount: 204.10}] },
-                { name: "Auto Insurance", budget: 110.00, transactions: [{date: dStr, desc: "Geico", amount: 110.00}] },
-                { name: "Gasoline", budget: 150.00, transactions: [{date: dStr, desc: "Shell", amount: 45.00}] },
+                { name: "Rent & Water", budget: 1850.00, transactions: [{date: dStr, desc: "Property Mgmt", amount: 1850.00, timestamp: Date.now()}] },
+                { name: "Groceries", budget: 450.00, transactions: [{date: dStr, desc: "Trader Joe's", amount: 112.45, timestamp: Date.now()}, {date: dStr, desc: "Costco", amount: 204.10, timestamp: Date.now()}] },
+                { name: "Auto Insurance", budget: 110.00, transactions: [{date: dStr, desc: "Geico", amount: 110.00, timestamp: Date.now()}] },
+                { name: "Gasoline", budget: 150.00, transactions: [{date: dStr, desc: "Shell", amount: 45.00, timestamp: Date.now()}] },
                 { name: "Internet", budget: 70.00, transactions: [] }
             ],
             discretionary: [
-                { name: "Dining Out", budget: 200.00, transactions: [{date: dStr, desc: "Chipotle", amount: 24.50}, {date: dStr, desc: "Local Sushi", amount: 65.00}] },
+                { name: "Dining Out", budget: 200.00, transactions: [{date: dStr, desc: "Chipotle", amount: 24.50, timestamp: Date.now()}, {date: dStr, desc: "Local Sushi", amount: 65.00, timestamp: Date.now()}] },
                 { name: "Vacation Fund", budget: 100.00, yearlyAmount: 1200.00, transactions: [], isRollover: true },
-                { name: "Spotify Premium", budget: 0.00, transactions: [{date: dStr, desc: "Spotify", amount: 10.99}], isSub: true, subType: "monthly", subCost: 10.99, subDate: dStr },
-                { name: "Personal Spending", budget: 150.00, transactions: [{date: dStr, desc: "Amazon", amount: 89.99}] },
+                { name: "Spotify Premium", budget: 0.00, transactions: [{date: dStr, desc: "Spotify", amount: 10.99, timestamp: Date.now()}], isSub: true, subType: "monthly", subCost: 10.99, subDate: dStr },
+                { name: "Personal Spending", budget: 150.00, transactions: [{date: dStr, desc: "Amazon", amount: 89.99, timestamp: Date.now()}] },
                 { name: "Amazon Prime", budget: 0.00, transactions: [], isSub: true, subType: "annual", subCost: 139.00, subDate: "2026-10-15" }
             ],
             investments: [
-                { name: "Vanguard S&P 500", budget: 0.00, transactions: [{date: dStr, desc: "Auto Transfer", amount: 825.00}] },
-                { name: "Emergency Fund", budget: 0.00, transactions: [{date: dStr, desc: "High Yield Savings", amount: 275.00}] }
+                { name: "Vanguard S&P 500", budget: 0.00, transactions: [{date: dStr, desc: "Auto Transfer", amount: 825.00, timestamp: Date.now()}] },
+                { name: "Emergency Fund", budget: 0.00, transactions: [{date: dStr, desc: "High Yield Savings", amount: 275.00, timestamp: Date.now()}] }
             ]
         };
     }
@@ -1259,7 +1254,12 @@
             
             loadLocalData();
             renderApp();
-            initCloud(); // Re-establish sync
+            
+            // Re-initiate cloud tracking
+            if (db) {
+                updateSyncDot('syncing');
+                setupCloudSync(_fsModule);
+            }
         }
     }
 
@@ -1378,7 +1378,58 @@
         handleTimeTravel();
     }
 
-    // --- ANIMATION ENGINE ---
+
+    // --- SMART DATE HELPER ---
+    function getSmartDateDefault(targetMonthStr) {
+        const today = new Date();
+        const [mName, yStr] = targetMonthStr.split(' ');
+        const mIdx = monthNames.indexOf(mName);
+
+        if (today.getFullYear() === parseInt(yStr) && today.getMonth() === mIdx) {
+            const y = today.getFullYear();
+            const m = String(today.getMonth() + 1).padStart(2, '0');
+            const d = String(today.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        } else {
+            const mPad = String(mIdx + 1).padStart(2, '0');
+            return `${yStr}-${mPad}-01`;
+        }
+    }
+
+    // --- CUSTOM MODALS TO REPLACE BROWSER ALERTS ---
+    function customAlert(msg) {
+        haptic('light');
+        document.getElementById('alert-message').innerText = msg;
+        document.getElementById('alert-modal').classList.add('active');
+    }
+    function closeCustomAlert() {
+        document.getElementById('alert-modal').classList.remove('active');
+    }
+
+    function customConfirm(msg, confirmText = "Yes", isDanger = true) {
+        haptic('medium');
+        return new Promise(resolve => {
+            document.getElementById('confirm-message').innerText = msg;
+            const btnYes = document.getElementById('btn-confirm-yes');
+            const btnNo = document.getElementById('btn-confirm-no');
+            
+            btnYes.innerText = confirmText;
+            btnYes.style.background = isDanger ? 'var(--danger)' : 'var(--primary)';
+            
+            btnYes.onclick = () => { haptic('light'); document.getElementById('confirm-modal').classList.remove('active'); resolve(true); };
+            btnNo.onclick = () => { document.getElementById('confirm-modal').classList.remove('active'); resolve(false); };
+            
+            document.getElementById('confirm-modal').classList.add('active');
+        });
+    }
+
+    function getOrdinal(n) {
+        const s = ["th", "st", "nd", "rd"];
+        const v = n % 100;
+        return n + (s[(v - 20) % 10] || s[v] || s[0]);
+    }
+
+    // Smooth Number Rolling Animation with Memory Registry
     const previousValuesRegistry = {};
 
     function animateValue(elementId, endValue, duration, formatter) {
@@ -1415,105 +1466,1499 @@
         obj.animationId = window.requestAnimationFrame(step);
     }
 
-
-    // ---- LOGIN SCREEN ----
-    function showLoginScreen() {
-        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-        const bg = isDark ? '#0f172a' : '#f8fafc';
-        const card = isDark ? '#1e293b' : '#ffffff';
-        const text = isDark ? '#f1f5f9' : '#0f172a';
-        const border = isDark ? '#334155' : '#e2e8f0';
-
-        document.body.innerHTML = `
-        <div id="login-wrap" style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:${bg};padding:1.5rem;">
-            <div style="width:100%;max-width:360px;background:${card};border-radius:1.5rem;padding:2.5rem;box-shadow:0 4px 24px rgba(0,0,0,0.12);">
-                <h1 style="font-size:1.4rem;font-weight:700;margin-bottom:0.25rem;color:${text};">Household Budget</h1>
-                <p style="color:#64748b;margin-bottom:2rem;font-size:0.875rem;">Sign in to access your budget</p>
-                <div id="login-error" style="display:none;color:#ef4444;font-size:0.875rem;margin-bottom:1rem;"></div>
-                <div style="margin-bottom:1rem;">
-                    <label style="display:block;font-size:0.875rem;font-weight:500;color:${text};margin-bottom:0.5rem;">Email</label>
-                    <input id="login-email" type="email" autocomplete="email" style="width:100%;padding:0.625rem 0.875rem;border:1px solid ${border};border-radius:0.75rem;font-size:1rem;outline:none;box-sizing:border-box;background:${card};color:${text};" />
-                </div>
-                <div style="margin-bottom:1.5rem;">
-                    <label style="display:block;font-size:0.875rem;font-weight:500;color:${text};margin-bottom:0.5rem;">Password</label>
-                    <input id="login-password" type="password" autocomplete="current-password" style="width:100%;padding:0.625rem 0.875rem;border:1px solid ${border};border-radius:0.75rem;font-size:1rem;outline:none;box-sizing:border-box;background:${card};color:${text};" />
-                </div>
-                <button id="login-btn" style="width:100%;padding:0.75rem;background:#2563eb;color:white;border:none;border-radius:0.75rem;font-size:0.9375rem;font-weight:600;cursor:pointer;">Sign In</button>
-            </div>
-        </div>`;
-
-        document.getElementById('login-btn').addEventListener('click', async () => {
-            const email = document.getElementById('login-email').value.trim();
-            const password = document.getElementById('login-password').value;
-            const errEl = document.getElementById('login-error');
-            const btn = document.getElementById('login-btn');
-            btn.textContent = 'Signing in...';
-            btn.disabled = true;
-            errEl.style.display = 'none';
-            try {
-                await _authModule.signInWithEmailAndPassword(auth, email, password);
-                // onAuthStateChanged will handle the rest
-            } catch (err) {
-                errEl.textContent = 'Incorrect email or password. Please try again.';
-                errEl.style.display = 'block';
-                btn.textContent = 'Sign In';
-                btn.disabled = false;
-            }
-        });
-
-        // Allow pressing Enter in password field
-        document.getElementById('login-password').addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') document.getElementById('login-btn').click();
-        });
+    function toggleTheme() {
+        haptic('light');
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('budgetTheme', newTheme);
+        
+        const themeBtn = document.getElementById('theme-toggle');
+        if(themeBtn) themeBtn.innerText = newTheme === 'dark' ? '☀️' : '🌙';
+        
+        if (currentActiveView === 'analytics') renderAnalytics();
     }
 
-    // --- REPAIRED LOCAL DATA LOADER ---
+    // --- OPTIMISTIC DATA LOADER ---
     function loadLocalData() {
         const saved = localStorage.getItem(STORAGE_KEY);
+        let hasLegacyRules = false;
+
         if (saved) {
-            const parsed = JSON.parse(saved);
-            
-            // Fixes the issue where data gets 'wrapped' inside itself!
-            if (parsed.budgetData) {
-                budgetData = parsed.budgetData;
-                if (parsed.calculationRules) {
-                    calculationRules = parsed.calculationRules;
+            try {
+                const parsed = JSON.parse(saved);
+                if (parsed && parsed.lastUpdated) {
+                    budgetData = parsed.budgetData || {};
+                    calculationRules = parsed.calculationRules || [];
+                    localLastUpdated = parsed.lastUpdated;
                 } else {
-                    calculationRules = JSON.parse(JSON.stringify(defaultCalculationRules));
+                    budgetData = parsed;
+                    localLastUpdated = Date.now();
+                    hasLegacyRules = true;
                 }
-                localLastUpdated = parsed.lastUpdated || 0;
-            } else {
-                // Fallback for older saves
-                budgetData = parsed;
-                const savedRules = localStorage.getItem(RULES_KEY);
-                if (savedRules) {
-                    calculationRules = JSON.parse(savedRules);
-                } else {
-                    calculationRules = JSON.parse(JSON.stringify(defaultCalculationRules));
-                }
-            }
+            } catch(e) {}
         } else {
             const d = new Date();
-            currentMonthStr = `${monthNames[d.getMonth()]} ${d.getFullYear()}`;
-            budgetData = { [currentMonthStr]: JSON.parse(JSON.stringify(defaultDataTemplate)) };
-            calculationRules = JSON.parse(JSON.stringify(defaultCalculationRules));
+            const fallbackMonth = `${monthNames[d.getMonth()]} ${d.getFullYear()}`;
+            budgetData = { [fallbackMonth]: JSON.parse(JSON.stringify(defaultDataTemplate)) };
+            localLastUpdated = Date.now();
+            hasLegacyRules = true;
         }
 
-        // Ensure we always have rules
-        if (!calculationRules || calculationRules.length === 0) {
-            calculationRules = JSON.parse(JSON.stringify(defaultCalculationRules));
+        if (hasLegacyRules) {
+            const savedRules = localStorage.getItem(RULES_KEY);
+            if (savedRules) calculationRules = JSON.parse(savedRules);
+            else calculationRules = JSON.parse(JSON.stringify(defaultCalculationRules));
         }
     }
 
+    function pushUndoState() {
+        const state = { budgetData: JSON.parse(JSON.stringify(budgetData)), calculationRules: JSON.parse(JSON.stringify(calculationRules)) };
+        undoStack.push(state);
+        if (undoStack.length > MAX_UNDO) undoStack.shift();
+        document.getElementById('btn-undo').style.display = 'inline-flex';
+    }
+
+    function handleUndo() {
+        if (undoStack.length === 0) return;
+        const prevState = undoStack.pop();
+        budgetData = prevState.budgetData;
+        calculationRules = prevState.calculationRules;
+        saveData(true); 
+        
+        renderNavigation();
+        switchView(currentActiveView);
+        
+        const btn = document.getElementById('btn-undo');
+        btn.innerHTML = "✅ Undone!";
+        btn.style.backgroundColor = "var(--success)";
+        
+        setTimeout(() => {
+            btn.innerHTML = "↩ Undo";
+            btn.style.backgroundColor = "var(--warning)";
+            if (undoStack.length === 0) btn.style.display = 'none';
+        }, 1500);
+    }
+
+    function openSettingsModal() { document.getElementById('settings-modal').classList.add('active'); }
+    function closeSettingsModal() { document.getElementById('settings-modal').classList.remove('active'); }
+
+    async function forceCloudSave() {
+        if(await customConfirm("This will completely overwrite the cloud database with exactly what you see on this screen. Proceed?", "Push to Cloud", true)) {
+            try {
+                updateSyncDot('syncing');
+                const docRef = doc_fn(db, 'budget_data', 'master_save');
+                
+                const payload = { budgetData: budgetData, calculationRules: calculationRules, lastUpdated: Date.now() };
+                const saveTask = setDoc_fn(docRef, payload);
+                const timeoutTask = new Promise((_, reject) => setTimeout(() => reject(new Error("TIMEOUT")), 10000));
+                
+                await Promise.race([saveTask, timeoutTask]);
+                
+                localLastUpdated = payload.lastUpdated;
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+                
+                updateSyncDot('synced');
+                customAlert("✅ SUCCESS! Your data has been forcefully pushed to the cloud.");
+            } catch(e) {
+                if (e.message === "TIMEOUT") {
+                    customAlert("❌ ERROR: The connection timed out.\n\nFirebase is blocking the save. Please check your Firestore rules.");
+                } else {
+                    customAlert("❌ ERROR: Failed to push to cloud.\n\nDetails: " + e.message);
+                }
+                updateSyncDot('offline');
+            }
+        }
+    }
+
+    function exportData() {
+        const dataToSave = { budgetData: budgetData, calculationRules: calculationRules };
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dataToSave));
+        const downloadAnchorNode = document.createElement('a');
+        downloadAnchorNode.setAttribute("href", dataStr);
+        downloadAnchorNode.setAttribute("download", `budget_backup_${new Date().toISOString().split('T')[0]}.json`);
+        document.body.appendChild(downloadAnchorNode);
+        downloadAnchorNode.click();
+        downloadAnchorNode.remove();
+        closeSettingsModal();
+    }
+
+    function exportToCSV() {
+        let csvContent = "data:text/csv;charset=utf-8,";
+        csvContent += "Date,Month,Year,Section,Category,Description,Amount\r\n";
+
+        const sortedMonths = Object.keys(budgetData).sort((a, b) => parseMonthStr(a) - parseMonthStr(b));
+
+        sortedMonths.forEach(monthStr => {
+            const [mName, yStr] = monthStr.split(' ');
+            SECTION_IDS.forEach(sec => {
+                if(budgetData[monthStr][sec]) {
+                    budgetData[monthStr][sec].forEach(item => {
+                        if (item.transactions && item.transactions.length > 0) {
+                            item.transactions.forEach(tx => {
+                                const desc = `"${(tx.desc || '').replace(/"/g, '""')}"`;
+                                csvContent += `${tx.date},${mName},${yStr},${sec},"${item.name}",${desc},${tx.amount}\r\n`;
+                            });
+                        }
+                    });
+                }
+            });
+        });
+
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `budget_transactions_${new Date().toISOString().split('T')[0]}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        closeSettingsModal();
+    }
+
+    function importData(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const importedData = JSON.parse(e.target.result);
+                if (importedData.budgetData && importedData.calculationRules) {
+                    pushUndoState();
+                    budgetData = importedData.budgetData;
+                    calculationRules = importedData.calculationRules;
+                    
+                    saveData();
+                    renderApp();
+                    closeSettingsModal();
+                    customAlert("Data successfully restored and pushed to cloud!");
+                } else { customAlert("Error: Invalid backup file format."); }
+            } catch (err) { customAlert("Error processing backup file."); }
+        };
+        reader.readAsText(file);
+        event.target.value = ''; 
+    }
+
+    async function resetData() {
+        if(await customConfirm("Are you sure? This will wipe ALL data and reset to default.", "Reset All", true)) {
+            localStorage.removeItem(STORAGE_KEY);
+            localStorage.removeItem(RULES_KEY);
+            window.location.reload();
+        }
+    }
+
+    const currencyFormatter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
+    const formatCurrency = (num) => currencyFormatter.format(num);
+    const formatDate = (dateStr) => {
+        if(!dateStr) return '';
+        const [y, m, d] = dateStr.split('-');
+        return new Date(y, m - 1, d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    };
+
+    function getOrCreateMonthData(monthStr, skipSave = false) {
+        if (!budgetData[monthStr]) {
+            const keys = Object.keys(budgetData);
+            if (keys.length > 0) {
+                const targetDate = parseMonthStr(monthStr);
+                const sortedKeys = [...keys].sort((a, b) => parseMonthStr(a) - parseMonthStr(b));
+                
+                let templateKey = sortedKeys[sortedKeys.length - 1]; 
+                for (let i = sortedKeys.length - 1; i >= 0; i--) {
+                    if (parseMonthStr(sortedKeys[i]) <= targetDate) {
+                        templateKey = sortedKeys[i];
+                        break;
+                    }
+                }
+                
+                const templateData = budgetData[templateKey];
+                let newMonth = JSON.parse(JSON.stringify(templateData));
+                
+                SECTION_IDS.forEach(sec => {
+                    if(newMonth[sec]) newMonth[sec].forEach(item => { item.transactions = []; });
+                });
+                
+                budgetData[monthStr] = newMonth;
+            } else {
+                budgetData[monthStr] = JSON.parse(JSON.stringify(defaultDataTemplate));
+            }
+            if(!skipSave) saveData();
+        }
+        
+        return budgetData[monthStr];
+    }
+
+    const sumTransactions = (transactions) => transactions.reduce((acc, curr) => acc + curr.amount, 0);
+
+    function calculateRollover(secId, targetName, targetMonthStr) {
+        const [currMName, currYStr] = targetMonthStr.split(' ');
+        const mIdx = monthNames.indexOf(currMName);
+        let rollover = 0;
+        
+        for (let i = 0; i < mIdx; i++) {
+            const checkMonth = `${monthNames[i]} ${currYStr}`;
+            if (budgetData[checkMonth]) {
+                const item = budgetData[checkMonth][secId].find(x => x.name === targetName);
+                if (item && !item.isCalculated) {
+                    const actual = sumTransactions(item.transactions);
+                    rollover += (item.budget || 0) - actual;
+                }
+            }
+        }
+        return rollover;
+    }
+
+    function getItemValues(secId, item, monthData, currentTargetMonthStr) {
+        let baseBudget = item.budget || 0;
+        let rolloverAmt = 0;
+        let actual = sumTransactions(item.transactions);
+        let isCalculated = false; let calcDesc = ''; let suggestedActual = 0;
+        
+        const rule = calculationRules.find(r => r.category === secId && r.name === item.name);
+        
+        if (rule) {
+            isCalculated = true; calcDesc = rule.desc;
+            let sourceBudget = 0; let sourceActual = 0;
+            if (rule.sources === 'ALL') {
+                sourceBudget = monthData.income.reduce((sum, inc) => sum + (inc.budget || 0), 0);
+                sourceActual = monthData.income.reduce((sum, inc) => sum + sumTransactions(inc.transactions), 0);
+            } else {
+                rule.sources.forEach(srcName => {
+                    const incItem = monthData.income.find(i => i.name === srcName);
+                    if (incItem) {
+                        sourceBudget += (incItem.budget || 0);
+                        sourceActual += sumTransactions(incItem.transactions);
+                    }
+                });
+            }
+            baseBudget = Math.round(sourceBudget * rule.pct);
+            suggestedActual = Math.round(sourceActual * rule.pct); 
+        } else if (item.isRollover && currentTargetMonthStr) {
+            rolloverAmt = calculateRollover(secId, item.name, currentTargetMonthStr);
+        }
+        
+        let budget = baseBudget + rolloverAmt;
+        return { budget, actual, isCalculated, calcDesc, suggestedActual, baseBudget, rolloverAmt };
+    }
+
+    function getYTDBalance(monthStr, secId, itemIndex) {
+        const [mName, yStr] = monthStr.split(' ');
+        const mIdx = monthNames.indexOf(mName);
+        let ytdBudget = 0; let ytdActual = 0;
+
+        const baseItem = budgetData[monthStr][secId][itemIndex];
+        if (!baseItem) return 0; 
+        const targetName = baseItem.name;
+
+        for (let i = 0; i <= mIdx; i++) {
+            const checkMonth = `${monthNames[i]} ${yStr}`;
+            if (budgetData[checkMonth]) {
+                const item = budgetData[checkMonth][secId].find(x => x.name === targetName);
+                if (item) {
+                    ytdBudget += (item.budget || 0);
+                    ytdActual += sumTransactions(item.transactions);
+                }
+            }
+        }
+        return ytdBudget - ytdActual;
+    }
+
+    const getMonthTotals = (monthData, targetMonthStr) => {
+        const sumSectionActual = (secId, section) => section.reduce((acc, item) => acc + getItemValues(secId, item, monthData, targetMonthStr).actual, 0);
+        return {
+            income: sumSectionActual('income', monthData.income),
+            necessary: sumSectionActual('necessary', monthData.necessary),
+            discretionary: sumSectionActual('discretionary', monthData.discretionary),
+            investments: sumSectionActual('investments', monthData.investments)
+        };
+    };
+
+    function switchView(view) {
+        haptic('light');
+        currentActiveView = view;
+        
+        appTabsOrder.forEach(tabId => {
+            const el = document.getElementById(`view-${tabId}`);
+            if(el) el.classList.toggle('hidden', view !== tabId);
+            
+            const tBtn = document.getElementById(`tab-${tabId}`);
+            if(tBtn) tBtn.classList.toggle('active', view === tabId);
+            
+            const nBtn = document.getElementById(`nav-${tabId}`);
+            if(nBtn) nBtn.classList.toggle('active', view === tabId);
+        });
+
+        const globalControls = document.getElementById('global-month-controls');
+        if (view === 'monthly' || view === 'accounts') {
+            globalControls.style.display = 'flex';
+        } else {
+            globalControls.style.display = 'none';
+        }
+        
+        const fab = document.getElementById('main-fab');
+        const monthlyActions = document.getElementById('monthly-actions-container');
+        
+        if (view === 'accounts') {
+            if (fab) fab.style.display = 'none';
+            if (monthlyActions) monthlyActions.style.display = 'none';
+        } else if (view === 'monthly') {
+            if (fab) fab.style.display = 'flex';
+            if (monthlyActions) monthlyActions.style.display = 'flex';
+        } else {
+            if (fab) fab.style.display = 'none';
+            if (monthlyActions) monthlyActions.style.display = 'none';
+        }
+
+        if (view === 'monthly') renderMonthly(); 
+        else if (view === 'yearly') renderYearly();
+        else if (view === 'analytics') renderAnalytics();
+    }
+
+    function setYearlyMode(mode) {
+        haptic('light');
+        yearlyViewMode = mode;
+        document.getElementById('ytab-summary').classList.toggle('active', mode === 'summary');
+        document.getElementById('ytab-detailed').classList.toggle('active', mode === 'detailed');
+        renderYearly();
+    }
+
+    function handleTimeTravel() {
+        const isAnalytics = currentActiveView === 'analytics';
+        
+        if (isAnalytics) {
+            currentMonthStr = `${document.getElementById('analytics-month').value} ${document.getElementById('analytics-year').value}`;
+        } else {
+            currentMonthStr = `${document.getElementById('month-dropdown').value} ${document.getElementById('year-dropdown').value}`;
+        }
+        
+        getOrCreateMonthData(currentMonthStr);
+        
+        if (isAnalytics) {
+            renderAnalytics();
+        } else if (currentActiveView === 'yearly') {
+            renderYearly();
+        } else {
+            renderMonthly();
+        }
+    }
+
+    function toggleSection(secId) {
+        haptic('light');
+        collapsedSections[secId] = !collapsedSections[secId];
+        renderMonthly();
+        if (currentActiveView === 'yearly') renderYearly();
+    }
+
+    function openReorderModal() { document.getElementById('reorder-modal').classList.add('active'); renderReorderList(); }
+    function closeReorderModal() { document.getElementById('reorder-modal').classList.remove('active'); }
+
+    function renderReorderList() {
+        const secId = document.getElementById('reorder-section-select').value;
+        const list = document.getElementById('reorder-list');
+        list.innerHTML = '';
+        const arr = budgetData[currentMonthStr][secId];
+        
+        arr.forEach((item, idx) => {
+            list.innerHTML += `
+                <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); padding: 0.75rem 1rem; border: 1px solid var(--border); border-radius: var(--radius-md); box-shadow: var(--shadow-sm);">
+                    <span style="font-weight: 500; color: var(--text-strong);">${item.name}</span>
+                    <div style="display: flex; gap: 0.25rem;">
+                        <button type="button" onclick="moveCategory('${secId}', ${idx}, -1)" class="btn-tx-action" style="opacity: 1; pointer-events: auto; padding: 0.35rem; background: var(--bg-alt); border: 1px solid var(--border);" ${idx === 0 ? 'disabled style="opacity:0.3;"' : ''}>${ICONS.chevUp}</button>
+                        <button type="button" onclick="moveCategory('${secId}', ${idx}, 1)" class="btn-tx-action" style="opacity: 1; pointer-events: auto; padding: 0.35rem; background: var(--bg-alt); border: 1px solid var(--border);" ${idx === arr.length - 1 ? 'disabled style="opacity:0.3;"' : ''}>${ICONS.chevDown}</button>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    function moveCategory(secId, idx, dir) {
+        pushUndoState();
+        haptic('light');
+        const currentArr = budgetData[currentMonthStr][secId];
+        const newIdx = idx + dir;
+        
+        if (newIdx >= 0 && newIdx < currentArr.length) {
+            const temp = currentArr[idx];
+            currentArr[idx] = currentArr[newIdx];
+            currentArr[newIdx] = temp;
+            
+            const masterOrder = currentArr.map(item => item.name);
+            
+            Object.keys(budgetData).forEach(m => {
+                if (m !== currentMonthStr) {
+                    budgetData[m][secId].sort((a, b) => {
+                        let idxA = masterOrder.indexOf(a.name);
+                        let idxB = masterOrder.indexOf(b.name);
+                        if (idxA === -1) idxA = 9999;
+                        if (idxB === -1) idxB = 9999;
+                        return idxA - idxB;
+                    });
+                }
+            });
+            
+            saveData();
+            renderReorderList();
+            renderMonthly();
+            if (currentActiveView === 'yearly') renderYearly();
+        }
+    }
+
+    function forceSyncOrder() {
+        pushUndoState();
+        haptic('medium');
+        const secId = document.getElementById('reorder-section-select').value;
+        const currentArr = budgetData[currentMonthStr][secId];
+        const masterOrder = currentArr.map(item => item.name);
+        
+        Object.keys(budgetData).forEach(m => {
+            if (m !== currentMonthStr) {
+                budgetData[m][secId].sort((a, b) => {
+                    let idxA = masterOrder.indexOf(a.name);
+                    let idxB = masterOrder.indexOf(b.name);
+                    if (idxA === -1) idxA = 9999;
+                    if (idxB === -1) idxB = 9999;
+                    return idxA - idxB;
+                });
+            }
+        });
+        saveData();
+        renderMonthly();
+        if (currentActiveView === 'yearly') renderYearly();
+        customAlert("Success! The order of " + secId.toUpperCase() + " for all past and future months now perfectly matches this month's layout.");
+    }
+
+    function openQuickAddModal() {
+        haptic('medium');
+        document.getElementById('quick-add-modal').classList.add('active');
+        document.querySelector('#quick-add-modal .add-form').reset();
+        
+        const select = document.getElementById('qa-category');
+        select.innerHTML = '<option value="" disabled selected>Select Category...</option>';
+        const sections = [{ id: 'income', label: 'Income' }, { id: 'necessary', label: 'Necessary Expenses' }, { id: 'discretionary', label: 'Discretionary Expenses' }, { id: 'investments', label: 'Investments / Savings' }];
+
+        sections.forEach(sec => {
+            const optgroup = document.createElement('optgroup');
+            optgroup.label = sec.label.toUpperCase();
+            budgetData[currentMonthStr][sec.id].forEach((item, idx) => { optgroup.innerHTML += `<option value="${sec.id}|${idx}">${item.name}</option>`; });
+            select.appendChild(optgroup);
+        });
+
+        document.getElementById('qa-date').value = getSmartDateDefault(currentMonthStr);
+
+        setTimeout(() => document.getElementById('qa-amount').focus(), 100);
+    }
+    
+    function closeQuickAddModal() { document.getElementById('quick-add-modal').classList.remove('active'); }
+
+    function handleQuickAdd(e) {
+        e.preventDefault();
+        const catVal = document.getElementById('qa-category').value;
+        const amount = parseFloat(document.getElementById('qa-amount').value);
+        const desc = document.getElementById('qa-desc').value;
+        const dateStr = document.getElementById('qa-date').value;
+
+        if (catVal && !isNaN(amount) && desc && dateStr) {
+            pushUndoState();
+            haptic('medium');
+            const [secId, idx] = catVal.split('|');
+            const [y, m, d] = dateStr.split('-');
+            const targetMonthStr = monthNames[parseInt(m) - 1] + ' ' + y;
+            
+            getOrCreateMonthData(targetMonthStr);
+            budgetData[targetMonthStr][secId][idx].transactions.push({ date: dateStr, desc: desc, amount: amount, timestamp: Date.now() });
+
+            saveData();
+            closeQuickAddModal();
+            refreshViews();
+        }
+    }
+
+    function toggleAddYearly() {
+        const isYearly = document.getElementById('new-row-is-yearly').checked;
+        document.getElementById('new-row-budget-label').innerText = isYearly ? "Total Yearly Cost" : "Monthly Budget";
+    }
+
+    function toggleAddSub() {
+        const isSub = document.getElementById('new-row-is-sub').checked;
+        document.getElementById('new-sub-details').style.display = isSub ? 'flex' : 'none';
+        if (isSub) {
+            const budgetInput = document.getElementById('new-row-budget');
+            if (budgetInput.value === '') budgetInput.value = '0.00';
+        }
+    }
+
+    function toggleEditYearly() {
+        const isYearly = document.getElementById('edit-row-is-yearly').checked;
+        document.getElementById('edit-row-budget-label').innerText = isYearly ? "Total Yearly Cost" : "Monthly Budget";
+        let currentVal = parseFloat(document.getElementById('edit-row-budget').value) || 0;
+        if(isYearly && currentVal > 0) document.getElementById('edit-row-budget').value = (currentVal * 12).toFixed(2);
+        else if (!isYearly && currentVal > 0) document.getElementById('edit-row-budget').value = (currentVal / 12).toFixed(2);
+    }
+
+    function toggleEditSub() {
+        const isSub = document.getElementById('edit-row-is-sub').checked;
+        document.getElementById('edit-sub-details').style.display = isSub ? 'flex' : 'none';
+    }
+
+    function renderMonthly() {
+        const data = getOrCreateMonthData(currentMonthStr);
+        const container = document.getElementById('tables-container');
+        container.innerHTML = ''; 
+
+        const sections = [{ id: 'income', title: 'Income', data: data.income }, { id: 'necessary', title: 'Necessary Expenses', data: data.necessary }, { id: 'discretionary', title: 'Discretionary Expenses', data: data.discretionary }, { id: 'investments', title: 'Investments / Savings', data: data.investments }];
+        let grandTotals = { income: 0, necessary: 0, discretionary: 0, investments: 0 };
+        let animationsToRun = [];
+
+        sections.forEach(sec => {
+            let sectionTotalActual = 0; let sectionTotalBudget = 0; let rowsHtml = '';
+
+            sec.data.forEach((item, idx) => {
+                const vals = getItemValues(sec.id, item, data, currentMonthStr);
+                sectionTotalActual += vals.actual; sectionTotalBudget += vals.budget;
+                grandTotals[sec.id] = sectionTotalActual;
+
+                let diffClass = 'neutral'; let diffText = '-';
+                let isUnplannedExpense = false;
+
+                if (vals.isCalculated) {
+                    const remainingToTarget = vals.suggestedActual - vals.actual;
+                    if (vals.suggestedActual === 0 && vals.actual === 0) { diffText = '-'; diffClass = 'neutral'; } 
+                    else if (remainingToTarget > 0.001) { diffText = 'Need: ' + formatCurrency(remainingToTarget); diffClass = 'primary'; } 
+                    else { diffText = 'Goal Met ✓'; diffClass = 'positive'; }
+                } else {
+                    const diff = vals.actual - vals.budget;
+                    if (diff === 0 && vals.budget > 0) {
+                        diffText = 'Budget Met ✓';
+                        diffClass = 'positive';
+                    } else if (vals.actual > 0 || diff !== 0) {
+                        diffText = formatCurrency(diff);
+                        if (sec.id === 'income') {
+                            diffClass = diff >= 0 ? 'positive' : 'negative'; 
+                        } else {
+                            if (vals.budget === 0 && vals.actual > 0) {
+                                diffClass = 'warning';
+                                isUnplannedExpense = true;
+                            } else {
+                                diffClass = diff <= 0 ? 'positive' : 'negative';
+                            }
+                        }
+                    }
+                }
+
+                let pct = 0; let barColor = 'var(--primary)';
+                const budgetRef = vals.isCalculated ? vals.suggestedActual : vals.budget;
+                
+                if (budgetRef > 0) {
+                    pct = Math.min((vals.actual / budgetRef) * 100, 100);
+                    if (sec.id === 'income') {
+                        barColor = pct >= 100 ? 'var(--success)' : 'var(--primary)';
+                    } else if (vals.isCalculated) {
+                        barColor = pct >= 100 ? 'var(--success)' : 'var(--primary)';
+                    } else {
+                        if (vals.actual > budgetRef) {
+                            barColor = 'var(--danger)';
+                        } else if (vals.actual === budgetRef) {
+                            barColor = 'var(--success)';
+                        } else {
+                            barColor = 'var(--primary)';
+                        }
+                    }
+                } else if (vals.actual > 0) {
+                    pct = 100; 
+                    if (sec.id === 'income') {
+                        barColor = 'var(--success)';
+                    } else {
+                        barColor = 'var(--warning)';
+                        isUnplannedExpense = true;
+                    }
+                }
+
+                const progressBarHtml = `<div class="progress-bar-container"><div class="progress-bar-fill" style="width: ${pct}%; background-color: ${barColor};"></div></div>`;
+                const transactionCount = item.transactions.length;
+                const badgeHtml = transactionCount > 0 ? `<span class="badge" title="${transactionCount} Transactions">${transactionCount}</span>` : '';
+                
+                let amtClass = 'amount';
+                if (vals.actual === 0) amtClass = 'amount zero';
+                else if (isUnplannedExpense) amtClass = 'amount unplanned';
+                
+                const openIconHtml = ICONS.chevRight;
+                const calcBadge = `<span class="calc-badge" title="${vals.calcDesc}"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg> Auto</span>`;
+
+                let yearlyBadge = '';
+                if (item.yearlyAmount) {
+                    const ytdBalance = getYTDBalance(currentMonthStr, sec.id, idx);
+                    const negClass = ytdBalance < 0 ? 'negative' : '';
+                    yearlyBadge = `<span class="yearly-badge ${negClass}" title="Total Yearly Cost: ${formatCurrency(item.yearlyAmount)}">Fund: ${formatCurrency(ytdBalance)}</span>`;
+                }
+
+                let subBadge = '';
+                if (item.isSub) {
+                    let dateDisplay = '';
+                    if (item.subDate) {
+                        const [y, m, d] = item.subDate.split('-');
+                        const dObj = new Date(y, m - 1, d);
+                        if (item.subType === 'monthly') {
+                            dateDisplay = ` on the ${getOrdinal(dObj.getDate())}`;
+                        } else {
+                            dateDisplay = ` on ${dObj.toLocaleDateString('en-US', {month:'short', day:'numeric'})}`;
+                        }
+                    }
+                    const costStr = formatCurrency(item.subCost || 0);
+                    const typeStr = item.subType === 'monthly' ? 'Monthly' : 'Annual';
+                    subBadge = `<span class="sub-badge" title="Subscription Details"><svg width="0.75rem" height="0.75rem" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> ${typeStr}: ${costStr}${dateDisplay}</span>`;
+                }
+                
+                let rolloverBadge = '';
+                if (item.isRollover) {
+                    const sign = vals.rolloverAmt >= 0 ? '+' : '';
+                    rolloverBadge = `<span class="yearly-badge" style="border-color:var(--primary); color:var(--primary)" title="YTD Rollover added to base budget">🔄 Roll: ${sign}${formatCurrency(vals.rolloverAmt)}</span>`;
+                }
+
+                const targetHtml = vals.isCalculated ? `<div style="font-size: 0.75rem; color: var(--primary); margin-top: 0.25rem; font-weight: 600;">Target: ${formatCurrency(vals.suggestedActual)}</div>` : '';
+
+                const actionButtons = `
+                    <button class="btn-row-action" onclick="openEditRowModal('${sec.id}', ${idx})" title="Edit Category">${ICONS.edit}</button>
+                    <button class="btn-row-action delete" onclick="deleteRow('${sec.id}', ${idx})" title="Delete Category">${ICONS.trash}</button>
+                `;
+
+                rowsHtml += `
+                    <div class="row-scroll-wrapper">
+                        <div class="grid-row">
+                            <div class="g-col-name">
+                                <span class="cat-name-text">${item.name}</span>
+                                <div class="badges-wrapper" style="display: flex; gap: 0.25rem; flex-wrap: wrap;">
+                                    ${vals.isCalculated ? calcBadge : ''} 
+                                    ${yearlyBadge}
+                                    ${subBadge}
+                                    ${rolloverBadge}
+                                </div>
+                            </div>
+                            
+                            <div class="g-col-budget" id="row-budget-${sec.id}-${idx}">${formatCurrency(vals.budget)}</div>
+                            
+                            <div class="g-col-actual">
+                                <div class="actual-content">
+                                    <button onclick="openModal('${sec.id}', ${idx})" class="btn-actual" title="View Transactions">
+                                        <div style="display: flex; align-items: center; gap: 0.35rem;">
+                                            <span class="${amtClass}" id="row-actual-${sec.id}-${idx}">${formatCurrency(vals.actual)}</span>
+                                            ${badgeHtml}
+                                        </div>
+                                        <span class="mobile-budget-context mobile-hide">of ${formatCurrency(vals.budget)}</span>
+                                    </button>
+                                </div>
+                                <div style="width: 100%;">
+                                    ${progressBarHtml}
+                                    ${targetHtml}
+                                </div>
+                            </div>
+                            
+                            <div class="g-col-diff">
+                                <span class="val-diff ${diffClass}">${diffText}</span>
+                            </div>
+                            
+                            <div class="g-col-actions">
+                                <div class="action-buttons-wrapper">
+                                    ${actionButtons}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="swipe-actions">
+                            ${actionButtons}
+                        </div>
+                    </div>
+                `;
+
+                animationsToRun.push({ id: `row-budget-${sec.id}-${idx}`, val: vals.budget, isPct: false });
+                animationsToRun.push({ id: `row-actual-${sec.id}-${idx}`, val: vals.actual, isPct: false });
+            });
+
+            const isCollapsed = collapsedSections[sec.id];
+            const sectionHtml = `
+                <div class="section-card">
+                    <div class="section-header ${isCollapsed ? 'collapsed' : ''}" onclick="toggleSection('${sec.id}')">
+                        <div class="section-header-title">
+                            <svg class="icon-collapse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            <h2 class="section-title">${sec.title}</h2>
+                        </div>
+                        <div class="section-totals">
+                            <div class="tot-block"><span class="tot-lbl">Budget</span> <span class="val-budget" id="sec-budget-${sec.id}">${formatCurrency(sectionTotalBudget)}</span></div>
+                            <div class="tot-block"><span class="tot-lbl">Actual</span> <span class="val-actual" id="sec-actual-${sec.id}">${formatCurrency(sectionTotalActual)}</span></div>
+                        </div>
+                    </div>
+                    <div class="${isCollapsed ? 'hidden' : ''}">
+                        <div class="grid-table">
+                            <div class="grid-header">
+                                <div>Category</div>
+                                <div class="text-center">Budget</div>
+                                <div class="text-center">Actual</div>
+                                <div class="text-center">Diff</div>
+                                <div></div>
+                            </div>
+                            <div class="grid-body">
+                                ${rowsHtml}
+                            </div>
+                        </div>
+                        <button class="btn-add-row" onclick="openRowModal('${sec.id}')">+ Add New Category</button>
+                    </div>
+                </div>
+            `;
+            container.innerHTML += sectionHtml;
+            
+            animationsToRun.push({ id: `sec-budget-${sec.id}`, val: sectionTotalBudget, isPct: false });
+            animationsToRun.push({ id: `sec-actual-${sec.id}`, val: sectionTotalActual, isPct: false });
+        });
+
+        const remaining = grandTotals.income - (grandTotals.necessary + grandTotals.discretionary + grandTotals.investments);
+        const totalInc = grandTotals.income > 0 ? grandTotals.income : 1; 
+        
+        animationsToRun.push({ id: 'card-income', val: grandTotals.income, isPct: false });
+        animationsToRun.push({ id: 'card-necessary', val: grandTotals.necessary, isPct: false });
+        animationsToRun.push({ id: 'card-discretionary', val: (grandTotals.discretionary + grandTotals.investments), isPct: false });
+        animationsToRun.push({ id: 'card-remaining', val: remaining, isPct: false });
+        
+        animationsToRun.push({ id: 'pct-necessary', val: ((grandTotals.necessary / totalInc) * 100), isPct: true });
+        animationsToRun.push({ id: 'pct-discretionary', val: (((grandTotals.discretionary + grandTotals.investments) / totalInc) * 100), isPct: true });
+        animationsToRun.push({ id: 'pct-remaining', val: ((remaining / totalInc) * 100), isPct: true });
+
+        const pctFormatter = (v) => `${v.toFixed(1)}%`;
+        
+        requestAnimationFrame(() => {
+            animationsToRun.forEach(anim => {
+                animateValue(anim.id, anim.val, 500, anim.isPct ? pctFormatter : formatCurrency);
+            });
+        });
+    }
+
+    async function deleteRow(secId, idx) {
+        const item = budgetData[currentMonthStr][secId][idx];
+        if(await customConfirm(`Are you sure you want to delete "${item.name}" from this month onwards?\n\n(It will still be saved in past months if it existed previously)`, "Delete", true)) {
+            pushUndoState();
+            haptic('medium');
+            const targetName = item.name;
+            const currDate = parseMonthStr(currentMonthStr);
+
+            Object.keys(budgetData).forEach(m => {
+                if (parseMonthStr(m) >= currDate) {
+                    const matchIdx = budgetData[m][secId].findIndex(x => x.name === targetName);
+                    if (matchIdx !== -1) budgetData[m][secId].splice(matchIdx, 1);
+                }
+            });
+            saveData();
+            renderMonthly();
+        }
+    }
+
+    function renderYearly() {
+        const yearSelect = document.getElementById('year-selector');
+        const year = yearSelect && yearSelect.value ? yearSelect.value : currentMonthStr.split(' ')[1];
+        const container = document.getElementById('yearly-container');
+        const yearMonths = monthNames.map(m => `${m} ${year}`);
+
+        let html = '';
+
+        if (yearlyViewMode === 'summary') {
+            const rowData = {
+                income: { title: "Total Income", vals: [], total: 0 }, necessary: { title: "Total Necessary Expenses", vals: [], total: 0 },
+                discretionaryInc: { title: "Discretionary Income", vals: [], total: 0 }, investments: { title: "Investment Expenses", vals: [], total: 0 },
+                discretLessInv: { title: "Discret Inc Less Investments", vals: [], total: 0 }, discretionaryExp: { title: "Discretionary Expenses", vals: [], total: 0 },
+                remaining: { title: "AMOUNT REMAINING", vals: [], total: 0, isBold: true }
+            };
+
+            yearMonths.forEach(m => {
+                let totals = { income: 0, necessary: 0, discretionary: 0, investments: 0 };
+                if (budgetData[m]) totals = getMonthTotals(budgetData[m], m);
+                const discInc = totals.income - totals.necessary;
+                const discLessInv = discInc - totals.investments;
+                const remaining = discLessInv - totals.discretionary;
+
+                rowData.income.vals.push(totals.income); rowData.necessary.vals.push(totals.necessary);
+                rowData.discretionaryInc.vals.push(discInc); rowData.investments.vals.push(totals.investments);
+                rowData.discretLessInv.vals.push(discLessInv); rowData.discretionaryExp.vals.push(totals.discretionary);
+                rowData.remaining.vals.push(remaining);
+
+                rowData.income.total += totals.income; rowData.necessary.total += totals.necessary;
+                rowData.discretionaryInc.total += discInc; rowData.investments.total += totals.investments;
+                rowData.discretLessInv.total += discLessInv; rowData.discretionaryExp.total += totals.discretionary;
+                rowData.remaining.total += remaining;
+            });
+
+            let mobileHtml = `<div class="yearly-mobile-cards mobile-only">`;
+            Object.keys(rowData).forEach(key => {
+                const r = rowData[key];
+                let monthsHtml = '';
+                r.vals.forEach((val, idx) => {
+                    const valClass = val === 0 ? 'y-m-val zero' : 'y-m-val';
+                    const displayVal = val === 0 ? '-' : formatCurrency(val);
+                    monthsHtml += `<div class="y-month-cell"><span class="y-m-name">${monthNames[idx]}</span><span class="${valClass}">${displayVal}</span></div>`;
+                });
+                
+                mobileHtml += `
+                    <div class="y-summary-card ${r.isBold ? 'highlight' : ''}">
+                        <div class="y-card-top">
+                            <span class="y-card-title">${r.title} (YTD)</span>
+                            <span class="y-card-ytd">${formatCurrency(r.total)}</span>
+                        </div>
+                        <div class="y-card-months-grid">
+                            ${monthsHtml}
+                        </div>
+                    </div>
+                `;
+            });
+            mobileHtml += `</div>`;
+
+            let desktopHtml = `
+            <div class="section-card desktop-only">
+                <div class="table-wrapper">
+                    <table class="table-yearly">
+                        <thead>
+                            <tr><th>Category</th>`;
+            monthNames.forEach(m => desktopHtml += `<th class="text-right">${m}</th>`);
+            desktopHtml += `<th class="text-right col-ytd">YTD Total</th></tr>
+                        </thead>
+                        <tbody>`;
+            
+            Object.keys(rowData).forEach((key, index) => {
+                const r = rowData[key];
+                const rowClass = r.isBold ? 'row-bold' : (index % 2 === 0 ? '' : 'row-alt');
+                desktopHtml += `<tr class="table-row ${rowClass}"><td style="font-weight: ${r.isBold ? '700' : '500'};">${r.title}</td>`;
+                r.vals.forEach(val => desktopHtml += `<td class="text-right">${val === 0 ? '-' : formatCurrency(val)}</td>`);
+                desktopHtml += `<td class="text-right col-ytd">${formatCurrency(r.total)}</td></tr>`;
+                if(key === 'discretionaryExp') desktopHtml += `<tr class="table-row spacer-row"><td colspan="14"></td></tr>`;
+            });
+            desktopHtml += `</tbody></table></div></div>`;
+            
+            html = mobileHtml + desktopHtml;
+
+        } else {
+            const sections = [{ id: 'income', title: 'Income' }, { id: 'necessary', title: 'Necessary Expenses' }, { id: 'discretionary', title: 'Discretionary Expenses' }, { id: 'investments', title: 'Investments / Savings' }];
+            let masterTemplate = { income: [], necessary: [], discretionary: [], investments: [] };
+            
+            if (budgetData[currentMonthStr]) {
+                sections.forEach(sec => {
+                    budgetData[currentMonthStr][sec.id].forEach(item => {
+                        masterTemplate[sec.id].push({ name: item.name });
+                    });
+                });
+            }
+            
+            yearMonths.forEach(m => {
+                if (budgetData[m]) {
+                    sections.forEach(sec => {
+                        budgetData[m][sec.id].forEach(item => {
+                            if (!masterTemplate[sec.id].find(x => x.name === item.name)) {
+                                masterTemplate[sec.id].push({ name: item.name });
+                            }
+                        });
+                    });
+                }
+            });
+
+            let tableHtml = `
+            <div class="section-card">
+                <div class="table-wrapper">
+                    <table class="table-yearly">
+                        <thead>
+                            <tr><th>Category</th>`;
+            monthNames.forEach(m => tableHtml += `<th class="text-right">${m}</th>`);
+            tableHtml += `<th class="text-right col-ytd">YTD Total</th></tr>
+                        </thead>
+                        <tbody>`;
+
+            sections.forEach(sec => {
+                let sectionTotals = Array(12).fill(0); 
+                let sectionYtdTotal = 0;
+                let rowsHtml = '';
+                
+                masterTemplate[sec.id].forEach((item) => {
+                    let catYtdTotal = 0;
+                    rowsHtml += `<tr class="table-row row-alt"><td style="padding-left: 2rem;">${item.name}</td>`;
+                    yearMonths.forEach((m, mIdx) => {
+                        let actual = 0;
+                        if (budgetData[m]) {
+                            const matchItem = budgetData[m][sec.id].find(x => x.name === item.name);
+                            if (matchItem) actual = sumTransactions(matchItem.transactions);
+                        }
+                        catYtdTotal += actual; sectionTotals[mIdx] += actual;
+                        rowsHtml += `<td class="text-right">${actual === 0 ? '-' : formatCurrency(actual)}</td>`;
+                    });
+                    sectionYtdTotal += catYtdTotal;
+                    rowsHtml += `<td class="text-right col-ytd">${formatCurrency(catYtdTotal)}</td></tr>`;
+                });
+
+                const isCollapsed = collapsedSections[sec.id];
+                
+                tableHtml += `<tr class="table-row row-bold" style="cursor: pointer;" onclick="toggleSection('${sec.id}')">
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--primary-text);">
+                            <svg class="icon-collapse" style="${isCollapsed ? 'transform: rotate(-90deg); transition: transform 0.2s;' : 'transition: transform 0.2s;'}" width="1.25rem" height="1.25rem" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            ${sec.title.toUpperCase()}
+                        </div>
+                    </td>`;
+                
+                sectionTotals.forEach(t => {
+                    tableHtml += `<td class="text-right">${t === 0 ? '-' : formatCurrency(t)}</td>`;
+                });
+                tableHtml += `<td class="text-right col-ytd">${formatCurrency(sectionYtdTotal)}</td></tr>`;
+
+                if (!isCollapsed) {
+                    tableHtml += rowsHtml;
+                }
+                
+                tableHtml += `<tr class="table-row spacer-row"><td colspan="14"></td></tr>`;
+            });
+            tableHtml += `</tbody></table></div></div>`;
+            html = tableHtml;
+        }
+        
+        container.innerHTML = html;
+    }
+
+    function renderAnalytics() {
+        const monthDropdown = document.getElementById('analytics-month');
+        const yearDropdown = document.getElementById('analytics-year');
+        
+        if(monthDropdown && monthDropdown.options.length === 0) {
+            fullMonthNames.forEach((m, idx) => monthDropdown.innerHTML += `<option value="${monthNames[idx]}">${m}</option>`);
+            for(let y = 2024; y <= 2036; y++) yearDropdown.innerHTML += `<option value="${y}">${y}</option>`;
+            
+            const [mName, yStr] = currentMonthStr.split(' ');
+            monthDropdown.value = mName;
+            yearDropdown.value = yStr;
+        }
+
+        const selMonthStr = (monthDropdown && yearDropdown) ? `${monthDropdown.value} ${yearDropdown.value}` : currentMonthStr;
+        const selYearStr = yearDropdown ? yearDropdown.value : currentMonthStr.split(' ')[1];
+
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        const textColor = isDark ? '#f1f5f9' : '#0f172a';
+        const gridColor = isDark ? '#334155' : '#e2e8f0';
+
+        const yearMonths = monthNames.map(m => `${m} ${selYearStr}`);
+        let nwData = [];
+        
+        yearMonths.forEach(m => {
+            let nw = 0;
+            if (budgetData[m] && budgetData[m].accounts) {
+                nw = budgetData[m].accounts.reduce((sum, acct) => sum + acct.balance, 0);
+            }
+            nwData.push(nw);
+        });
+
+        const nwCtx = document.getElementById('nwChart').getContext('2d');
+        if (nwChartInstance) nwChartInstance.destroy();
+        nwChartInstance = new Chart(nwCtx, {
+            type: 'line',
+            data: {
+                labels: monthNames,
+                datasets: [{
+                    label: 'Net Worth',
+                    data: nwData,
+                    borderColor: '#2563eb', 
+                    backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.3,
+                    pointBackgroundColor: '#2563eb'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { ticks: { color: textColor }, grid: { display: false } },
+                    y: { ticks: { color: textColor, callback: (v) => '$' + v }, grid: { color: gridColor } }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: { label: (ctx) => ` Net Worth: ${formatCurrency(ctx.raw)}` }
+                    }
+                }
+            }
+        });
+
+        let necTotal = 0, discTotal = 0, invTotal = 0;
+        if (budgetData[selMonthStr]) {
+            const totals = getMonthTotals(budgetData[selMonthStr], selMonthStr);
+            necTotal = totals.necessary;
+            discTotal = totals.discretionary;
+            invTotal = totals.investments;
+        }
+
+        const pieCtx = document.getElementById('pieChart').getContext('2d');
+        if (pieChartInstance) pieChartInstance.destroy();
+        pieChartInstance = new Chart(pieCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Necessary', 'Discretionary', 'Investments'],
+                datasets: [{
+                    data: [necTotal, discTotal, invTotal],
+                    backgroundColor: ['#f59e0b', '#3b82f6', '#22c55e'],
+                    borderColor: isDark ? '#1e293b' : '#ffffff',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom', labels: { color: textColor, padding: 20 } },
+                    tooltip: {
+                        callbacks: { label: (ctx) => ` ${ctx.label}: ${formatCurrency(ctx.raw)}` }
+                    }
+                }
+            }
+        });
+
+        let incData = [];
+        let expData = [];
+        
+        yearMonths.forEach(m => {
+            if (budgetData[m]) {
+                const totals = getMonthTotals(budgetData[m], m);
+                incData.push(totals.income);
+                expData.push(totals.necessary + totals.discretionary + totals.investments);
+            } else {
+                incData.push(0); expData.push(0);
+            }
+        });
+
+        const barCtx = document.getElementById('barChart').getContext('2d');
+        if (barChartInstance) barChartInstance.destroy();
+        barChartInstance = new Chart(barCtx, {
+            type: 'bar',
+            data: {
+                labels: monthNames,
+                datasets: [
+                    { label: 'Income', data: incData, backgroundColor: '#22c55e', borderRadius: 4 },
+                    { label: 'Spending', data: expData, backgroundColor: '#ef4444', borderRadius: 4 }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { ticks: { color: textColor }, grid: { display: false } },
+                    y: { ticks: { color: textColor, callback: (v) => '$' + v }, grid: { color: gridColor } }
+                },
+                plugins: {
+                    legend: { position: 'top', labels: { color: textColor } },
+                    tooltip: {
+                        callbacks: { label: (ctx) => ` ${ctx.dataset.label}: ${formatCurrency(ctx.raw)}` }
+                    }
+                }
+            }
+        });
+    }
+
+    function openModal(categoryType, itemIndex) {
+        haptic('light');
+        activeModalCategory = categoryType; activeModalIndex = itemIndex;
+        const item = budgetData[currentMonthStr][categoryType][itemIndex];
+        const vals = getItemValues(categoryType, item, budgetData[currentMonthStr], currentMonthStr);
+
+        document.getElementById('modal-title').innerText = `${item.name}`;
+        const banner = document.getElementById('modal-target-banner');
+        if (vals.isCalculated) {
+            banner.innerHTML = `💡 Goal based on actual income: <strong>${formatCurrency(vals.suggestedActual)}</strong>`;
+            banner.style.display = 'block';
+        } else { banner.style.display = 'none'; }
+
+        document.getElementById('transaction-modal').classList.add('active');
+        document.querySelector('#transaction-modal .add-form').reset();
+        
+        document.getElementById('tx-date').value = getSmartDateDefault(currentMonthStr); 
+
+        editingTxIndex = null;
+        document.getElementById('btn-add-tx').innerText = "Add Transaction";
+        document.getElementById('btn-cancel-tx').style.display = "none";
+        setTimeout(() => document.getElementById('tx-amount').focus(), 100);
+        renderTransactionsList();
+    }
+
+    function closeModal() { document.getElementById('transaction-modal').classList.remove('active'); activeModalCategory = null; activeModalIndex = null; editingTxIndex = null; }
+
+    function renderTransactionsList() {
+        if (!activeModalCategory) return;
+        const item = budgetData[currentMonthStr][activeModalCategory][activeModalIndex];
+        const listContainer = document.getElementById('modal-tx-list');
+        const totalSpan = document.getElementById('modal-total');
+        
+        if (item.transactions.length === 0) {
+            listContainer.innerHTML = `<div class="tx-empty" style="border:none; background: transparent;">No transactions added yet.</div>`;
+            totalSpan.innerText = '$0.00'; return;
+        }
+
+        let html = ''; let total = 0;
+        const sortedTx = [...item.transactions].sort((a, b) => new Date(a.date) - new Date(b.date));
+        const isIncome = activeModalCategory === 'income';
+        
+        sortedTx.forEach((tx, sortedIdx) => {
+            const originalIdx = item.transactions.indexOf(tx); 
+            total += tx.amount;
+            
+            const displayAmt = isIncome ? `+${formatCurrency(Math.abs(tx.amount))}` : `-${formatCurrency(Math.abs(tx.amount))}`;
+            const colorStyle = isIncome ? `color: var(--success);` : `color: var(--danger);`;
+            
+            const txActions = `
+                <button type="button" onclick="editTransaction(${originalIdx})" class="btn-tx-action edit" title="Edit Transaction">${ICONS.edit}</button>
+                <button type="button" onclick="deleteTransaction(${originalIdx})" class="btn-tx-action delete" title="Delete Transaction">${ICONS.trash}</button>
+            `;
+
+            html += `
+                <div class="tx-scroll-wrapper" ${editingTxIndex === originalIdx ? 'style="border-color: var(--primary);"' : ''}>
+                    <div class="tx-item" ${editingTxIndex === originalIdx ? 'style="background: var(--primary-bg);"' : ''}>
+                        <div class="tx-info">
+                            <span class="tx-amount-large" style="${colorStyle}">${displayAmt}</span>
+                            <span class="tx-desc-stack">${tx.desc}</span>
+                            <span class="tx-date-stack">${formatDate(tx.date)}</span>
+                        </div>
+                        <div class="tx-actions">
+                            ${txActions}
+                        </div>
+                    </div>
+                    <div class="tx-swipe-actions">
+                        ${txActions}
+                    </div>
+                </div>`;
+        });
+        listContainer.innerHTML = html;
+        totalSpan.innerText = formatCurrency(total);
+        listContainer.scrollTop = listContainer.scrollHeight;
+    }
+
+    function editTransaction(txIndex) {
+        haptic('light');
+        editingTxIndex = txIndex;
+        const tx = budgetData[currentMonthStr][activeModalCategory][activeModalIndex].transactions[txIndex];
+        document.getElementById('tx-date').value = tx.date;
+        document.getElementById('tx-desc').value = tx.desc;
+        document.getElementById('tx-amount').value = tx.amount;
+        document.getElementById('btn-add-tx').innerText = "Save Changes";
+        document.getElementById('btn-cancel-tx').style.display = "block";
+        renderTransactionsList(); 
+        document.getElementById('tx-amount').focus();
+    }
+
+    function cancelEditTransaction() {
+        haptic('light');
+        editingTxIndex = null;
+        document.querySelector('#transaction-modal .add-form').reset();
+        
+        document.getElementById('tx-date').value = getSmartDateDefault(currentMonthStr); 
+        
+        document.getElementById('btn-add-tx').innerText = "Add Transaction";
+        document.getElementById('btn-cancel-tx').style.display = "none";
+        renderTransactionsList(); 
+    }
+
+    function handleAddTransaction(e) {
+        e.preventDefault();
+        const date = document.getElementById('tx-date').value;
+        const desc = document.getElementById('tx-desc').value;
+        const amount = parseFloat(document.getElementById('tx-amount').value);
+        
+        if (desc && !isNaN(amount) && date) {
+            pushUndoState();
+            haptic('medium');
+            if (editingTxIndex !== null) {
+                const oldTx = budgetData[currentMonthStr][activeModalCategory][activeModalIndex].transactions[editingTxIndex];
+                budgetData[currentMonthStr][activeModalCategory][activeModalIndex].transactions[editingTxIndex] = { date: date, desc: desc, amount: amount, timestamp: oldTx.timestamp || Date.now() };
+                editingTxIndex = null;
+                document.getElementById('btn-add-tx').innerText = "Add Transaction";
+                document.getElementById('btn-cancel-tx').style.display = "none";
+            } else {
+                budgetData[currentMonthStr][activeModalCategory][activeModalIndex].transactions.push({ date: date, desc: desc, amount: amount, timestamp: Date.now() });
+            }
+            saveData();
+            renderTransactionsList();
+            refreshViews();
+            document.getElementById('tx-desc').value = '';
+            document.getElementById('tx-amount').value = '';
+            document.getElementById('tx-amount').focus(); 
+        }
+    }
+
+    function deleteTransaction(txIndex) {
+        pushUndoState();
+        haptic('medium');
+        budgetData[currentMonthStr][activeModalCategory][activeModalIndex].transactions.splice(txIndex, 1);
+        saveData(); renderTransactionsList(); refreshViews();
+    }
+
+    function openRowModal(secId) {
+        haptic('light');
+        activeRowSection = secId;
+        const titles = { 'income': 'Income', 'necessary': 'Necessary Expenses', 'discretionary': 'Discretionary Expenses', 'investments': 'Investments' };
+        document.getElementById('row-modal-title').innerText = `Add New ${titles[secId]}`;
+        document.getElementById('row-modal').classList.add('active');
+        document.getElementById('add-row-form').reset();
+        
+        document.getElementById('new-row-is-rollover').checked = false;
+        document.getElementById('new-row-is-yearly').checked = false;
+        document.getElementById('new-row-is-sub').checked = false;
+        toggleAddYearly();
+        toggleAddSub();
+        
+        setTimeout(() => document.getElementById('new-row-name').focus(), 100);
+    }
+
+    function closeRowModal() { document.getElementById('row-modal').classList.remove('active'); activeRowSection = null; }
+
+    function handleAddRow(e) {
+        e.preventDefault();
+        const name = document.getElementById('new-row-name').value;
+        const inputValue = parseFloat(document.getElementById('new-row-budget').value) || 0;
+        
+        const isRollover = document.getElementById('new-row-is-rollover').checked;
+        const isYearly = document.getElementById('new-row-is-yearly').checked;
+        
+        const isSub = document.getElementById('new-row-is-sub').checked;
+        const subType = document.getElementById('new-sub-type').value;
+        const subCost = parseFloat(document.getElementById('new-sub-cost').value) || 0;
+        const subDate = document.getElementById('new-sub-date').value;
+
+        if (name && activeRowSection) {
+            pushUndoState();
+            haptic('medium');
+            let budget = inputValue; let yearlyAmount = null;
+            if (isYearly) { yearlyAmount = inputValue; budget = inputValue / 12; }
+
+            const currDate = parseMonthStr(currentMonthStr);
+
+            Object.keys(budgetData).forEach(m => {
+                if (parseMonthStr(m) >= currDate) {
+                    const exists = budgetData[m][activeRowSection].find(x => x.name === name);
+                    if (!exists) {
+                        budgetData[m][activeRowSection].push({ 
+                            name: name, budget: budget, yearlyAmount: yearlyAmount, transactions: [],
+                            isSub: isSub, subType: subType, subCost: subCost, subDate: subDate,
+                            isRollover: isRollover
+                        });
+                    }
+                }
+            });
+            saveData(); closeRowModal(); renderMonthly();
+        }
+    }
+
+    function openEditRowModal(secId, idx) {
+        haptic('light');
+        activeEditSection = secId; activeEditIndex = idx;
+        const item = budgetData[currentMonthStr][secId][idx];
+        const vals = getItemValues(secId, item, budgetData[currentMonthStr], currentMonthStr);
+        
+        document.getElementById('edit-row-name').value = item.name;
+        
+        const budgetInput = document.getElementById('edit-row-budget');
+        const calcWarning = document.getElementById('edit-row-calc-warning');
+        
+        const isRolloverCb = document.getElementById('edit-row-is-rollover');
+        const isYearlyCb = document.getElementById('edit-row-is-yearly');
+        const isSubCb = document.getElementById('edit-row-is-sub');
+        
+        isRolloverCb.checked = item.isRollover || false;
+        
+        isSubCb.checked = item.isSub || false;
+        document.getElementById('edit-sub-type').value = item.subType || 'monthly';
+        document.getElementById('edit-sub-cost').value = item.subCost || '';
+        document.getElementById('edit-sub-date').value = item.subDate || '';
+        toggleEditSub();
+        
+        if (vals.isCalculated) {
+            budgetInput.value = vals.baseBudget.toFixed(2); budgetInput.disabled = true;
+            budgetInput.style.backgroundColor = 'var(--bg-alt)'; budgetInput.style.color = 'var(--text-muted)';
+            calcWarning.style.display = 'block'; 
+            
+            isRolloverCb.disabled = true;
+            isYearlyCb.disabled = true; 
+            isSubCb.disabled = true;
+            document.getElementById('edit-options-wrapper').style.display = 'none';
+        } else {
+            budgetInput.disabled = false; budgetInput.style.backgroundColor = ''; budgetInput.style.color = '';
+            calcWarning.style.display = 'none'; 
+            
+            isRolloverCb.disabled = false;
+            isYearlyCb.disabled = false;
+            isSubCb.disabled = false;
+            document.getElementById('edit-options-wrapper').style.display = 'flex';
+            
+            if (item.yearlyAmount) {
+                isYearlyCb.checked = true; budgetInput.value = item.yearlyAmount.toFixed(2); document.getElementById('edit-row-budget-label').innerText = "Total Yearly Cost";
+            } else {
+                isYearlyCb.checked = false; budgetInput.value = (item.budget || 0).toFixed(2); document.getElementById('edit-row-budget-label').innerText = "Monthly Budget";
+            }
+        }
+        document.getElementById('edit-row-modal').classList.add('active');
+        setTimeout(() => document.getElementById('edit-row-budget').focus(), 100);
+    }
+
+    function closeEditRowModal() { document.getElementById('edit-row-modal').classList.remove('active'); activeEditSection = null; activeEditIndex = null; }
+
+    function handleEditRow(e) {
+        e.preventDefault();
+        const newName = document.getElementById('edit-row-name').value;
+        const inputValue = parseFloat(document.getElementById('edit-row-budget').value) || 0;
+        
+        const isRollover = document.getElementById('edit-row-is-rollover').checked;
+        const isYearly = document.getElementById('edit-row-is-yearly').checked;
+        
+        const isSub = document.getElementById('edit-row-is-sub').checked;
+        const subType = document.getElementById('edit-sub-type').value;
+        const subCost = parseFloat(document.getElementById('edit-sub-cost').value) || 0;
+        const subDate = document.getElementById('edit-sub-date').value;
+
+        if (newName && activeEditSection !== null && activeEditIndex !== null) {
+            pushUndoState();
+            haptic('medium');
+            const oldName = budgetData[currentMonthStr][activeEditSection][activeEditIndex].name;
+            const currDate = parseMonthStr(currentMonthStr);
+
+            Object.keys(budgetData).forEach(m => {
+                if (parseMonthStr(m) >= currDate) {
+                    const itemToEdit = budgetData[m][activeEditSection].find(x => x.name === oldName);
+                    if (itemToEdit) {
+                        itemToEdit.name = newName;
+                        itemToEdit.isRollover = isRollover;
+                        itemToEdit.isSub = isSub;
+                        itemToEdit.subType = subType;
+                        itemToEdit.subCost = subCost;
+                        itemToEdit.subDate = subDate;
+                        
+                        if (!getItemValues(activeEditSection, itemToEdit, budgetData[m], m).isCalculated) {
+                            if (isYearly) { itemToEdit.yearlyAmount = inputValue; itemToEdit.budget = inputValue / 12; } 
+                            else { itemToEdit.yearlyAmount = null; itemToEdit.budget = inputValue; }
+                        }
+                    }
+                }
+            });
+            saveData(); closeEditRowModal(); renderMonthly();
+        }
+    }
+
+    function openRulesModal() {
+        haptic('light');
+        editingRuleIndex = null; 
+        document.getElementById('rule-form-title').innerText = "+ Create Custom Rule";
+        document.getElementById('btn-submit-rule').innerText = "Add";
+
+        const list = document.getElementById('rules-list');
+        let rulesHtml = '';
+        calculationRules.forEach((rule, idx) => {
+            const currentPct = (rule.pct * 100).toFixed(1);
+            rulesHtml += `
+                <div style="background: var(--bg-alt); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border); position: relative;">
+                    <div style="position: absolute; right: 0.75rem; top: 0.75rem; display: flex; gap: 0.35rem;">
+                        <button type="button" onclick="editCalculationRule(${idx})" class="btn-row-action" title="Edit Rule" style="opacity: 1; pointer-events: auto; padding: 0.35rem; background: var(--bg-card); border: 1px solid var(--border); box-shadow: var(--shadow-sm);">${ICONS.edit}</button>
+                        <button type="button" onclick="deleteCalculationRule(${idx})" class="btn-row-action delete" title="Delete Rule" style="opacity: 1; pointer-events: auto; padding: 0.35rem; background: var(--bg-card); border: 1px solid var(--border); box-shadow: var(--shadow-sm);">${ICONS.trash}</button>
+                    </div>
+                    <div style="font-weight: 600; color: var(--text-strong); margin-bottom: 0.25rem; padding-right: 5rem;">${rule.name}</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.75rem;">Source: ${rule.sources === 'ALL' ? 'Total Income' : rule.sources.join(' + ')}</div>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <input type="number" inputmode="decimal" id="rule-input-${idx}" class="input-number" style="text-align: left; width: 6rem; padding: 0.5rem;" step="0.1" value="${currentPct}" required>
+                        <span style="font-weight: 500; color: var(--text-muted);">%</span>
+                    </div>
+                </div>
+            `;
+        });
+        list.innerHTML = rulesHtml;
+
+        const targetSelect = document.getElementById('new-rule-target');
+        targetSelect.innerHTML = '<option value="" disabled selected>Select an existing row...</option>';
+        ['necessary', 'discretionary', 'investments'].forEach(sec => {
+            const optgroup = document.createElement('optgroup'); optgroup.label = sec.toUpperCase();
+            budgetData[currentMonthStr][sec].forEach(item => { optgroup.innerHTML += `<option value="${sec}|${item.name}">${item.name}</option>`; });
+            targetSelect.appendChild(optgroup);
+        });
+
+        const sourceContainer = document.getElementById('new-rule-source-container');
+        let sourceHtml = `
+            <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; cursor: pointer;">
+                <input type="checkbox" id="rule-source-all" value="ALL" onchange="toggleAllSources(this)" checked style="width: 1.25rem; height: 1.25rem; accent-color: var(--primary);">
+                <span style="font-weight: 600; color: var(--text-strong);">Total Income (All)</span>
+            </label><div style="height: 1px; background: var(--border); margin: 0.5rem 0;"></div>`;
+        budgetData[currentMonthStr].income.forEach(item => {
+            sourceHtml += `
+                <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; cursor: pointer;">
+                    <input type="checkbox" class="rule-source-cb" value="${item.name}" disabled style="width: 1.25rem; height: 1.25rem; accent-color: var(--primary);">
+                    <span style="color: var(--text-main);">${item.name}</span>
+                </label>`;
+        });
+        sourceContainer.innerHTML = sourceHtml;
+        document.getElementById('rules-modal').classList.add('active');
+    }
+
+    function toggleAllSources(checkbox) {
+        document.querySelectorAll('.rule-source-cb').forEach(cb => {
+            if (checkbox.checked) { cb.checked = false; cb.disabled = true; } else { cb.disabled = false; }
+        });
+    }
+
+    function closeRulesModal() { document.getElementById('rules-modal').classList.remove('active'); }
+
+    function handleSaveRules(e) {
+        e.preventDefault();
+        pushUndoState();
+        haptic('medium');
+        calculationRules.forEach((rule, idx) => {
+            const inputVal = parseFloat(document.getElementById(`rule-input-${idx}`).value);
+            if (!isNaN(inputVal)) { rule.pct = inputVal / 100; rule.desc = `${inputVal}% of ${rule.sources === 'ALL' ? 'Total Income' : rule.sources.join(' + ')}`; }
+        });
+        saveData(); closeRulesModal(); renderMonthly(); 
+    }
+
+    function editCalculationRule(idx) {
+        haptic('light');
+        editingRuleIndex = idx;
+        const rule = calculationRules[idx];
+        document.getElementById('rule-form-title').innerText = "✎ Edit Custom Rule";
+        document.getElementById('btn-submit-rule').innerText = "Update";
+        document.getElementById('new-rule-target').value = `${rule.category}|${rule.name}`;
+        
+        const isAll = rule.sources === 'ALL';
+        const sourceAllCb = document.getElementById('rule-source-all');
+        sourceAllCb.checked = isAll; toggleAllSources(sourceAllCb); 
+        
+        if (!isAll) { document.querySelectorAll('.rule-source-cb').forEach(cb => { cb.checked = rule.sources.includes(cb.value); }); }
+        document.getElementById('new-rule-pct').value = (rule.pct * 100).toFixed(1);
+        document.getElementById('rule-form-title').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function handleSaveCustomRule() {
+        const targetVal = document.getElementById('new-rule-target').value;
+        const pctVal = parseFloat(document.getElementById('new-rule-pct').value);
+        const isAll = document.getElementById('rule-source-all').checked;
+        let sources = [];
+        if (isAll) { sources = 'ALL'; } else { document.querySelectorAll('.rule-source-cb:checked').forEach(cb => sources.push(cb.value)); }
+
+        if(targetVal && !isNaN(pctVal) && (sources === 'ALL' || sources.length > 0)) {
+            pushUndoState();
+            haptic('medium');
+            const [category, name] = targetVal.split('|');
+            const newRule = { category: category, name: name, pct: pctVal / 100, sources: sources, desc: `${pctVal}% of ${sources === 'ALL' ? 'Total Income' : sources.join(' + ')}` };
+            if (editingRuleIndex !== null) calculationRules[editingRuleIndex] = newRule; else calculationRules.push(newRule);
+            saveData(); document.getElementById('new-rule-pct').value = ''; editingRuleIndex = null; openRulesModal(); renderMonthly();
+        } else { customAlert('Please select a target row, at least one income source, and enter a valid percentage.'); }
+    }
+
+    async function deleteCalculationRule(idx) {
+        if(await customConfirm('Are you sure you want to delete this calculation rule?', "Delete", true)) {
+            pushUndoState(); calculationRules.splice(idx, 1); saveData(); openRulesModal(); renderMonthly();
+        }
+    }
+
+    // --- BOOTSTRAP & CLOUD INIT ---
     async function initCloud() {
         try {
-            // 1. OPTIMISTIC LOADING: Render instantly from local storage
-            // This guarantees the app NEVER gets stuck on a blank screen if the network hangs!
+            // 1. OPTIMISTIC LOADING: Instantly render from local storage!
+            // This guarantees the app works even if the network hangs completely.
             loadLocalData();
             renderNavigation();
+            
+            // Check if URL suggests demo mode
+            if (window.location.search.includes('demo=true')) toggleDemoMode();
+            
             renderApp();
             
-            // 2. Start the sync dot visually AFTER the UI is drawn
+            // 2. NOW try connecting to the cloud.
             updateSyncDot('syncing');
             
             const appModule = await import('https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js');
@@ -1538,18 +2983,11 @@
             // Log in silently
             await _authModule.signInAnonymously(auth);
 
-            // Listen for auth state — show login or load app accordingly
             _authModule.onAuthStateChanged(auth, (user) => {
                 if (user) {
-                    // User is signed in — rebuild the page if we replaced it with login
-                    if (document.getElementById('login-wrap')) {
-                        location.reload(); // cleanest way to restore full app after login
-                    } else {
-                        setupCloudSync(_fsModule);
-                    }
+                    setupCloudSync(_fsModule);
                 } else {
-                    // No user — show login screen
-                    showLoginScreen();
+                    updateSyncDot('offline');
                 }
             });
 
@@ -1559,19 +2997,54 @@
         }
     }
 
+    function renderApp() {
+        const yearSelect = document.getElementById('year-selector');
+        const analyticsYear = document.getElementById('analytics-year');
+        if (yearSelect && yearSelect.options.length === 0) {
+            for(let y = 2024; y <= 2036; y++) {
+                yearSelect.innerHTML += `<option value="${y}">${y}</option>`;
+                if (analyticsYear) analyticsYear.innerHTML += `<option value="${y}">${y}</option>`;
+            }
+            yearSelect.value = "2026";
+            if (analyticsYear) analyticsYear.value = "2026";
+        }
+        
+        const monthDrop = document.getElementById('month-dropdown');
+        const yearDrop = document.getElementById('year-dropdown');
+        const analyticsMonth = document.getElementById('analytics-month');
+        
+        if (monthDrop && monthDrop.options.length === 0) {
+            fullMonthNames.forEach((m, idx) => {
+                monthDrop.innerHTML += `<option value="${monthNames[idx]}">${m}</option>`;
+                if (analyticsMonth) analyticsMonth.innerHTML += `<option value="${monthNames[idx]}">${m}</option>`;
+            });
+            for(let y = 2024; y <= 2036; y++) {
+                if (yearDrop) yearDrop.innerHTML += `<option value="${y}">${y}</option>`;
+            }
+        }
+        
+        if(currentMonthStr) {
+            const [mName, yStr] = currentMonthStr.split(' ');
+            if (monthDrop) monthDrop.value = mName;
+            if (yearDrop) yearDrop.value = yStr;
+            if (analyticsMonth) analyticsMonth.value = mName;
+            if (analyticsYear) analyticsYear.value = yStr;
+        }
+        
+        switchView(currentActiveView);
+    }
+
     function setupCloudSync(fsModule) {
         const docRef = doc_fn(db, 'budget_data', 'master_save');
         
         fsModule.onSnapshot(docRef, (docSnap) => {
-            if (isDemoMode) return; // Block external cloud updates if in Demo Mode
+            if (isDemoMode) return; 
 
             if (docSnap.exists()) {
                 const data = docSnap.data();
                 const cloudLastUpdated = data.lastUpdated || 0;
                 
-                // Conflict Resolution: If Local is newer, push local changes to cloud
                 if (localLastUpdated > cloudLastUpdated && localLastUpdated > 0) {
-                    console.log("Local data is newer. Pushing to cloud...");
                     window.saveData(false, true); 
                     return;
                 }
@@ -1580,7 +3053,6 @@
                 calculationRules = data.calculationRules || [];
                 localLastUpdated = cloudLastUpdated;
                 
-                // Mirror to local storage immediately
                 localStorage.setItem(STORAGE_KEY, JSON.stringify({
                     budgetData: budgetData,
                     calculationRules: calculationRules,
@@ -1603,7 +3075,7 @@
     }
 
     window.saveData = async function(skipCloud = false, isBackgroundSync = false) {
-        if (isDemoMode) return; // Block all saving if Demo Mode is active
+        if (isDemoMode) return; 
 
         const timestamp = Date.now();
         localLastUpdated = timestamp;
@@ -1632,7 +3104,6 @@
         }
     };
 
-    // Auto-save on tab close or backgrounding
     document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'hidden') window.saveData(false, true);
     });
