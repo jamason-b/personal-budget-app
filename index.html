@@ -1553,6 +1553,21 @@
             });
         });
 
+        sortedMonths.forEach(monthStr => {
+            const [mName, yStr] = monthStr.split(' ');
+            const monthData = budgetData[monthStr];
+            if (monthData && monthData.accounts && monthData.accounts.length > 0) {
+                let totalNetWorth = 0;
+                monthData.accounts.forEach(acct => {
+                    const balance = parseFloat(acct.balance) || 0;
+                    totalNetWorth += balance;
+                    const acctName = `"${(acct.name || '').replace(/"/g, '""')}"`;
+                    csvContent += `,${mName},${yStr},accounts,${acctName},"Balance",${balance}\r\n`;
+                });
+                csvContent += `,${mName},${yStr},accounts,"Total Net Worth","",${totalNetWorth}\r\n`;
+            }
+        });
+
         const encodedUri = encodeURI(csvContent);
         const link = document.createElement("a");
         link.setAttribute("href", encodedUri);
