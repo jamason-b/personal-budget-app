@@ -713,6 +713,10 @@
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
             </button>
         </div>
+        <div style="display: flex; border-bottom: 1px solid var(--border);">
+            <button id="qa-tab-single" onclick="switchQuickAddTab('single')" style="flex: 1; padding: 0.75rem; background: var(--primary-bg); color: var(--primary); border: none; border-bottom: 2px solid var(--primary); font-weight: 600; font-size: 0.875rem; cursor: pointer; font-family: inherit;">Single</button>
+            <button id="qa-tab-split" onclick="switchQuickAddTab('split')" style="flex: 1; padding: 0.75rem; background: none; color: var(--text-muted); border: none; border-bottom: 2px solid transparent; font-weight: 600; font-size: 0.875rem; cursor: pointer; font-family: inherit;">✂️ Split</button>
+        </div>
         <div class="modal-body">
             <form class="add-form" onsubmit="handleQuickAdd(event)">
                 <div class="form-group">
@@ -732,6 +736,39 @@
                     <input type="date" id="qa-date" class="input-date" required>
                 </div>
                 <button type="submit" class="btn-add">Save Transaction</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div id="split-modal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 30rem;">
+        <div class="modal-header">
+            <h3 class="modal-title">Split Transaction</h3>
+            <button onclick="closeSplitModal()" class="btn-close">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form class="add-form" id="split-form" onsubmit="handleSplitTransaction(event)">
+                <div class="form-group">
+                    <label class="form-label" for="split-desc">Description</label>
+                    <input type="text" id="split-desc" class="input-text" placeholder="e.g. Costco" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="split-date">Date</label>
+                    <input type="date" id="split-date" class="input-date" required>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                    <span style="font-size: 0.875rem; font-weight: 600; color: var(--text-strong);">Split Lines</span>
+                    <div style="font-size: 0.85rem; color: var(--text-muted);">Total: <strong id="split-running-total" style="color: var(--text-strong);">$0.00</strong></div>
+                </div>
+
+                <div id="split-rows-container" style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem;"></div>
+
+                <button type="button" onclick="addSplitRow()" class="btn-add" style="background: var(--bg-alt); color: var(--text-strong); border: 1px dashed var(--border); box-shadow: none; margin-bottom: 1rem; font-size: 0.85rem;">+ Add Split Line</button>
+                <button type="submit" class="btn-add">Save All Splits</button>
             </form>
         </div>
     </div>
@@ -1030,6 +1067,7 @@
     window.handleUndo = handleUndo; window.openSettingsModal = openSettingsModal; window.exportData = exportData;
     window.importData = importData; window.resetData = resetData; window.openQuickAddModal = openQuickAddModal;
     window.closeQuickAddModal = closeQuickAddModal; window.handleQuickAdd = handleQuickAdd; window.toggleAddYearly = toggleAddYearly;
+    window.switchQuickAddTab = switchQuickAddTab; window.openSplitModal = openSplitModal; window.closeSplitModal = closeSplitModal; window.addSplitRow = addSplitRow; window.removeSplitRow = removeSplitRow; window.updateSplitTotal = updateSplitTotal; window.handleSplitTransaction = handleSplitTransaction;
     window.toggleEditYearly = toggleEditYearly; window.openModal = openModal; window.closeModal = closeModal;
     window.editTransaction = editTransaction; window.cancelEditTransaction = cancelEditTransaction; window.handleAddTransaction = handleAddTransaction;
     window.deleteTransaction = deleteTransaction; window.openRowModal = openRowModal; window.closeRowModal = closeRowModal;
@@ -2146,6 +2184,115 @@
     }
     
     function closeQuickAddModal() { document.getElementById('quick-add-modal').classList.remove('active'); }
+
+    function switchQuickAddTab(tab) {
+        if (tab === 'split') {
+            openSplitModal();
+        } else {
+            document.getElementById('qa-tab-single').style.cssText = 'flex:1;padding:0.75rem;background:var(--primary-bg);color:var(--primary);border:none;border-bottom:2px solid var(--primary);font-weight:600;font-size:0.875rem;cursor:pointer;font-family:inherit;';
+            document.getElementById('qa-tab-split').style.cssText = 'flex:1;padding:0.75rem;background:none;color:var(--text-muted);border:none;border-bottom:2px solid transparent;font-weight:600;font-size:0.875rem;cursor:pointer;font-family:inherit;';
+        }
+    }
+
+    function openSplitModal() {
+        haptic('medium');
+        closeQuickAddModal();
+        document.getElementById('split-modal').classList.add('active');
+        document.getElementById('split-form').reset();
+        document.getElementById('split-rows-container').innerHTML = '';
+        document.getElementById('split-running-total').textContent = '$0.00';
+        document.getElementById('split-date').value = getSmartDateDefault(currentMonthStr);
+        addSplitRow();
+        addSplitRow();
+        setTimeout(() => document.getElementById('split-desc').focus(), 100);
+    }
+
+    function closeSplitModal() { document.getElementById('split-modal').classList.remove('active'); }
+
+    function buildSplitCategoryOptions() {
+        const sections = [
+            { id: 'income', label: 'Income' },
+            { id: 'necessary', label: 'Necessary Expenses' },
+            { id: 'discretionary', label: 'Discretionary Expenses' },
+            { id: 'investments', label: 'Investments / Savings' }
+        ];
+        let html = '<option value="" disabled selected>Category...</option>';
+        sections.forEach(sec => {
+            html += `<optgroup label="${sec.label.toUpperCase()}">`;
+            budgetData[currentMonthStr][sec.id].forEach((item, idx) => {
+                html += `<option value="${sec.id}|${idx}">${item.name}</option>`;
+            });
+            html += '</optgroup>';
+        });
+        return html;
+    }
+
+    function addSplitRow() {
+        const container = document.getElementById('split-rows-container');
+        const row = document.createElement('div');
+        row.className = 'split-row';
+        row.style.cssText = 'display: flex; gap: 0.5rem; align-items: center;';
+        row.innerHTML = `
+            <select class="input-text split-cat" style="flex: 2; font-size: 0.85rem; padding: 0.6rem 0.75rem;" onchange="updateSplitTotal()">${buildSplitCategoryOptions()}</select>
+            <input type="number" inputmode="decimal" class="input-number split-amt" style="flex: 1; font-size: 0.85rem; padding: 0.6rem 0.75rem;" placeholder="0.00" step="0.01" min="0.01" oninput="updateSplitTotal()">
+            <button type="button" onclick="removeSplitRow(this)" style="background: none; border: none; color: var(--danger); cursor: pointer; padding: 0.25rem; flex-shrink: 0;">${ICONS.trash}</button>
+        `;
+        container.appendChild(row);
+    }
+
+    function removeSplitRow(btn) {
+        btn.closest('.split-row').remove();
+        updateSplitTotal();
+    }
+
+    function updateSplitTotal() {
+        let total = 0;
+        document.querySelectorAll('#split-rows-container .split-amt').forEach(inp => {
+            const v = parseFloat(inp.value);
+            if (!isNaN(v)) total += v;
+        });
+        document.getElementById('split-running-total').textContent = formatCurrency(total);
+    }
+
+    function handleSplitTransaction(e) {
+        e.preventDefault();
+        const desc = document.getElementById('split-desc').value.trim();
+        const dateStr = document.getElementById('split-date').value;
+        const rows = document.querySelectorAll('#split-rows-container .split-row');
+
+        const splits = [];
+        let valid = true;
+        rows.forEach(row => {
+            const catVal = row.querySelector('.split-cat').value;
+            const amt = parseFloat(row.querySelector('.split-amt').value);
+            if (!catVal || isNaN(amt) || amt <= 0) { valid = false; return; }
+            splits.push({ catVal, amt });
+        });
+
+        if (!valid || splits.length === 0) {
+            customAlert('Each split line needs a category and a positive amount.');
+            return;
+        }
+
+        pushUndoState();
+        haptic('heavy');
+
+        const [y, m] = dateStr.split('-');
+        const targetMonthStr = monthNames[parseInt(m) - 1] + ' ' + y;
+        getOrCreateMonthData(targetMonthStr);
+
+        const now = Date.now();
+        splits.forEach((split, i) => {
+            const [secId, idx] = split.catVal.split('|');
+            budgetData[targetMonthStr][secId][idx].transactions.push({
+                date: dateStr, desc: desc, amount: split.amt, timestamp: now + i
+            });
+        });
+
+        saveData();
+        closeSplitModal();
+        refreshViews();
+    }
 
     function handleQuickAdd(e) {
         e.preventDefault();
