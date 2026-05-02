@@ -855,9 +855,11 @@
 
             <div style="display: flex; flex-direction: column; gap: 0.75rem;">
                 <div style="display:flex;flex-direction:column;gap:0.4rem;">
-                    <label class="form-label" style="font-size:0.75rem;color:var(--text-muted);letter-spacing:0.05em;">🤖 CLAUDE AI (BILL SCANNING)</label>
-                    <input type="password" id="anthropic-api-key-input" class="input-text" placeholder="sk-ant-api03-..." style="font-size:0.82rem;font-family:monospace;" oninput="saveAnthropicKey()">
+                    <label class="form-label" style="font-size:0.75rem;color:var(--text-muted);letter-spacing:0.05em;">🤖 AI BILL SCANNING</label>
+                    <input type="password" id="anthropic-api-key-input" class="input-text" placeholder="Anthropic key (sk-ant-...)" style="font-size:0.82rem;font-family:monospace;" oninput="saveAnthropicKey()">
                     <span id="anthropic-key-status" style="font-size:0.75rem;color:var(--success);"></span>
+                    <input type="password" id="gemini-api-key-input" class="input-text" placeholder="Gemini key (AIza...)" style="font-size:0.82rem;font-family:monospace;margin-top:0.3rem;" oninput="saveGeminiKey()">
+                    <span id="gemini-key-status" style="font-size:0.75rem;color:var(--success);"></span>
                 </div>
                 <div style="height: 1px; background: var(--border); margin: 0.25rem 0;"></div>
                 <button onclick="toggleTheme();" class="btn-add mobile-only" style="margin: 0; background: var(--bg-card); color: var(--text-strong); border: 1px solid var(--border);">🌓 Toggle Dark Mode</button>
@@ -1156,7 +1158,7 @@
     window.openAccountsModal = openAccountsModal; window.closeAccountsModal = closeAccountsModal; window.handleUpdateAccounts = handleUpdateAccounts; window.addAccountRow = addAccountRow;
     window.openTabsReorderModal = openTabsReorderModal; window.closeTabsReorderModal = closeTabsReorderModal; window.moveNavigationTab = moveNavigationTab;
     window.openSearchModal = openSearchModal; window.closeSearchModal = closeSearchModal; window.performGlobalSearch = performGlobalSearch; window.jumpToMonth = jumpToMonth;
-    window.saveAnthropicKey = saveAnthropicKey; window.openScanBillModal = openScanBillModal; window.closeScanBillModal = closeScanBillModal;
+    window.saveAnthropicKey = saveAnthropicKey; window.saveGeminiKey = saveGeminiKey; window.openScanBillModal = openScanBillModal; window.closeScanBillModal = closeScanBillModal;
     window.handleScanFileSelect = handleScanFileSelect; window.handleScanFileDrop = handleScanFileDrop; window.submitScanToAI = submitScanToAI;
     window.openScanReviewModal = openScanReviewModal; window.closeScanReviewModal = closeScanReviewModal; window.removeScanRow = removeScanRow; window.handleScanBatchSubmit = handleScanBatchSubmit;
 
@@ -1606,9 +1608,12 @@
 
     function openSettingsModal() {
         document.getElementById('settings-modal').classList.add('active');
-        const savedKey = localStorage.getItem('anthropicApiKey') || '';
-        document.getElementById('anthropic-api-key-input').value = savedKey;
-        document.getElementById('anthropic-key-status').textContent = savedKey ? '✓ Key saved' : '';
+        const savedAnthropic = localStorage.getItem('anthropicApiKey') || '';
+        document.getElementById('anthropic-api-key-input').value = savedAnthropic;
+        document.getElementById('anthropic-key-status').textContent = savedAnthropic ? '✓ Key saved' : '';
+        const savedGemini = localStorage.getItem('geminiApiKey') || '';
+        document.getElementById('gemini-api-key-input').value = savedGemini;
+        document.getElementById('gemini-key-status').textContent = savedGemini ? '✓ Key saved' : '';
     }
     function closeSettingsModal() { document.getElementById('settings-modal').classList.remove('active'); }
 
@@ -2479,19 +2484,26 @@ Return ONLY a valid JSON array. No markdown, no extra text. Each element must ha
 If no transactions are found, return an empty array: []`;
     }
 
-    async function submitScanToAI() {
-        const apiKey = localStorage.getItem('anthropicApiKey') || '';
-        if (!apiKey.startsWith('sk-ant-')) {
-            customAlert('Please add your Anthropic API key in Settings first (⚙️ icon).');
-            return;
-        }
-        if (!scanSelectedFile) {
-            customAlert('Please select an image first.');
-            return;
-        }
+    function saveGeminiKey() {
+        const val = document.getElementById('gemini-api-key-input').value.trim();
+        localStorage.setItem('geminiApiKey', val);
+        document.getElementById('gemini-key-status').textContent = val ? '✓ Key saved' : '';
+    }
 
-        const body = document.getElementById('scan-bill-body');
-        body.innerHTML = `<div class="scan-loading"><div class="scan-spinner"></div><p>Analyzing your bill with Claude AI...</p><p style="font-size:0.78rem;color:var(--text-light);">Usually takes 5–15 seconds.</p></div>`;
+    async function submitScanToAI() {
+        const anthropicKey = localStorage.getItem('anthropicApiKey') || '';
+        const geminiKey = localStorage.getItem('geminiApiKey') || '';
+        const useGemini = geminiKey.startsWith('AIza') && !anthropicKey.startsWith('sk-ant-');
+
+        if (!geminiKey.startsWith('AIza') && !anthropicKey.startsWith('sk-ant-')) {
+            customAlert('Please add an Anthropic or Gemini API key in Settings first (⚙️ icon).');
+            return;
+        }
+        if (!scanSelectedFile) { customAlert('Please select an image first.'); return; }
+
+        const modalBody = document.getElementById('scan-bill-body');
+        const providerName = useGemini ? 'Gemini' : 'Claude';
+        modalBody.innerHTML = `<div class="scan-loading"><div class="scan-spinner"></div><p>Analyzing your bill with ${providerName} AI...</p><p style="font-size:0.78rem;color:var(--text-light);">Usually takes 5–15 seconds.</p></div>`;
 
         try {
             const base64Data = await new Promise((resolve, reject) => {
@@ -2502,41 +2514,56 @@ If no transactions are found, return an empty array: []`;
             });
 
             const mediaType = scanSelectedFile.type || 'image/jpeg';
-            const response = await fetch('https://api.anthropic.com/v1/messages', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'x-api-key': apiKey,
-                    'anthropic-version': '2023-06-01',
-                    'anthropic-dangerous-direct-browser-calls': 'true'
-                },
-                body: JSON.stringify({
-                    model: 'claude-haiku-4-5-20251001',
-                    max_tokens: 2048,
-                    messages: [{
-                        role: 'user',
-                        content: [
-                            { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64Data } },
-                            { type: 'text', text: buildClaudePrompt() }
-                        ]
-                    }]
-                })
-            });
+            const prompt = buildClaudePrompt();
+            let rawText;
 
-            if (!response.ok) {
-                const errData = await response.json().catch(() => ({}));
-                throw new Error(errData.error?.message || `API error ${response.status}`);
+            if (useGemini) {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [
+                            { inline_data: { mime_type: mediaType, data: base64Data } },
+                            { text: prompt }
+                        ]}]
+                    })
+                });
+                if (!response.ok) {
+                    const errData = await response.json().catch(() => ({}));
+                    throw new Error(errData.error?.message || `Gemini API error ${response.status}`);
+                }
+                const data = await response.json();
+                rawText = (data.candidates?.[0]?.content?.parts?.[0]?.text || '').trim();
+            } else {
+                const response = await fetch('https://api.anthropic.com/v1/messages', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-api-key': anthropicKey,
+                        'anthropic-version': '2023-06-01',
+                        'anthropic-dangerous-direct-browser-calls': 'true'
+                    },
+                    body: JSON.stringify({
+                        model: 'claude-haiku-4-5-20251001',
+                        max_tokens: 2048,
+                        messages: [{ role: 'user', content: [
+                            { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64Data } },
+                            { type: 'text', text: prompt }
+                        ]}]
+                    })
+                });
+                if (!response.ok) {
+                    const errData = await response.json().catch(() => ({}));
+                    throw new Error(errData.error?.message || `API error ${response.status}`);
+                }
+                const data = await response.json();
+                rawText = (data.content[0].text || '').trim();
             }
 
-            const data = await response.json();
-            const rawText = (data.content[0].text || '').trim();
             const jsonStr = rawText.replace(/^```json\n?/, '').replace(/^```\n?/, '').replace(/\n?```$/, '').trim();
             let transactions;
-            try {
-                transactions = JSON.parse(jsonStr);
-            } catch {
-                throw new Error('Claude returned an unexpected format. Please try again.');
-            }
+            try { transactions = JSON.parse(jsonStr); }
+            catch { throw new Error(`${providerName} returned an unexpected format. Please try again.`); }
             if (!Array.isArray(transactions)) throw new Error('Invalid response format.');
 
             closeScanBillModal();
