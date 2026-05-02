@@ -1096,7 +1096,7 @@
         </div>
         
         <div class="modal-body">
-            <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1rem;">Adjust the percentages that drive your automatic budget calculations.</p>
+            <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1rem;">Adjust percentages or yearly Roth limits. Yearly targets auto-pace monthly contributions to hit the annual limit.</p>
             <form id="edit-rules-form" onsubmit="handleSaveRules(event)">
                 <div id="rules-list" style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.5rem;"></div>
                 <button type="submit" class="btn-add">Save Existing Rules</button>
@@ -1114,12 +1114,27 @@
                         <div id="new-rule-source-container" class="input-text" style="height: auto; max-height: 160px; overflow-y: auto; padding: 0.75rem;"></div>
                     </div>
                     <div class="form-group">
-                        <label class="form-label" for="new-rule-pct">Percentage To Allocate (%)</label>
-                        <div style="display: flex; align-items: center; gap: 0.5rem;">
-                            <input type="number" inputmode="decimal" id="new-rule-pct" class="input-number" step="0.1" placeholder="e.g. 5">
-                            <button type="button" id="btn-submit-rule" onclick="handleSaveCustomRule()" class="btn-add" style="margin-top: 0; width: auto; padding: 0.75rem 1.5rem;">Add</button>
+                        <label class="form-label">Rule Type</label>
+                        <div style="display: flex; gap: 1rem;">
+                            <label style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer;">
+                                <input type="radio" name="rule-type" id="rule-type-pct" value="pct" checked onchange="toggleRuleTypeInputs()" style="accent-color: var(--primary);">
+                                <span>% of Income</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer;">
+                                <input type="radio" name="rule-type" id="rule-type-fixed" value="fixedTarget" onchange="toggleRuleTypeInputs()" style="accent-color: var(--primary);">
+                                <span>Yearly Max ($)</span>
+                            </label>
                         </div>
                     </div>
+                    <div class="form-group" id="rule-pct-group">
+                        <label class="form-label" for="new-rule-pct">Percentage To Allocate (%)</label>
+                        <input type="number" inputmode="decimal" id="new-rule-pct" class="input-number" step="0.1" placeholder="e.g. 5">
+                    </div>
+                    <div class="form-group" id="rule-fixed-group" style="display: none;">
+                        <label class="form-label" for="new-rule-yearly-target">Yearly Contribution Target ($)</label>
+                        <input type="number" inputmode="decimal" id="new-rule-yearly-target" class="input-number" step="1" placeholder="e.g. 7500">
+                    </div>
+                    <button type="button" id="btn-submit-rule" onclick="handleSaveCustomRule()" class="btn-add" style="margin-top: 0.5rem;">Add</button>
                 </div>
             </div>
         </div>
@@ -1493,11 +1508,10 @@
     }
 
     const defaultCalculationRules = [
-        { category: 'investments', name: 'Joint Brokerage', pct: 0.20, sources: 'ALL', desc: '20% of Total Income' },
         { category: 'necessary', name: 'Tithing Donations', pct: 0.10, sources: 'ALL', add: 10, desc: '10% of Total Income + $10 Fast Offerings' },
-        { category: 'investments', name: 'Joint Crypto', pct: 0.01, sources: 'ALL', desc: '1% of Total Income' },
-        { category: 'investments', name: 'Jamason Roth IRA', pct: 0.06, sources: ['TA', 'STAT', 'Property Management'], desc: '6% of TA, STAT & Prop Mgmt' },
-        { category: 'investments', name: 'Brooklynne Roth IRA', pct: 0.06, sources: ['Peak Ent'], desc: '6% of Peak ENT' }
+        { category: 'investments', name: 'Emergency Fund', type: 'fixedTarget', yearlyTarget: 2125, sources: 'ALL', desc: 'Fill to $8K emergency fund (~$2,125 gap)' },
+        { category: 'investments', name: 'Jamason Roth IRA', type: 'fixedTarget', yearlyTarget: 7500, sources: 'ALL', desc: 'Max Roth IRA ($7,500/year)' },
+        { category: 'investments', name: 'Brooklynne Roth IRA', type: 'fixedTarget', yearlyTarget: 7500, sources: 'ALL', desc: 'Max Roth IRA ($7,500/year)' }
     ];
 
     const defaultAccounts = [
@@ -1513,7 +1527,7 @@
         income: [{ name: "Peak Ent", budget: 2000.00, transactions: [] }, { name: "TA", budget: 45.00, transactions: [] }, { name: "STAT", budget: 800.00, transactions: [] }, { name: "Property Management", budget: 0.00, transactions: [] }, { name: "Taxes (Refund)", budget: 3211.00, transactions: [] }, { name: "Other Income", budget: 0.00, transactions: [] }],
         necessary: [{ name: "Mortgage / Rent", budget: 1150.00, transactions: [] }, { name: "Second Mortgage", budget: 0.00, transactions: [] }, { name: "Electricity", budget: 0.00, transactions: [] }, { name: "Gas / Oil", budget: 0.00, transactions: [] }, { name: "Water / Sewer", budget: 0.00, transactions: [] }, { name: "Trash / Internet / Cable", budget: 0.00, transactions: [] }, { name: "Cell / Land Line Phone", budget: 0.00, transactions: [] }, { name: "Auto Fuel", budget: 200.00, transactions: [] }, { name: "Auto Maintenance", budget: 25.00, transactions: [] }, { name: "Auto Insurance", budget: 0.00, transactions: [] }, { name: "Auto Registration / License", budget: 0.00, transactions: [] }, { name: "Groceries / Food", budget: 260.00, transactions: [] }, { name: "Home Supplies", budget: 25.00, transactions: [] }, { name: "Childcare / Dependents", budget: 0.00, transactions: [] }, { name: "Student Loans", budget: 0.00, transactions: [] }, { name: "Healthcare / Medical", budget: 126.42, transactions: [] }, { name: "Dental Care / Insurance", budget: 29.42, transactions: [] }, { name: "Vision Care / Insurance", budget: 9.90, transactions: [] }, { name: "Life Insurance", budget: 0.00, transactions: [] }, { name: "Medicine / Prescriptions", budget: 0.00, transactions: [] }, { name: "Veterinarian / Pets", budget: 0.00, transactions: [] }, { name: "Jamason School Things", budget: 0.00, transactions: [] }, { name: "Tithing Donations", budget: 0.00, transactions: [] }, { name: "Home / Rental Insurance", budget: 0.00, transactions: [] }, { name: "Property & School Taxes", budget: 0.00, transactions: [] }, { name: "Minimum Debt Payments", budget: 0.00, transactions: [] }],
         discretionary: [{ name: "Dining Out", budget: 100.00, transactions: [] }, { name: "Concerts / Plays / Sports", budget: 0.00, transactions: [] }, { name: "Outdoor Recreation", budget: 0.00, transactions: [] }, { name: "Other Entertainment", budget: 0.00, transactions: [] }, { name: "Gym Membership", budget: 26.84, transactions: [] }, { name: "Personal Care / Salon", budget: 0.00, transactions: [] }, { name: "Clothing", budget: 0.00, transactions: [] }, { name: "Furniture / Decor", budget: 0.00, transactions: [] }, { name: "Jamason Buying Things", budget: 50.00, transactions: [] }, { name: "Brooklynne Buying Things", budget: 50.00, transactions: [] }, { name: "Subscriptions (Apple/Spotify/etc)", budget: 12.66, transactions: [] }, { name: "Gifts / Donations", budget: 0.00, transactions: [] }, { name: "Travel / Vacation", budget: 0.00, transactions: [] }, { name: "Other Monthly Spending", budget: 0.00, transactions: [] }, { name: "Other Yearly Expense - VASA", budget: 8.95, yearlyAmount: 107.42, transactions: [] }, { name: "Other Yearly Expense - Sam's Club", budget: 4.48, yearlyAmount: 53.73, transactions: [] }, { name: "Other Yearly Expense - Bevel", budget: 4.17, yearlyAmount: 49.99, transactions: [] }, { name: "Other Yearly Expense - Generic", budget: 10.00, yearlyAmount: 120.00, transactions: [] }],
-        investments: [{ name: "Investment - Real Estate", budget: 0.00, transactions: [] }, { name: "Business Income Expenses", budget: 0.00, transactions: [] }, { name: "Joint Brokerage", budget: 0.00, transactions: [] }, { name: "Jamason Roth IRA", budget: 0.00, transactions: [] }, { name: "Brooklynne Roth IRA", budget: 0.00, transactions: [] }, { name: "Joint Crypto", budget: 0.00, transactions: [] }, { name: "Brooklynne HSA", budget: 30.00, transactions: [] }, { name: "401K Deposits", budget: 0.00, transactions: [] }, { name: "Extra Debt Payoff Payments", budget: 0.00, transactions: [] }]
+        investments: [{ name: "Emergency Fund", budget: 0.00, transactions: [] }, { name: "Investment - Real Estate", budget: 0.00, transactions: [] }, { name: "Business Income Expenses", budget: 0.00, transactions: [] }, { name: "Joint Brokerage", budget: 0.00, transactions: [] }, { name: "Jamason Roth IRA", budget: 0.00, transactions: [] }, { name: "Brooklynne Roth IRA", budget: 0.00, transactions: [] }, { name: "Joint Crypto", budget: 0.00, transactions: [] }, { name: "Brooklynne HSA", budget: 30.00, transactions: [] }, { name: "401K Deposits", budget: 0.00, transactions: [] }, { name: "Extra Debt Payoff Payments", budget: 0.00, transactions: [] }]
     };
 
     let budgetData = {};
@@ -1526,12 +1540,12 @@
     let activeModalCategory = null; let activeModalIndex = null;
     let activeRowSection = null; let activeEditSection = null; let activeEditIndex = null;
     let editingRuleIndex = null; let editingTxIndex = null; 
-    let collapsedSections = { income: false, necessary: false, discretionary: false, investments: false };
+    let collapsedSections = { income: true, necessary: true, discretionary: true, investments: true };
     let calculationRules = [];
     let localLastUpdated = 0;
 
     const STORAGE_KEY = 'budgetAppV16'; 
-    const RULES_KEY = 'budgetRulesV4';
+    const RULES_KEY = 'budgetRulesV5';
 
     function getPreviousMonthStr(monthStr) {
         const [mName, yStr] = monthStr.split(' ');
@@ -1829,21 +1843,42 @@
         
         if (rule) {
             isCalculated = true; calcDesc = rule.desc;
-            let sourceBudget = 0; let sourceActual = 0;
-            if (rule.sources === 'ALL') {
-                sourceBudget = monthData.income.reduce((sum, inc) => sum + (inc.budget || 0), 0);
-                sourceActual = monthData.income.reduce((sum, inc) => sum + sumTransactions(inc.transactions), 0);
-            } else {
-                rule.sources.forEach(srcName => {
-                    const incItem = monthData.income.find(i => i.name === srcName);
-                    if (incItem) {
-                        sourceBudget += (incItem.budget || 0);
-                        sourceActual += sumTransactions(incItem.transactions);
+            if (rule.type === 'fixedTarget') {
+                let ytdActual = 0;
+                if (currentTargetMonthStr) {
+                    const [mName, yStr] = currentTargetMonthStr.split(' ');
+                    const mIdx = monthNames.indexOf(mName);
+                    for (let i = 0; i < mIdx; i++) {
+                        const checkMonth = `${monthNames[i]} ${yStr}`;
+                        if (budgetData[checkMonth]) {
+                            const prevItem = budgetData[checkMonth][secId]?.find(x => x.name === item.name);
+                            if (prevItem) ytdActual += sumTransactions(prevItem.transactions);
+                        }
                     }
-                });
+                    const remainingMonths = Math.max(1, 12 - mIdx);
+                    const remaining = Math.max(0, rule.yearlyTarget - ytdActual);
+                    baseBudget = Math.ceil(remaining / remainingMonths);
+                } else {
+                    baseBudget = Math.ceil(rule.yearlyTarget / 12);
+                }
+                suggestedActual = baseBudget;
+            } else {
+                let sourceBudget = 0; let sourceActual = 0;
+                if (rule.sources === 'ALL') {
+                    sourceBudget = monthData.income.reduce((sum, inc) => sum + (inc.budget || 0), 0);
+                    sourceActual = monthData.income.reduce((sum, inc) => sum + sumTransactions(inc.transactions), 0);
+                } else {
+                    rule.sources.forEach(srcName => {
+                        const incItem = monthData.income.find(i => i.name === srcName);
+                        if (incItem) {
+                            sourceBudget += (incItem.budget || 0);
+                            sourceActual += sumTransactions(incItem.transactions);
+                        }
+                    });
+                }
+                baseBudget = Math.round(sourceBudget * rule.pct) + (rule.add || 0);
+                suggestedActual = Math.round(sourceActual * rule.pct) + (rule.add || 0);
             }
-            baseBudget = Math.round(sourceBudget * rule.pct) + (rule.add || 0);
-            suggestedActual = Math.round(sourceActual * rule.pct) + (rule.add || 0);
         } else if (item.isRollover && currentTargetMonthStr) {
             rolloverAmt = calculateRollover(secId, item.name, currentTargetMonthStr);
         }
@@ -3580,21 +3615,38 @@ If no transactions are found, return an empty array: []`;
         const list = document.getElementById('rules-list');
         let rulesHtml = '';
         calculationRules.forEach((rule, idx) => {
-            const currentPct = (rule.pct * 100).toFixed(1);
-            rulesHtml += `
-                <div style="background: var(--bg-alt); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border); position: relative;">
-                    <div style="position: absolute; right: 0.75rem; top: 0.75rem; display: flex; gap: 0.35rem;">
-                        <button type="button" onclick="editCalculationRule(${idx})" class="btn-row-action" title="Edit Rule" style="opacity: 1; pointer-events: auto; padding: 0.35rem; background: var(--bg-card); border: 1px solid var(--border); box-shadow: var(--shadow-sm);">${ICONS.edit}</button>
-                        <button type="button" onclick="deleteCalculationRule(${idx})" class="btn-row-action delete" title="Delete Rule" style="opacity: 1; pointer-events: auto; padding: 0.35rem; background: var(--bg-card); border: 1px solid var(--border); box-shadow: var(--shadow-sm);">${ICONS.trash}</button>
+            const actionBtns = `
+                <div style="position: absolute; right: 0.75rem; top: 0.75rem; display: flex; gap: 0.35rem;">
+                    <button type="button" onclick="editCalculationRule(${idx})" class="btn-row-action" title="Edit Rule" style="opacity: 1; pointer-events: auto; padding: 0.35rem; background: var(--bg-card); border: 1px solid var(--border); box-shadow: var(--shadow-sm);">${ICONS.edit}</button>
+                    <button type="button" onclick="deleteCalculationRule(${idx})" class="btn-row-action delete" title="Delete Rule" style="opacity: 1; pointer-events: auto; padding: 0.35rem; background: var(--bg-card); border: 1px solid var(--border); box-shadow: var(--shadow-sm);">${ICONS.trash}</button>
+                </div>`;
+            if (rule.type === 'fixedTarget') {
+                rulesHtml += `
+                    <div style="background: var(--bg-alt); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border); position: relative;">
+                        ${actionBtns}
+                        <div style="font-weight: 600; color: var(--text-strong); margin-bottom: 0.25rem; padding-right: 5rem;">${rule.name}</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.75rem;">Priority: Yearly Max — auto-paced monthly</div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <span style="font-weight: 500; color: var(--text-muted);">$</span>
+                            <input type="number" inputmode="decimal" id="rule-input-${idx}" class="input-number" style="text-align: left; width: 7rem; padding: 0.5rem;" step="1" value="${rule.yearlyTarget}" required>
+                            <span style="font-weight: 500; color: var(--text-muted);">/year</span>
+                        </div>
                     </div>
-                    <div style="font-weight: 600; color: var(--text-strong); margin-bottom: 0.25rem; padding-right: 5rem;">${rule.name}</div>
-                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.75rem;">Source: ${rule.sources === 'ALL' ? 'Total Income' : rule.sources.join(' + ')}</div>
-                    <div style="display: flex; align-items: center; gap: 0.5rem;">
-                        <input type="number" inputmode="decimal" id="rule-input-${idx}" class="input-number" style="text-align: left; width: 6rem; padding: 0.5rem;" step="0.1" value="${currentPct}" required>
-                        <span style="font-weight: 500; color: var(--text-muted);">%</span>
+                `;
+            } else {
+                const currentPct = (rule.pct * 100).toFixed(1);
+                rulesHtml += `
+                    <div style="background: var(--bg-alt); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border); position: relative;">
+                        ${actionBtns}
+                        <div style="font-weight: 600; color: var(--text-strong); margin-bottom: 0.25rem; padding-right: 5rem;">${rule.name}</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.75rem;">Source: ${rule.sources === 'ALL' ? 'Total Income' : rule.sources.join(' + ')}</div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <input type="number" inputmode="decimal" id="rule-input-${idx}" class="input-number" style="text-align: left; width: 6rem; padding: 0.5rem;" step="0.1" value="${currentPct}" required>
+                            <span style="font-weight: 500; color: var(--text-muted);">%</span>
+                        </div>
                     </div>
-                </div>
-            `;
+                `;
+            }
         });
         list.innerHTML = rulesHtml;
 
@@ -3629,6 +3681,16 @@ If no transactions are found, return an empty array: []`;
         });
     }
 
+    function toggleRuleTypeInputs() {
+        const isFixed = document.getElementById('rule-type-fixed')?.checked;
+        const pctGroup = document.getElementById('rule-pct-group');
+        const fixedGroup = document.getElementById('rule-fixed-group');
+        const sourceGroup = document.getElementById('new-rule-source-container')?.closest('.form-group');
+        if (pctGroup) pctGroup.style.display = isFixed ? 'none' : '';
+        if (fixedGroup) fixedGroup.style.display = isFixed ? '' : 'none';
+        if (sourceGroup) sourceGroup.style.display = isFixed ? 'none' : '';
+    }
+
     function closeRulesModal() { document.getElementById('rules-modal').classList.remove('active'); }
 
     function handleSaveRules(e) {
@@ -3637,7 +3699,15 @@ If no transactions are found, return an empty array: []`;
         haptic('medium');
         calculationRules.forEach((rule, idx) => {
             const inputVal = parseFloat(document.getElementById(`rule-input-${idx}`).value);
-            if (!isNaN(inputVal)) { rule.pct = inputVal / 100; rule.desc = `${inputVal}% of ${rule.sources === 'ALL' ? 'Total Income' : rule.sources.join(' + ')}`; }
+            if (!isNaN(inputVal)) {
+                if (rule.type === 'fixedTarget') {
+                    rule.yearlyTarget = inputVal;
+                    rule.desc = `Max $${inputVal.toLocaleString()}/year`;
+                } else {
+                    rule.pct = inputVal / 100;
+                    rule.desc = `${inputVal}% of ${rule.sources === 'ALL' ? 'Total Income' : rule.sources.join(' + ')}` + (rule.add ? ` + $${rule.add}` : '');
+                }
+            }
         });
         saveData(); closeRulesModal(); renderMonthly(); 
     }
@@ -3655,25 +3725,43 @@ If no transactions are found, return an empty array: []`;
         sourceAllCb.checked = isAll; toggleAllSources(sourceAllCb); 
         
         if (!isAll) { document.querySelectorAll('.rule-source-cb').forEach(cb => { cb.checked = rule.sources.includes(cb.value); }); }
-        document.getElementById('new-rule-pct').value = (rule.pct * 100).toFixed(1);
+        if (rule.type === 'fixedTarget') {
+            document.getElementById('rule-type-fixed').checked = true;
+            document.getElementById('new-rule-yearly-target').value = rule.yearlyTarget;
+        } else {
+            document.getElementById('rule-type-pct').checked = true;
+            document.getElementById('new-rule-pct').value = (rule.pct * 100).toFixed(1);
+        }
+        toggleRuleTypeInputs();
         document.getElementById('rule-form-title').scrollIntoView({ behavior: 'smooth' });
     }
 
     function handleSaveCustomRule() {
         const targetVal = document.getElementById('new-rule-target').value;
-        const pctVal = parseFloat(document.getElementById('new-rule-pct').value);
+        const ruleType = document.querySelector('input[name="rule-type"]:checked')?.value || 'pct';
         const isAll = document.getElementById('rule-source-all').checked;
         let sources = [];
         if (isAll) { sources = 'ALL'; } else { document.querySelectorAll('.rule-source-cb:checked').forEach(cb => sources.push(cb.value)); }
 
-        if(targetVal && !isNaN(pctVal) && (sources === 'ALL' || sources.length > 0)) {
-            pushUndoState();
-            haptic('medium');
-            const [category, name] = targetVal.split('|');
-            const newRule = { category: category, name: name, pct: pctVal / 100, sources: sources, desc: `${pctVal}% of ${sources === 'ALL' ? 'Total Income' : sources.join(' + ')}` };
-            if (editingRuleIndex !== null) calculationRules[editingRuleIndex] = newRule; else calculationRules.push(newRule);
-            saveData(); document.getElementById('new-rule-pct').value = ''; editingRuleIndex = null; openRulesModal(); renderMonthly();
-        } else { customAlert('Please select a target row, at least one income source, and enter a valid percentage.'); }
+        if (ruleType === 'fixedTarget') {
+            const yearlyTarget = parseFloat(document.getElementById('new-rule-yearly-target').value);
+            if (targetVal && !isNaN(yearlyTarget) && yearlyTarget > 0) {
+                pushUndoState(); haptic('medium');
+                const [category, name] = targetVal.split('|');
+                const newRule = { category, name, type: 'fixedTarget', yearlyTarget, sources: 'ALL', desc: `Max $${yearlyTarget.toLocaleString()}/year` };
+                if (editingRuleIndex !== null) calculationRules[editingRuleIndex] = newRule; else calculationRules.push(newRule);
+                saveData(); document.getElementById('new-rule-yearly-target').value = ''; editingRuleIndex = null; openRulesModal(); renderMonthly();
+            } else { customAlert('Please select a target row and enter a valid yearly target amount.'); }
+        } else {
+            const pctVal = parseFloat(document.getElementById('new-rule-pct').value);
+            if (targetVal && !isNaN(pctVal) && (sources === 'ALL' || sources.length > 0)) {
+                pushUndoState(); haptic('medium');
+                const [category, name] = targetVal.split('|');
+                const newRule = { category, name, pct: pctVal / 100, sources, desc: `${pctVal}% of ${sources === 'ALL' ? 'Total Income' : sources.join(' + ')}` };
+                if (editingRuleIndex !== null) calculationRules[editingRuleIndex] = newRule; else calculationRules.push(newRule);
+                saveData(); document.getElementById('new-rule-pct').value = ''; editingRuleIndex = null; openRulesModal(); renderMonthly();
+            } else { customAlert('Please select a target row, at least one income source, and enter a valid percentage.'); }
+        }
     }
 
     async function deleteCalculationRule(idx) {
