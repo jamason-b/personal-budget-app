@@ -1581,7 +1581,9 @@
             const d = new Date();
             const fallbackMonth = `${monthNames[d.getMonth()]} ${d.getFullYear()}`;
             budgetData = { [fallbackMonth]: JSON.parse(JSON.stringify(defaultDataTemplate)) };
-            localLastUpdated = Date.now();
+            // GUARD: empty storage just built a blank default. Keep the timestamp at 0
+            // so this blank can NEVER win conflict resolution and overwrite real cloud data.
+            localLastUpdated = 0;
             hasLegacyRules = true;
         }
 
@@ -3957,8 +3959,16 @@ If no transactions are found, return an empty array: []`;
                 getOrCreateMonthData(currentMonthStr, true);
                 renderApp();
             } else {
+                // Cloud master_save doesn't exist. Load whatever is local, but only
+                // seed the cloud if local actually holds data — NEVER write a blank
+                // default up (that is what wiped the database before).
                 loadLocalData();
-                saveData(); 
+                if (!isEffectivelyEmpty(budgetData)) {
+                    saveData();
+                } else {
+                    updateSyncDot('offline');
+                    console.warn('Cloud master_save missing and local is empty — not seeding cloud with a blank default.');
+                }
                 renderApp();
             }
         }, (err) => {
@@ -3967,7 +3977,33 @@ If no transactions are found, return an empty array: []`;
         });
     }
 
+    // GUARD: a "blank" state = no months, or months with zero transactions AND no
+    // non-zero balances (the default template). Used to refuse overwriting real data
+    // with an empty/default state. forceCloudSave() bypasses saveData(), so a deliberate
+    // manual "Push to Cloud" still works even from a cleared state.
+    function isEffectivelyEmpty(bd) {
+        if (!bd || Object.keys(bd).length === 0) return true;
+        for (const m of Object.values(bd)) {
+            for (const sec of ['income', 'necessary', 'discretionary', 'investments']) {
+                for (const it of (m[sec] || [])) {
+                    if (it.transactions && it.transactions.length > 0) return false;
+                }
+            }
+            for (const a of (m.accounts || [])) {
+                if ((parseFloat(a.balance) || 0) !== 0) return false;
+            }
+        }
+        return true;
+    }
+
     window.saveData = async function(skipCloud = false, isBackgroundSync = false) {
+        // GUARD: never persist a blank/default state — it would clobber real data
+        // in localStorage and (via the cloud push below) in Firestore.
+        if (isEffectivelyEmpty(budgetData)) {
+            console.warn('saveData skipped: budgetData is empty/default — refusing to overwrite.');
+            return;
+        }
+
         const timestamp = Date.now();
         localLastUpdated = timestamp;
 
