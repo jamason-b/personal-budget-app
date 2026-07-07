@@ -879,6 +879,11 @@
                 <button onclick="document.getElementById('import-file-settings').click()" class="btn-add" style="margin: 0; background: var(--bg-alt); color: var(--text-strong); border: 1px solid var(--border);">📤 Restore from Backup</button>
                 <input type="file" id="import-file-settings" style="display: none;" accept=".json" onchange="importData(event)">
                 
+                <div style="height: 1px; background: var(--border); margin: 0.25rem 0;"></div>
+                <label class="form-label" style="font-size:0.75rem;color:var(--text-muted);letter-spacing:0.05em;">☁️ RESTORE FROM CLOUD BACKUP (auto-saved daily)</label>
+                <select id="cloud-backup-select" class="input-text" style="font-size:0.82rem;"><option value="">Loading…</option></select>
+                <button onclick="restoreSelectedCloudBackup()" class="btn-add" style="margin: 0; background: var(--bg-alt); color: var(--text-strong); border: 1px solid var(--border);">☁️ Restore Selected Day</button>
+
                 <button onclick="resetData()" class="btn-add" style="margin-top: 1rem; background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger);">🚨 Reset All Data</button>
             </div>
         </div>
@@ -1170,6 +1175,7 @@
     window.closeSettingsModal = closeSettingsModal; window.forceCloudSave = forceCloudSave; window.forceSyncOrder = forceSyncOrder;
     window.toggleAddSub = toggleAddSub; window.toggleEditSub = toggleEditSub; window.exportToCSV = exportToCSV;
     window.closeCustomAlert = closeCustomAlert;
+    window.restoreSelectedCloudBackup = restoreSelectedCloudBackup;
     window.openAccountsModal = openAccountsModal; window.closeAccountsModal = closeAccountsModal; window.handleUpdateAccounts = handleUpdateAccounts; window.addAccountRow = addAccountRow;
     window.openTabsReorderModal = openTabsReorderModal; window.closeTabsReorderModal = closeTabsReorderModal; window.moveNavigationTab = moveNavigationTab;
     window.openSearchModal = openSearchModal; window.closeSearchModal = closeSearchModal; window.performGlobalSearch = performGlobalSearch; window.jumpToMonth = jumpToMonth;
@@ -1624,6 +1630,7 @@
 
     function openSettingsModal() {
         document.getElementById('settings-modal').classList.add('active');
+        populateCloudBackups();
         const savedAnthropic = localStorage.getItem('anthropicApiKey') || '';
         document.getElementById('anthropic-api-key-input').value = savedAnthropic;
         document.getElementById('anthropic-key-status').textContent = savedAnthropic ? '✓ Key saved' : '';
@@ -4024,12 +4031,96 @@ If no transactions are found, return an empty array: []`;
                 
                 await Promise.race([saveTask, timeoutTask]);
                 if (!isBackgroundSync) updateSyncDot('synced');
+                writeDailyBackup(payload); // keep a dated snapshot so a bad write is recoverable
             } catch(e) {
                 console.error("Cloud Save Failed", e);
                 if (!isBackgroundSync) updateSyncDot('offline');
             }
         }
     };
+
+    // ---- Automatic versioned cloud backups ----
+    // On each real cloud save, keep a dated snapshot at budget_data/backup_YYYY-MM-DD,
+    // so a bad write to master_save is never unrecoverable. Guarded upstream by
+    // saveData's isEffectivelyEmpty check, so a blank state is never backed up.
+    const BACKUP_KEEP_DAYS = 14;
+    let _prunedBackupsThisSession = false;
+
+    async function writeDailyBackup(payload) {
+        if (!db || !_fsModule) return;
+        try {
+            const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+            await _fsModule.setDoc(_fsModule.doc(db, 'budget_data', `backup_${today}`),
+                                   { ...payload, backedUpAt: Date.now() });
+            if (!_prunedBackupsThisSession) {
+                _prunedBackupsThisSession = true;
+                pruneOldBackups(); // fire and forget
+            }
+        } catch (e) {
+            console.warn('Daily cloud backup failed (main save unaffected):', e.message);
+        }
+    }
+
+    async function pruneOldBackups() {
+        try {
+            const cutoff = new Date(Date.now() - BACKUP_KEEP_DAYS * 86400000).toISOString().slice(0, 10);
+            const snap = await _fsModule.getDocs(_fsModule.collection(db, 'budget_data'));
+            const jobs = [];
+            snap.forEach(d => {
+                // 'backup_' is 7 chars; only ever touches backup docs, never master_save
+                if (d.id.startsWith('backup_') && d.id.slice(7) < cutoff) {
+                    jobs.push(_fsModule.deleteDoc(_fsModule.doc(db, 'budget_data', d.id)));
+                }
+            });
+            await Promise.all(jobs);
+        } catch (e) { console.warn('Backup prune skipped:', e.message); }
+    }
+
+    async function populateCloudBackups() {
+        const sel = document.getElementById('cloud-backup-select');
+        if (!sel) return;
+        sel.innerHTML = '<option value="">Loading…</option>';
+        if (!db || !_fsModule) { sel.innerHTML = '<option value="">Cloud offline</option>'; return; }
+        try {
+            const snap = await _fsModule.getDocs(_fsModule.collection(db, 'budget_data'));
+            const ids = [];
+            snap.forEach(d => { if (d.id.startsWith('backup_')) ids.push(d.id); });
+            ids.sort().reverse(); // newest date first
+            sel.innerHTML = ids.length
+                ? ids.map(id => `<option value="${id}">${id.slice(7)}</option>`).join('')
+                : '<option value="">No cloud backups yet</option>';
+        } catch (e) {
+            sel.innerHTML = '<option value="">Could not load backups</option>';
+            console.warn('Load cloud backups failed:', e.message);
+        }
+    }
+
+    async function restoreSelectedCloudBackup() {
+        const sel = document.getElementById('cloud-backup-select');
+        const id = sel && sel.value;
+        if (!id) { customAlert('Pick a backup date first.'); return; }
+        if (!db || !_fsModule) { customAlert('Cloud is offline — cannot restore.'); return; }
+        const day = id.slice(7);
+        if (!(await customConfirm(`Restore your budget to the ${day} cloud backup? This replaces what's on screen and pushes to the cloud. Undo can revert it.`, 'Restore ' + day, true))) return;
+        try {
+            const dsnap = await _fsModule.getDoc(_fsModule.doc(db, 'budget_data', id));
+            if (!dsnap.exists()) { customAlert('That backup no longer exists.'); return; }
+            const data = dsnap.data();
+            if (!data.budgetData || !data.calculationRules) { customAlert('That backup is not a valid snapshot.'); return; }
+            pushUndoState();
+            budgetData = data.budgetData;
+            calculationRules = data.calculationRules;
+            Object.keys(budgetData).forEach(m => {
+                if (!budgetData[m].accounts) budgetData[m].accounts = JSON.parse(JSON.stringify(defaultAccounts));
+            });
+            saveData();
+            renderApp();
+            closeSettingsModal();
+            customAlert(`Restored the ${day} backup and pushed it to the cloud.`);
+        } catch (e) {
+            customAlert('Restore failed: ' + e.message);
+        }
+    }
 
     // Auto-save on tab close or backgrounding
     document.addEventListener('visibilitychange', () => {
