@@ -922,6 +922,9 @@
                 <select id="cloud-backup-select" class="input-text" style="font-size:0.82rem;"><option value="">Loading…</option></select>
                 <button onclick="restoreSelectedCloudBackup()" class="btn-add" style="margin: 0; background: var(--bg-alt); color: var(--text-strong); border: 1px solid var(--border);">☁️ Restore Selected Day</button>
 
+                <div style="height: 1px; background: var(--border); margin: 0.25rem 0;"></div>
+                <button onclick="signOutUser()" class="btn-add" style="margin: 0; background: var(--bg-card); color: var(--text-strong); border: 1px solid var(--border);">🚪 Sign Out</button>
+
                 <button onclick="resetData()" class="btn-add" style="margin-top: 1rem; background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger);">🚨 Reset All Data</button>
             </div>
         </div>
@@ -1214,6 +1217,7 @@
     window.toggleAddSub = toggleAddSub; window.toggleEditSub = toggleEditSub; window.exportToCSV = exportToCSV;
     window.closeCustomAlert = closeCustomAlert;
     window.restoreSelectedCloudBackup = restoreSelectedCloudBackup;
+    window.signOutUser = signOutUser;
     window.openAccountsModal = openAccountsModal; window.closeAccountsModal = closeAccountsModal; window.handleUpdateAccounts = handleUpdateAccounts; window.addAccountRow = addAccountRow;
     window.openTabsReorderModal = openTabsReorderModal; window.closeTabsReorderModal = closeTabsReorderModal; window.moveNavigationTab = moveNavigationTab;
     window.openSearchModal = openSearchModal; window.closeSearchModal = closeSearchModal; window.performGlobalSearch = performGlobalSearch; window.jumpToMonth = jumpToMonth;
@@ -1756,6 +1760,12 @@
         document.getElementById('gemini-key-status').textContent = savedGemini ? '✓ Key saved' : '';
     }
     function closeSettingsModal() { document.getElementById('settings-modal').classList.remove('active'); }
+
+    async function signOutUser() {
+        if (!(await customConfirm("You'll need your email + password to sign back in — make sure that account is set up first. Sign out now?", "Sign Out", true))) return;
+        try { if (_authModule && auth) await _authModule.signOut(auth); } catch (e) { console.warn('sign out error', e); }
+        location.reload();
+    }
 
     async function forceCloudSave() {
         if(await customConfirm("This will completely overwrite the cloud database with exactly what you see on this screen. Proceed?", "Push to Cloud", true)) {
