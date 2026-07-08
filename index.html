@@ -322,6 +322,19 @@
         .acct-bal-wrap { display: flex; flex-direction: column; align-items: flex-end; min-width: 90px; }
         .acct-delta { font-size: 0.75rem; font-weight: 600; margin-top: 0.15rem; }
         .acct-delta.up { color: var(--success); } .acct-delta.down { color: var(--danger); } .acct-delta.flat { color: var(--text-muted); }
+        .analytics-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+        @media (max-width: 640px) { .analytics-kpis { grid-template-columns: repeat(2, 1fr); } }
+        .kpi-tile { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 1rem 1.1rem; box-shadow: var(--shadow-sm); }
+        .kpi-label { font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); font-weight: 600; }
+        .kpi-value { font-size: 1.5rem; font-weight: 800; font-variant-numeric: tabular-nums; margin-top: 0.25rem; letter-spacing: -0.01em; color: var(--text-strong); }
+        .kpi-sub { font-size: 0.72rem; font-weight: 600; margin-top: 0.15rem; color: var(--text-muted); }
+        .kpi-sub.up { color: var(--success); } .kpi-sub.down { color: var(--danger); }
+        .bva-list { display: flex; flex-direction: column; gap: 1.1rem; padding-top: 0.5rem; }
+        .bva-top { display: flex; justify-content: space-between; align-items: baseline; font-size: 0.85rem; margin-bottom: 0.4rem; gap: 0.5rem; }
+        .bva-amt { color: var(--text-muted); font-variant-numeric: tabular-nums; text-align: right; }
+        .bva-track { height: 12px; border-radius: 7px; background: var(--bg-alt); overflow: hidden; }
+        .bva-track span { display: block; height: 100%; border-radius: 7px; }
+        .bva-empty { color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 1rem; }
         
         .update-banner { background: var(--primary-bg); border: 1px solid var(--primary-border); border-radius: var(--radius-lg); padding: 1rem 1.25rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; }
         .update-banner p { color: var(--primary-text); font-weight: 500; font-size: 0.9rem; margin: 0; }
@@ -623,6 +636,7 @@
             <select id="analytics-month" class="month-selector" style="width: auto; margin-right: 0.5rem;" onchange="renderAnalytics()"></select>
             <select id="analytics-year" class="month-selector" style="width: auto;" onchange="renderAnalytics()"></select>
         </div>
+        <div class="analytics-kpis" id="analytics-kpis"></div>
         <div class="analytics-grid">
             <div class="chart-container full-width">
                 <div class="chart-header">
@@ -648,6 +662,13 @@
                     <canvas id="barChart"></canvas>
                 </div>
             </div>
+        </div>
+
+        <div class="chart-container" style="margin-top: 1.5rem;">
+            <div class="chart-header">
+                <h3 class="chart-title">Budget vs Actual</h3>
+            </div>
+            <div id="bva-list" class="bva-list"></div>
         </div>
     </div>
 </div>
@@ -3323,6 +3344,58 @@ If no transactions are found, return an empty array: []`;
         container.innerHTML = html;
     }
 
+    function renderAnalyticsKpis(monthStr) {
+        const el = document.getElementById('analytics-kpis');
+        if (!el) return;
+        const md = budgetData[monthStr];
+        if (!md) { el.innerHTML = ''; return; }
+        const t = getMonthTotals(md, monthStr);
+        const income = t.income;
+        const expenses = t.necessary + t.discretionary;
+        const saved = income - expenses;
+        const rate = income > 0 ? (saved / income * 100) : 0;
+        const goalMet = rate >= 30;
+        const savedColor = saved >= 0 ? 'var(--primary)' : 'var(--danger)';
+        el.innerHTML = `
+            <div class="kpi-tile"><div class="kpi-label">Income</div><div class="kpi-value" style="color:var(--success)">${formatCurrency(income)}</div></div>
+            <div class="kpi-tile"><div class="kpi-label">Expenses</div><div class="kpi-value" style="color:var(--warning)">${formatCurrency(expenses)}</div></div>
+            <div class="kpi-tile"><div class="kpi-label">Saved</div><div class="kpi-value" style="color:${savedColor}">${formatCurrency(saved)}</div></div>
+            <div class="kpi-tile"><div class="kpi-label">Savings rate</div><div class="kpi-value">${income > 0 ? rate.toFixed(0) + '%' : '—'}</div><div class="kpi-sub ${goalMet ? 'up' : 'down'}">goal 30% ${goalMet ? '✓' : '· under'}</div></div>
+        `;
+    }
+
+    function renderBudgetVsActual(monthStr) {
+        const el = document.getElementById('bva-list');
+        if (!el) return;
+        const md = budgetData[monthStr];
+        if (!md) { el.innerHTML = '<div class="bva-empty">No data for this month yet.</div>'; return; }
+        const rows = [];
+        ['necessary', 'discretionary'].forEach(secId => {
+            (md[secId] || []).forEach(item => {
+                const v = getItemValues(secId, item, md, monthStr);
+                if (v.budget > 0 || v.actual > 0) rows.push({ name: item.name, budget: v.budget, actual: v.actual });
+            });
+        });
+        rows.sort((a, b) => (b.actual - b.budget) - (a.actual - a.budget));
+        const top = rows.slice(0, 6);
+        if (!top.length) { el.innerHTML = '<div class="bva-empty">Set category budgets to track this.</div>'; return; }
+        el.innerHTML = top.map(r => {
+            const pct = r.budget > 0 ? (r.actual / r.budget * 100) : 100;
+            const over = r.actual > r.budget + 0.005;
+            const width = Math.max(2, Math.min(100, pct));
+            const color = over ? 'var(--danger)' : 'var(--success)';
+            const diff = r.actual - r.budget;
+            const note = r.budget <= 0
+                ? '<span style="color:var(--text-muted)">no budget</span>'
+                : (over ? `<b style="color:var(--danger)">over ${formatCurrency(diff)}</b>`
+                        : `<b style="color:var(--success)">${formatCurrency(-diff)} left</b>`);
+            return `<div class="bva-row">
+                <div class="bva-top"><span>${r.name}</span><span class="bva-amt">${formatCurrency(r.actual)} / ${formatCurrency(r.budget)} &nbsp; ${note}</span></div>
+                <div class="bva-track"><span style="width:${width}%;background:${color}"></span></div>
+            </div>`;
+        }).join('');
+    }
+
     function renderAnalytics() {
         const monthDropdown = document.getElementById('analytics-month');
         const yearDropdown = document.getElementById('analytics-year');
@@ -3338,6 +3411,9 @@ If no transactions are found, return an empty array: []`;
 
         const selMonthStr = (monthDropdown && yearDropdown) ? `${monthDropdown.value} ${yearDropdown.value}` : currentMonthStr;
         const selYearStr = yearDropdown ? yearDropdown.value : currentMonthStr.split(' ')[1];
+
+        renderAnalyticsKpis(selMonthStr);
+        renderBudgetVsActual(selMonthStr);
 
         const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
         const textColor = isDark ? '#f1f5f9' : '#0f172a';
