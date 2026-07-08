@@ -153,7 +153,11 @@
         .summary-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin-bottom: 1.5rem; }
         @media (min-width: 768px) { .summary-grid { grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem; } }
         
-        .summary-card { background: var(--bg-card); padding: 0.85rem; border-radius: var(--radius-xl); border: 1px solid var(--border); box-shadow: var(--shadow-sm); display: flex; flex-direction: column; justify-content: space-between; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        .summary-card { background: var(--bg-card); padding: 0.85rem; border-radius: var(--radius-xl); border: 1px solid var(--border); box-shadow: var(--shadow-sm); display: flex; flex-direction: column; justify-content: flex-start; gap: 0.4rem; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        .card-bar { height: 5px; border-radius: 4px; background: var(--bg-alt); overflow: hidden; margin-top: 0.15rem; }
+        .card-bar span { display: block; height: 100%; width: 0; border-radius: 4px; background: var(--primary); transition: width 0.5s ease; }
+        .card-budget { font-size: 0.68rem; color: var(--text-muted); font-variant-numeric: tabular-nums; line-height: 1.2; min-height: 0.82rem; }
+        .summary-card.highlight .card-bar { background: var(--primary-badge-bg); }
         @media (min-width: 768px) { .summary-card { padding: 1.25rem; border-radius: var(--radius-xl); } }
         
         .summary-card.highlight { background: var(--primary-bg); border-color: var(--primary-border); }
@@ -577,6 +581,8 @@
                     <div class="summary-label">Total Income</div>
                 </div>
                 <div class="summary-value" id="card-income">$0.00</div>
+                <div class="card-bar"><span id="bar-income"></span></div>
+                <div class="card-budget" id="budget-income">&nbsp;</div>
             </div>
             <div class="summary-card">
                 <div class="summary-label-wrapper">
@@ -584,6 +590,8 @@
                     <div class="pct-badge" id="pct-necessary">0.0%</div>
                 </div>
                 <div class="summary-value" id="card-necessary">$0.00</div>
+                <div class="card-bar"><span id="bar-necessary"></span></div>
+                <div class="card-budget" id="budget-necessary">&nbsp;</div>
             </div>
             <div class="summary-card">
                 <div class="summary-label-wrapper">
@@ -591,6 +599,8 @@
                     <div class="pct-badge" id="pct-discretionary">0.0%</div>
                 </div>
                 <div class="summary-value" id="card-discretionary">$0.00</div>
+                <div class="card-bar"><span id="bar-discretionary"></span></div>
+                <div class="card-budget" id="budget-discretionary">&nbsp;</div>
             </div>
             <div class="summary-card highlight">
                 <div class="summary-label-wrapper">
@@ -598,6 +608,8 @@
                     <div class="pct-badge" id="pct-remaining">0.0%</div>
                 </div>
                 <div class="summary-value" id="card-remaining">$0.00</div>
+                <div class="card-bar"><span id="bar-remaining"></span></div>
+                <div class="card-budget" id="budget-remaining">&nbsp;</div>
             </div>
         </div>
         
@@ -2951,6 +2963,7 @@ If no transactions are found, return an empty array: []`;
 
         const sections = [{ id: 'income', title: 'Income', data: data.income }, { id: 'necessary', title: 'Necessary Expenses', data: data.necessary }, { id: 'discretionary', title: 'Discretionary Expenses', data: data.discretionary }, { id: 'investments', title: 'Investments / Savings', data: data.investments }];
         let grandTotals = { income: 0, necessary: 0, discretionary: 0, investments: 0 };
+        let grandBudgets = { income: 0, necessary: 0, discretionary: 0, investments: 0 };
         let animationsToRun = [];
 
         sections.forEach(sec => {
@@ -3151,6 +3164,7 @@ If no transactions are found, return an empty array: []`;
             // Add section totals to the animation queue
             animationsToRun.push({ id: `sec-budget-${sec.id}`, val: sectionTotalBudget, isPct: false });
             animationsToRun.push({ id: `sec-actual-${sec.id}`, val: sectionTotalActual, isPct: false });
+            grandBudgets[sec.id] = sectionTotalBudget;
         });
 
         const remaining = grandTotals.income - (grandTotals.necessary + grandTotals.discretionary + grandTotals.investments);
@@ -3165,6 +3179,43 @@ If no transactions are found, return an empty array: []`;
         animationsToRun.push({ id: 'pct-necessary', val: ((grandTotals.necessary / totalInc) * 100), isPct: true });
         animationsToRun.push({ id: 'pct-discretionary', val: (((grandTotals.discretionary + grandTotals.investments) / totalInc) * 100), isPct: true });
         animationsToRun.push({ id: 'pct-remaining', val: ((remaining / totalInc) * 100), isPct: true });
+
+        // Aggregate budget bars on the four summary cards
+        const setCardBar = (barId, capId, actual, budget, mode) => {
+            const bar = document.getElementById(barId), cap = document.getElementById(capId);
+            if (!bar || !cap) return;
+            if (mode === 'save') {
+                const rate = totalInc > 0 ? (actual / totalInc) * 100 : 0;
+                bar.style.width = Math.max(0, Math.min(rate, 100)) + '%';
+                bar.style.background = actual >= 0 ? 'var(--success)' : 'var(--danger)';
+                cap.innerHTML = (grandTotals.income > 0) ? `${rate.toFixed(0)}% of income saved` : '&nbsp;';
+                return;
+            }
+            if (budget <= 0) {
+                bar.style.width = actual > 0 ? '100%' : '0%';
+                bar.style.background = 'var(--text-muted)';
+                cap.innerHTML = actual > 0 ? 'no budget set' : '&nbsp;';
+                return;
+            }
+            bar.style.width = Math.min((actual / budget) * 100, 100) + '%';
+            if (mode === 'income') {
+                bar.style.background = actual >= budget ? 'var(--success)' : 'var(--primary)';
+                cap.innerHTML = `${formatCurrency(actual)} of ${formatCurrency(budget)} expected`;
+            } else if (mode === 'neutral') {
+                bar.style.background = 'var(--primary)';
+                cap.innerHTML = `${formatCurrency(actual)} of ${formatCurrency(budget)} planned`;
+            } else { // expense
+                const over = actual > budget + 0.005;
+                bar.style.background = over ? 'var(--danger)' : (actual >= budget - 0.005 ? 'var(--success)' : 'var(--primary)');
+                cap.innerHTML = over
+                    ? `<span style="color:var(--danger)">${formatCurrency(actual - budget)} over</span> budget`
+                    : `${formatCurrency(budget - actual)} left of ${formatCurrency(budget)}`;
+            }
+        };
+        setCardBar('bar-income', 'budget-income', grandTotals.income, grandBudgets.income, 'income');
+        setCardBar('bar-necessary', 'budget-necessary', grandTotals.necessary, grandBudgets.necessary, 'expense');
+        setCardBar('bar-discretionary', 'budget-discretionary', grandTotals.discretionary + grandTotals.investments, grandBudgets.discretionary + grandBudgets.investments, 'neutral');
+        setCardBar('bar-remaining', 'budget-remaining', remaining, totalInc, 'save');
 
         const pctFormatter = (v) => `${v.toFixed(1)}%`;
         
