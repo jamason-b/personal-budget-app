@@ -335,6 +335,15 @@
         .bva-track { height: 12px; border-radius: 7px; background: var(--bg-alt); overflow: hidden; }
         .bva-track span { display: block; height: 100%; border-radius: 7px; }
         .bva-empty { color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 1rem; }
+        .yearly-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 1.25rem; }
+        .ys-strip { display: flex; gap: 6px; align-items: stretch; }
+        .ys-col { flex: 1; display: flex; flex-direction: column; align-items: center; min-width: 0; }
+        .ys-plot { position: relative; width: 100%; height: 72px; }
+        .ys-zero { position: absolute; left: 0; right: 0; top: 50%; border-top: 1px dashed var(--border); }
+        .ys-bar { position: absolute; left: 22%; right: 22%; border-radius: 3px; min-height: 2px; }
+        .ys-bar.pos { bottom: 50%; background: var(--success); }
+        .ys-bar.neg { top: 50%; background: var(--danger); }
+        .ys-lbl { font-size: 0.65rem; color: var(--text-muted); margin-top: 5px; }
         
         .update-banner { background: var(--primary-bg); border: 1px solid var(--primary-border); border-radius: var(--radius-lg); padding: 1rem 1.25rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; }
         .update-banner p { color: var(--primary-text); font-weight: 500; font-size: 0.9rem; margin: 0; }
@@ -3186,6 +3195,55 @@ If no transactions are found, return an empty array: []`;
         }
     }
 
+    function buildYearlyOverview(year, yearMonths, rowData) {
+        const inc = rowData.income.total;
+        const spent = rowData.necessary.total + rowData.discretionaryExp.total;
+        const saved = inc - spent;
+        const rate = inc > 0 ? (saved / inc * 100) : 0;
+        // per-month "saved" = income - living expenses (necessary + discretionary); investing counts as saving, not spending
+        const surplus = yearMonths.map((m, i) => budgetData[m]
+            ? (rowData.income.vals[i] - rowData.necessary.vals[i] - rowData.discretionaryExp.vals[i]) : null);
+        const withData = surplus.filter(v => v !== null).length;
+        const ahead = surplus.filter(v => v !== null && v >= 0).length;
+        const nwOf = m => (budgetData[m] && budgetData[m].accounts)
+            ? budgetData[m].accounts.reduce((s, a) => s + (parseFloat(a.balance) || 0), 0) : null;
+        let startNW = null, endNW = null;
+        yearMonths.forEach(m => { const v = nwOf(m); if (v !== null && v !== 0) { if (startNW === null) startNW = v; endNW = v; } });
+        const nwChange = (startNW !== null && endNW !== null) ? endNW - startNW : null;
+
+        const savedColor = saved >= 0 ? 'var(--primary)' : 'var(--danger)';
+        let kpis = `
+            <div class="kpi-tile"><div class="kpi-label">Income YTD</div><div class="kpi-value" style="color:var(--success)">${formatCurrency(inc)}</div></div>
+            <div class="kpi-tile"><div class="kpi-label">Spent YTD</div><div class="kpi-value" style="color:var(--warning)">${formatCurrency(spent)}</div></div>
+            <div class="kpi-tile"><div class="kpi-label">Saved YTD</div><div class="kpi-value" style="color:${savedColor}">${formatCurrency(saved)}</div></div>
+            <div class="kpi-tile"><div class="kpi-label">Avg savings rate</div><div class="kpi-value">${inc > 0 ? rate.toFixed(0) + '%' : '—'}</div><div class="kpi-sub">${ahead}/${withData} months ahead</div></div>`;
+        if (nwChange !== null) {
+            const sign = nwChange >= 0 ? '+' : '';
+            kpis += `<div class="kpi-tile"><div class="kpi-label">Net worth ${year}</div><div class="kpi-value">${formatCurrency(endNW)}</div><div class="kpi-sub ${nwChange >= 0 ? 'up' : 'down'}">${sign}${formatCurrency(nwChange)} this year</div></div>`;
+        }
+
+        const maxAbs = Math.max(1, ...surplus.map(v => v === null ? 0 : Math.abs(v)));
+        let bars = '';
+        surplus.forEach((v, i) => {
+            let inner = '';
+            if (v !== null) {
+                const h = Math.round(Math.abs(v) / maxAbs * 34);
+                inner = `<div class="ys-bar ${v >= 0 ? 'pos' : 'neg'}" style="height:${h}px" title="${monthNames[i]}: ${formatCurrency(v)}"></div>`;
+            }
+            bars += `<div class="ys-col"><div class="ys-plot"><div class="ys-zero"></div>${inner}</div><div class="ys-lbl">${monthNames[i]}</div></div>`;
+        });
+
+        return `
+            <div class="yearly-kpis">${kpis}</div>
+            <div class="section-card" style="margin-bottom:1.25rem; padding:1.1rem 1.25rem;">
+                <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:0.85rem;gap:0.5rem;">
+                    <h3 style="margin:0;font-size:1rem;">Saved each month</h3>
+                    <span style="font-size:0.72rem;color:var(--text-muted);text-align:right;">income − living costs · green = ahead, red = behind</span>
+                </div>
+                <div class="ys-strip">${bars}</div>
+            </div>`;
+    }
+
     function renderYearly() {
         const yearSelect = document.getElementById('year-selector');
         const year = yearSelect && yearSelect.value ? yearSelect.value : currentMonthStr.split(' ')[1];
@@ -3267,7 +3325,7 @@ If no transactions are found, return an empty array: []`;
             });
             desktopHtml += `</tbody></table></div></div>`;
             
-            html = mobileHtml + desktopHtml;
+            html = buildYearlyOverview(year, yearMonths, rowData) + mobileHtml + desktopHtml;
 
         } else {
             // Detailed View - Uses traditional table for both desktop & mobile but optimized
