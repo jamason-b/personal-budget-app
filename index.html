@@ -308,6 +308,20 @@
         .acct-info { display: flex; flex-direction: column; gap: 0.25rem; flex: 1; }
         .acct-name { font-weight: 600; color: var(--text-strong); font-size: 1.05rem; }
         .acct-bal { font-size: 1.25rem; font-weight: 700; color: var(--text-strong); font-variant-numeric: tabular-nums; text-align: right; min-width: 80px; }
+        .nw-delta { font-size: 0.9rem; font-weight: 700; margin-top: 0.35rem; }
+        .nw-delta.up { color: var(--success); } .nw-delta.down { color: var(--danger); }
+        .alloc-strip { margin-bottom: 1.5rem; }
+        .alloc-strip:empty { display: none; }
+        .alloc-label { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 0.5rem; }
+        .alloc-bar { height: 12px; border-radius: 7px; overflow: hidden; display: flex; background: var(--bg-alt); }
+        .alloc-bar span { height: 100%; }
+        .alloc-legend { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; font-size: 0.78rem; margin-top: 0.6rem; }
+        .alloc-k { display: flex; align-items: center; gap: 0.35rem; color: var(--text-muted); }
+        .alloc-dot { width: 9px; height: 9px; border-radius: 3px; flex-shrink: 0; }
+        .acct-share { font-size: 0.75rem; color: var(--text-muted); }
+        .acct-bal-wrap { display: flex; flex-direction: column; align-items: flex-end; min-width: 90px; }
+        .acct-delta { font-size: 0.75rem; font-weight: 600; margin-top: 0.15rem; }
+        .acct-delta.up { color: var(--success); } .acct-delta.down { color: var(--danger); } .acct-delta.flat { color: var(--text-muted); }
         
         .update-banner { background: var(--primary-bg); border: 1px solid var(--primary-border); border-radius: var(--radius-lg); padding: 1rem 1.25rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; }
         .update-banner p { color: var(--primary-text); font-weight: 500; font-size: 0.9rem; margin: 0; }
@@ -578,12 +592,15 @@
             <div>
                 <div class="nw-label">Total Net Worth</div>
                 <div class="nw-value" id="total-net-worth">$0.00</div>
+                <div class="nw-delta" id="nw-delta"></div>
             </div>
             <button onclick="openAccountsModal()" class="theme-btn" style="background: var(--primary-bg); color: var(--primary); border-color: var(--primary-border);">
                 <svg fill="none" stroke="currentColor" style="width: 1rem; height: 1rem; margin-right: 0.25rem;" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                 Update Balances
             </button>
         </div>
+
+        <div id="alloc-strip" class="alloc-strip"></div>
 
         <div id="accounts-container">
             </div>
@@ -1537,6 +1554,17 @@
     // The 10 canonical net-worth accounts. Legacy/typo names map onto these so the
     // list stays identical every month and net worth stays complete.
     const CANONICAL_ACCOUNTS = defaultAccounts.map(a => a.name);
+    // Net-worth allocation buckets for the "where it sits" strip.
+    const ACCOUNT_BUCKETS = {
+        'Joint Checking': 'Cash', 'Joint Savings': 'Cash', 'Emergency Fund': 'Cash',
+        'Jamason Personal Cash': 'Cash', 'Brooklynne Personal Cash': 'Cash',
+        'Joint Brokerage': 'Investments',
+        'Jamason Roth IRA': 'Retirement', 'Brooklynne Roth IRA': 'Retirement',
+        'Brooklynne HSA': 'Retirement', 'Jamason 401K / Rollover IRA': 'Retirement',
+        'Joint Crypto': 'Crypto'
+    };
+    const BUCKET_ORDER = ['Cash', 'Investments', 'Retirement', 'Crypto', 'Other'];
+    const BUCKET_COLORS = { Cash: '#3b82f6', Investments: '#14b8a6', Retirement: '#8b5cf6', Crypto: '#f59e0b', Other: '#94a3b8' };
     const ACCOUNT_ALIASES = {
         'checking account': 'Joint Checking',
         'join checking account': 'Joint Checking',
@@ -2071,6 +2099,21 @@
 
     // --- ACCOUNTS LOGIC ---
 
+    function renderAllocStrip(accounts, total) {
+        const el = document.getElementById('alloc-strip');
+        if (!el) return;
+        if (!(total > 0)) { el.innerHTML = ''; return; }
+        const buckets = {};
+        accounts.forEach(a => {
+            const b = ACCOUNT_BUCKETS[a.name] || 'Other';
+            buckets[b] = (buckets[b] || 0) + a.balance;
+        });
+        const segs = BUCKET_ORDER.filter(b => (buckets[b] || 0) > 0);
+        const bar = segs.map(b => `<span style="width:${(buckets[b] / total * 100).toFixed(2)}%;background:${BUCKET_COLORS[b]}"></span>`).join('');
+        const leg = segs.map(b => `<span class="alloc-k"><span class="alloc-dot" style="background:${BUCKET_COLORS[b]}"></span>${b} ${Math.round(buckets[b] / total * 100)}%</span>`).join('');
+        el.innerHTML = `<div class="alloc-label">Where it sits</div><div class="alloc-bar">${bar}</div><div class="alloc-legend">${leg}</div>`;
+    }
+
     function renderAccounts() {
         const data = getOrCreateMonthData(currentMonthStr);
         const container = document.getElementById('accounts-container');
@@ -2084,12 +2127,33 @@
         }
 
         let sparklineDataStore = [];
-        let totalNetWorth = 0;
         let html = '';
 
         const displayAccounts = normalizeAccounts(data.accounts);
+        const totalNetWorth = displayAccounts.reduce((s, a) => s + a.balance, 0);
+
+        // Previous month, for month-over-month change on the total and each account
+        const prevMonthStr = getPreviousMonthStr(currentMonthStr);
+        const prevAccounts = normalizeAccounts((budgetData[prevMonthStr] && budgetData[prevMonthStr].accounts) || []);
+        const prevTotal = prevAccounts.reduce((s, a) => s + a.balance, 0);
+        const prevBalOf = (name) => { const p = prevAccounts.find(a => canonicalName(a.name) === name); return p ? p.balance : 0; };
+
+        // Net-worth change line under the total
+        const nwDeltaEl = document.getElementById('nw-delta');
+        if (nwDeltaEl) {
+            if (prevTotal > 0) {
+                const dd = totalNetWorth - prevTotal;
+                const pct = Math.abs(dd / prevTotal * 100).toFixed(1);
+                const up = dd >= 0;
+                nwDeltaEl.className = 'nw-delta ' + (up ? 'up' : 'down');
+                nwDeltaEl.textContent = `${up ? '▲' : '▼'} ${formatCurrency(Math.abs(dd))} · ${up ? '+' : '−'}${pct}% vs ${prevMonthStr.split(' ')[0]}`;
+            } else { nwDeltaEl.className = 'nw-delta'; nwDeltaEl.textContent = ''; }
+        }
+
+        // "Where it sits" allocation strip
+        renderAllocStrip(displayAccounts, totalNetWorth);
+
         displayAccounts.forEach((acct, idx) => {
-            totalNetWorth += acct.balance;
 
             // Get historical balances (match across renamed/legacy account names)
             const sparkData = historyMonths.map(m => {
@@ -2102,15 +2166,26 @@
             
             sparklineDataStore.push({ id: `spark-${idx}`, data: sparkData });
 
+            const share = totalNetWorth > 0 ? (acct.balance / totalNetWorth * 100) : 0;
+            const subText = acct.balance !== 0 ? `${share.toFixed(share < 10 ? 1 : 0)}% of net worth` : 'not set yet';
+            const dChg = acct.balance - prevBalOf(acct.name);
+            const deltaHtml = Math.abs(dChg) >= 0.5
+                ? `<div class="acct-delta ${dChg >= 0 ? 'up' : 'down'}">${dChg >= 0 ? '▲' : '▼'} ${formatCurrency(Math.abs(dChg))}</div>`
+                : `<div class="acct-delta flat">—</div>`;
+
             html += `
                 <div class="account-card">
                     <div class="acct-info">
                         <span class="acct-name">${acct.name}</span>
+                        <span class="acct-share">${subText}</span>
                     </div>
                     <div style="width: 70px; height: 30px; margin: 0 1rem; position: relative; flex-shrink: 0;">
                         <canvas id="spark-${idx}"></canvas>
                     </div>
-                    <div class="acct-bal">${formatCurrency(acct.balance)}</div>
+                    <div class="acct-bal-wrap">
+                        <div class="acct-bal">${formatCurrency(acct.balance)}</div>
+                        ${deltaHtml}
+                    </div>
                 </div>
             `;
         });
