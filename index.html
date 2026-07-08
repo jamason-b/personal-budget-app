@@ -1521,12 +1521,77 @@
     ];
 
     const defaultAccounts = [
-        { name: 'Checking Account', balance: 0 },
-        { name: 'Savings Account', balance: 0 },
+        { name: 'Joint Checking', balance: 0 },
+        { name: 'Joint Savings', balance: 0 },
+        { name: 'Emergency Fund', balance: 0 },
+        { name: 'Jamason Personal Cash', balance: 0 },
+        { name: 'Brooklynne Personal Cash', balance: 0 },
         { name: 'Joint Brokerage', balance: 0 },
+        { name: 'Joint Crypto', balance: 0 },
         { name: 'Jamason Roth IRA', balance: 0 },
-        { name: 'Brooklynne Roth IRA', balance: 0 }
+        { name: 'Brooklynne Roth IRA', balance: 0 },
+        { name: 'Jamason 401K / Rollover IRA', balance: 0 }
     ];
+
+    // The 10 canonical net-worth accounts. Legacy/typo names map onto these so the
+    // list stays identical every month and net worth stays complete.
+    const CANONICAL_ACCOUNTS = defaultAccounts.map(a => a.name);
+    const ACCOUNT_ALIASES = {
+        'checking account': 'Joint Checking',
+        'join checking account': 'Joint Checking',
+        'joint checking account': 'Joint Checking',
+        'savings account': 'Joint Savings',
+        'joint savings account': 'Joint Savings',
+        'personal cash': 'Jamason Personal Cash',
+        'jamason personal': 'Jamason Personal Cash',
+        'brooklyn personal cash': 'Brooklynne Personal Cash',
+        'crypto': 'Joint Crypto',
+        'brooklyn roth ira': 'Brooklynne Roth IRA',
+        'jamason - stat 401k': 'Jamason 401K / Rollover IRA',
+        'jamason stat 401k': 'Jamason 401K / Rollover IRA',
+        'jamason 401k': 'Jamason 401K / Rollover IRA',
+        'stat 401k': 'Jamason 401K / Rollover IRA'
+    };
+    function canonicalName(name) {
+        const key = (name || '').trim().toLowerCase();
+        if (ACCOUNT_ALIASES[key]) return ACCOUNT_ALIASES[key];
+        const hit = CANONICAL_ACCOUNTS.find(c => c.toLowerCase() === key);
+        return hit || (name || '').trim();
+    }
+    // Reconcile an accounts array to the canonical set: rename aliases, merge
+    // duplicates (keep the meaningful non-zero balance), ensure all 10 exist,
+    // order canonical-first, and preserve any custom accounts at the end.
+    function normalizeAccounts(accounts) {
+        const byName = {}; const extras = [];
+        (accounts || []).forEach(a => {
+            const cn = canonicalName(a.name);
+            const bal = parseFloat(a.balance) || 0;
+            if (CANONICAL_ACCOUNTS.includes(cn)) {
+                if (!(cn in byName) || Math.abs(bal) > Math.abs(byName[cn])) byName[cn] = bal;
+            } else if ((a.name || '').trim()) {
+                extras.push({ name: (a.name || '').trim(), balance: bal });
+            }
+        });
+        const ordered = CANONICAL_ACCOUNTS.map(n => ({ name: n, balance: byName[n] || 0 }));
+        return ordered.concat(extras);
+    }
+    // Values to pre-fill the update form: this month's number, or if it's still 0/blank,
+    // carry forward the most recent prior month that had a number for that account.
+    function accountsForEntry(monthStr) {
+        const base = normalizeAccounts((budgetData[monthStr] && budgetData[monthStr].accounts) || []);
+        const priorMonths = Object.keys(budgetData)
+            .filter(m => parseMonthStr(m) < parseMonthStr(monthStr))
+            .sort((a, b) => parseMonthStr(b) - parseMonthStr(a));
+        return base.map(acct => {
+            if (acct.balance !== 0) return acct;
+            for (const m of priorMonths) {
+                const prior = (budgetData[m].accounts || []).find(a => canonicalName(a.name) === acct.name);
+                const pb = prior ? (parseFloat(prior.balance) || 0) : 0;
+                if (pb !== 0) return { name: acct.name, balance: pb };
+            }
+            return acct;
+        });
+    }
 
     const defaultDataTemplate = {
         accounts: JSON.parse(JSON.stringify(defaultAccounts)),
@@ -2019,13 +2084,14 @@
         let totalNetWorth = 0;
         let html = '';
 
-        data.accounts.forEach((acct, idx) => {
+        const displayAccounts = normalizeAccounts(data.accounts);
+        displayAccounts.forEach((acct, idx) => {
             totalNetWorth += acct.balance;
-            
-            // Get historical balances
+
+            // Get historical balances (match across renamed/legacy account names)
             const sparkData = historyMonths.map(m => {
                 if (budgetData[m] && budgetData[m].accounts) {
-                    const pastAcct = budgetData[m].accounts.find(a => a.name === acct.name);
+                    const pastAcct = budgetData[m].accounts.find(a => canonicalName(a.name) === acct.name);
                     return pastAcct ? pastAcct.balance : 0;
                 }
                 return 0;
@@ -2115,7 +2181,7 @@
         const listContainer = document.getElementById('accounts-input-list');
         let acctHtml = '';
 
-        data.accounts.forEach((acct, idx) => {
+        accountsForEntry(currentMonthStr).forEach((acct, idx) => {
             acctHtml += `
                 <div class="form-group" id="acct-row-${idx}">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
@@ -2172,31 +2238,22 @@
             }
         }
         
-        budgetData[currentMonthStr].accounts = newAccounts;
+        const cleaned = normalizeAccounts(newAccounts);
+        budgetData[currentMonthStr].accounts = cleaned;
 
-        // FORWARD SYNC: Propagate the new account list structure to all future months
+        // FORWARD SYNC: propagate the clean account layout to all future months,
+        // keeping each future month's own balances (matched by canonical name).
         const currDate = parseMonthStr(currentMonthStr);
 
         Object.keys(budgetData).forEach(m => {
-            // Only update logically future dates
             if (parseMonthStr(m) > currDate) {
                 if (!budgetData[m].accounts) budgetData[m].accounts = [];
-                
-                const futureAccounts = [];
-                
-                // Map the newly updated layout to the future month
-                newAccounts.forEach(newAcct => {
-                    const existingFutureAcct = budgetData[m].accounts.find(a => a.name === newAcct.name);
-                    if (existingFutureAcct) {
-                        // If it existed in the future, keep its future balance
-                        futureAccounts.push(existingFutureAcct);
-                    } else {
-                        // If it's a brand new account, add it to the future month with the current balance
-                        futureAccounts.push({ name: newAcct.name, balance: newAcct.balance });
-                    }
+                budgetData[m].accounts = cleaned.map(newAcct => {
+                    const existingFutureAcct = budgetData[m].accounts.find(a => canonicalName(a.name) === newAcct.name);
+                    return existingFutureAcct
+                        ? { name: newAcct.name, balance: parseFloat(existingFutureAcct.balance) || 0 }
+                        : { name: newAcct.name, balance: newAcct.balance };
                 });
-                
-                budgetData[m].accounts = futureAccounts;
             }
         });
 
