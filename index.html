@@ -1439,8 +1439,9 @@
         let html = !term ? `<div style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.75rem; letter-spacing: 0.05em;">Recently Added</div>` : '';
         
         results.forEach(res => {
-            const displayAmt = res.isIncome ? `+${formatCurrency(Math.abs(res.tx.amount))}` : `-${formatCurrency(Math.abs(res.tx.amount))}`;
-            const colorStyle = res.isIncome ? `color: var(--success);` : `color: var(--danger);`;
+            const isCredit = res.isIncome || res.tx.amount < 0; // negative expense = reimbursement/refund, show as a credit
+            const displayAmt = `${isCredit ? '+' : '-'}${formatCurrency(Math.abs(res.tx.amount))}`;
+            const colorStyle = isCredit ? `color: var(--success);` : `color: var(--danger);`;
 
             html += `
                 <div class="tx-item" style="cursor: pointer; display: block; border-left: 4px solid var(--primary); margin-bottom: 0.75rem;" onclick="jumpToMonth('${res.monthKey}')">
@@ -3705,8 +3706,9 @@ If no transactions are found, return an empty array: []`;
             const originalIdx = item.transactions.indexOf(tx); 
             total += tx.amount;
             
-            const displayAmt = isIncome ? `+${formatCurrency(Math.abs(tx.amount))}` : `-${formatCurrency(Math.abs(tx.amount))}`;
-            const colorStyle = isIncome ? `color: var(--success);` : `color: var(--danger);`;
+            const isCredit = isIncome || tx.amount < 0; // negative expense = reimbursement/refund, show as a credit
+            const displayAmt = `${isCredit ? '+' : '-'}${formatCurrency(Math.abs(tx.amount))}`;
+            const colorStyle = isCredit ? `color: var(--success);` : `color: var(--danger);`;
             
             const txActions = `
                 <button type="button" onclick="editTransaction(${originalIdx})" class="btn-tx-action edit" title="Edit Transaction">${ICONS.edit}</button>
