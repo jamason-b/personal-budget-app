@@ -1010,6 +1010,11 @@
                         <label class="form-label" for="tx-date">Date</label>
                         <input type="date" id="tx-date" class="input-date" required>
                     </div>
+                    <div class="form-group" id="tx-category-group" style="display: none;">
+                        <label class="form-label" for="tx-category">Category</label>
+                        <select id="tx-category" class="input-text"></select>
+                        <span class="form-hint">Change this to move the transaction into a different category.</span>
+                    </div>
                     <div style="display: flex; gap: 0.5rem; margin-top: 0.25rem;">
                         <button type="submit" id="btn-add-tx" class="btn-add" style="margin-top: 0;">Add</button>
                         <button type="button" id="btn-cancel-tx" onclick="cancelEditTransaction()" class="btn-add" style="margin-top: 0; background: var(--bg-alt); color: var(--text-strong); display: none;">Cancel</button>
@@ -3683,6 +3688,7 @@ If no transactions are found, return an empty array: []`;
         editingTxIndex = null;
         document.getElementById('btn-add-tx').innerText = "Add Transaction";
         document.getElementById('btn-cancel-tx').style.display = "none";
+        document.getElementById('tx-category-group').style.display = 'none';
         setTimeout(() => document.getElementById('tx-amount').focus(), 100);
         renderTransactionsList();
     }
@@ -3747,6 +3753,10 @@ If no transactions are found, return an empty array: []`;
         document.getElementById('tx-date').value = tx.date;
         document.getElementById('tx-desc').value = tx.desc;
         document.getElementById('tx-amount').value = tx.amount;
+        const catSelect = document.getElementById('tx-category');
+        catSelect.innerHTML = buildSplitCategoryOptions();
+        catSelect.value = `${activeModalCategory}|${activeModalIndex}`;
+        document.getElementById('tx-category-group').style.display = 'block';
         document.getElementById('btn-add-tx').innerText = "Save Changes";
         document.getElementById('btn-cancel-tx').style.display = "block";
         renderTransactionsList(); 
@@ -3762,7 +3772,8 @@ If no transactions are found, return an empty array: []`;
         
         document.getElementById('btn-add-tx').innerText = "Add Transaction";
         document.getElementById('btn-cancel-tx').style.display = "none";
-        renderTransactionsList(); 
+        document.getElementById('tx-category-group').style.display = 'none';
+        renderTransactionsList();
     }
 
     function handleAddTransaction(e) {
@@ -3776,10 +3787,22 @@ If no transactions are found, return an empty array: []`;
             haptic('medium');
             if (editingTxIndex !== null) {
                 const oldTx = budgetData[currentMonthStr][activeModalCategory][activeModalIndex].transactions[editingTxIndex];
-                budgetData[currentMonthStr][activeModalCategory][activeModalIndex].transactions[editingTxIndex] = { date: date, desc: desc, amount: amount, timestamp: oldTx.timestamp || Date.now() };
+                const updatedTx = { date: date, desc: desc, amount: amount, timestamp: oldTx.timestamp || Date.now() };
+                const [targetSec, targetIdxStr] = (document.getElementById('tx-category').value || '').split('|');
+                const targetIdx = parseInt(targetIdxStr, 10);
+                const validTarget = targetSec && !isNaN(targetIdx) && budgetData[currentMonthStr][targetSec] && budgetData[currentMonthStr][targetSec][targetIdx];
+                if (!validTarget || (targetSec === activeModalCategory && targetIdx === activeModalIndex)) {
+                    // same category (or no change) — edit in place
+                    budgetData[currentMonthStr][activeModalCategory][activeModalIndex].transactions[editingTxIndex] = updatedTx;
+                } else {
+                    // move the transaction to a different category
+                    budgetData[currentMonthStr][activeModalCategory][activeModalIndex].transactions.splice(editingTxIndex, 1);
+                    budgetData[currentMonthStr][targetSec][targetIdx].transactions.push(updatedTx);
+                }
                 editingTxIndex = null;
                 document.getElementById('btn-add-tx').innerText = "Add Transaction";
                 document.getElementById('btn-cancel-tx').style.display = "none";
+                document.getElementById('tx-category-group').style.display = 'none';
             } else {
                 budgetData[currentMonthStr][activeModalCategory][activeModalIndex].transactions.push({ date: date, desc: desc, amount: amount, timestamp: Date.now() });
             }
