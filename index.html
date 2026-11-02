@@ -633,6 +633,7 @@
                 <svg fill="none" stroke="currentColor" style="width: 1rem; height: 1rem; margin-right: 0.25rem;" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                 Update Balances
             </button>
+            <button onclick="openTransfersModal()" class="theme-btn" style="background: var(--primary-bg); color: var(--primary); border-color: var(--primary-border);">⇄ Transfers</button>
         </div>
 
         <div id="alloc-strip" class="alloc-strip"></div>
@@ -640,6 +641,23 @@
         <div id="accounts-container">
             </div>
     </div>
+
+<div id="transfers-modal" class="modal-overlay">
+  <div class="modal-content">
+    <div class="modal-header"><h3 class="modal-title">Account Transfers</h3><button onclick="closeTransfersModal()" class="btn-close">×</button></div>
+    <div class="modal-body">
+      <div id="transfers-list" class="tx-list"></div>
+      <form class="add-form" onsubmit="saveTransfer(event)">
+        <div class="form-group"><label class="form-label">From account</label><select id="transfer-from" class="input-text" required></select></div>
+        <div class="form-group"><label class="form-label">To account</label><select id="transfer-to" class="input-text" required></select></div>
+        <div class="form-group"><label class="form-label">Amount</label><input id="transfer-amount" class="input-number" type="number" min="0.01" step="0.01" required></div>
+        <div class="form-group"><label class="form-label">Date</label><input id="transfer-date" class="input-date" type="date" required></div>
+        <div class="form-group"><label class="form-label">Description (optional)</label><input id="transfer-desc" class="input-text" type="text"></div>
+        <button class="btn-add" type="submit">Add Transfer</button>
+      </form>
+    </div>
+  </div>
+</div>
 
     <div id="view-yearly" class="hidden">
         <div class="controls" style="justify-content: space-between; margin-bottom: 1.5rem;">
@@ -1235,6 +1253,8 @@
     window.switchQuickAddTab = switchQuickAddTab; window.openSplitModal = openSplitModal; window.closeSplitModal = closeSplitModal; window.addSplitRow = addSplitRow; window.removeSplitRow = removeSplitRow; window.updateSplitTotal = updateSplitTotal; window.handleSplitTransaction = handleSplitTransaction;
     window.toggleEditYearly = toggleEditYearly; window.openModal = openModal; window.closeModal = closeModal;
     window.editTransaction = editTransaction; window.cancelEditTransaction = cancelEditTransaction; window.handleAddTransaction = handleAddTransaction;
+    window.openTransfersModal = openTransfersModal; window.closeTransfersModal = closeTransfersModal; window.saveTransfer = saveTransfer;
+    window.editTransfer = editTransfer; window.deleteTransfer = deleteTransfer;
     window.deleteTransaction = deleteTransaction; window.openRowModal = openRowModal; window.closeRowModal = closeRowModal;
     window.handleAddRow = handleAddRow; window.openEditRowModal = openEditRowModal; window.closeEditRowModal = closeEditRowModal;
     window.handleEditRow = handleEditRow; window.closeRulesModal = closeRulesModal; window.handleSaveRules = handleSaveRules;
@@ -1678,6 +1698,59 @@
         });
     }
 
+    let editingTransferId = null;
+    function openTransfersModal() {
+        const md = budgetData[currentMonthStr];
+        md.transfers = md.transfers || [];
+        const accounts = normalizeAccounts(md.accounts || []);
+        ['transfer-from', 'transfer-to'].forEach(id => {
+            document.getElementById(id).innerHTML = accounts.map(a => `<option value="${a.name}">${a.name}</option>`).join('');
+        });
+        document.getElementById('transfer-date').value = getSmartDateDefault(currentMonthStr);
+        document.getElementById('transfers-modal').classList.add('active');
+        renderTransfers();
+    }
+    function closeTransfersModal() { document.getElementById('transfers-modal').classList.remove('active'); editingTransferId = null; }
+    function adjustTransferBalance(accountName, delta) {
+        const account = budgetData[currentMonthStr].accounts.find(a => canonicalName(a.name) === canonicalName(accountName));
+        if (!account) throw new Error('Transfer account no longer exists.');
+        account.balance = (parseFloat(account.balance) || 0) + delta;
+    }
+    function renderTransfers() {
+        const list = document.getElementById('transfers-list');
+        const transfers = budgetData[currentMonthStr].transfers || [];
+        list.innerHTML = transfers.length ? transfers.map(t => `<div class="tx-item"><div class="tx-info"><strong>⇄ ${formatCurrency(t.amount)}</strong><span>${t.from} → ${t.to}</span><span>${formatDate(t.date)}${t.desc ? ` · ${t.desc}` : ''}</span></div><div class="tx-actions"><button class="btn-tx-action edit" onclick="editTransfer('${t.id}')">Edit</button><button class="btn-tx-action delete" onclick="deleteTransfer('${t.id}')">Delete</button></div></div>`).join('') : '<div class="tx-empty">No transfers this month.</div>';
+    }
+    function saveTransfer(event) {
+        event.preventDefault();
+        const from = document.getElementById('transfer-from').value, to = document.getElementById('transfer-to').value;
+        const amount = Math.round(parseFloat(document.getElementById('transfer-amount').value) * 100) / 100;
+        const date = document.getElementById('transfer-date').value, desc = document.getElementById('transfer-desc').value.trim();
+        if (!from || !to || canonicalName(from) === canonicalName(to) || !(amount > 0) || !date) { customAlert('Choose two different accounts and enter a valid amount and date.'); return; }
+        const list = budgetData[currentMonthStr].transfers || (budgetData[currentMonthStr].transfers = []);
+        pushUndoState();
+        if (editingTransferId) {
+            const i = list.findIndex(t => t.id === editingTransferId), old = list[i];
+            if (!old) return;
+            adjustTransferBalance(old.from, old.amount); adjustTransferBalance(old.to, -old.amount);
+            list[i] = { id: old.id, from, to, amount, date, desc, timestamp: old.timestamp };
+        } else list.push({ id: `transfer-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, from, to, amount, date, desc, timestamp: Date.now() });
+        adjustTransferBalance(from, -amount); adjustTransferBalance(to, amount);
+        editingTransferId = null; event.target.reset(); document.getElementById('transfer-date').value = getSmartDateDefault(currentMonthStr);
+        saveData(); renderTransfers(); refreshViews();
+    }
+    function editTransfer(id) {
+        const t = (budgetData[currentMonthStr].transfers || []).find(x => x.id === id); if (!t) return;
+        editingTransferId = id; document.getElementById('transfer-from').value = t.from; document.getElementById('transfer-to').value = t.to;
+        document.getElementById('transfer-amount').value = t.amount; document.getElementById('transfer-date').value = t.date; document.getElementById('transfer-desc').value = t.desc || '';
+        document.querySelector('#transfers-modal form button[type="submit"]').innerText = 'Save Transfer';
+    }
+    function deleteTransfer(id) {
+        const list = budgetData[currentMonthStr].transfers || [], i = list.findIndex(t => t.id === id); if (i < 0) return;
+        pushUndoState(); const t = list[i]; adjustTransferBalance(t.from, t.amount); adjustTransferBalance(t.to, -t.amount); list.splice(i, 1);
+        saveData(); renderTransfers(); refreshViews();
+    }
+
     const defaultDataTemplate = {
         accounts: JSON.parse(JSON.stringify(defaultAccounts)),
         income: [{ name: "Peak Ent", budget: 2000.00, transactions: [] }, { name: "TA", budget: 45.00, transactions: [] }, { name: "STAT", budget: 800.00, transactions: [] }, { name: "Property Management", budget: 0.00, transactions: [] }, { name: "Taxes (Refund)", budget: 3211.00, transactions: [] }, { name: "Other Income", budget: 0.00, transactions: [] }],
@@ -1844,6 +1917,10 @@
 
         sortedMonths.forEach(monthStr => {
             const [mName, yStr] = monthStr.split(' ');
+            (budgetData[monthStr].transfers || []).forEach(t => {
+                const desc = `"${(t.desc || '').replace(/"/g, '""')}"`;
+                csvContent += `${t.date},${mName},${yStr},transfer,"${(t.from || '').replace(/"/g, '""')} → ${(t.to || '').replace(/"/g, '""')}",${desc},${t.amount}\r\n`;
+            });
             SECTION_IDS.forEach(sec => {
                 if(budgetData[monthStr][sec]) {
                     budgetData[monthStr][sec].forEach(item => {
